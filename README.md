@@ -2,21 +2,22 @@
 
 > **One hallucination. Find every filing it touched.**
 
-RECALL is legal incident-response software. It starts after a legal authority or quotation is put under review and asks the operational question: **where else does this dependency appear?**
+RECALL is **legal incident response**. It starts after an authority or quotation is put under review and asks the operational question: **where else does this dependency appear?**
 
-It is not a citation checker, fake-case detector, legal chatbot, or semantic-search verdict engine.
+It is not a citation checker, fake-case detector, legal chatbot, seeded graph demo, or semantic-search verdict engine.
 
 ## Search result → candidate → confirmed dependency
 
 RECALL deliberately separates retrieval from proof.
 
 1. **Search result** — CourtListener / RECAP returned a public filing because a query matched.
-2. **Candidate dependency** — RECALL preserved the filing metadata, source, query, and available text, but has not found deterministic incident evidence.
-3. **CONFIRMED_CITATION_DEPENDENCY** — the shared parser independently found the incident authority's canonical reporter / volume / first-page identity in available filing text.
-4. **CONFIRMED_QUOTE_REUSE** — deterministic normalized quotation overlap crossed a conservative threshold.
+2. **CANDIDATE_UNCONFIRMED** — RECALL preserved source metadata but could not independently establish the dependency from available filing text.
+3. **CONFIRMED_CITATION_DEPENDENCY** — RECALL's deterministic parser found the same canonical reporter / volume / first-page authority in available filing text.
+4. **CONFIRMED_QUOTE_REUSE** — normalized quotation overlap crossed the conservative deterministic threshold.
 5. **POSSIBLE_DERIVED_CLAIM** — lexical/semantic resemblance only. Human review required.
+6. **NOT_RELATED** — evidence does not support dependency, including explicit critical discussion of the incident authority.
 
-A search hit is never promoted to a confirmed dependency merely because CourtListener ranked it highly.
+A CourtListener ranking or search hit is never enough to create a confirmed edge.
 
 ## Real CourtListener / RECAP mode
 
@@ -24,108 +25,85 @@ A search hit is never promoted to a confirmed dependency merely because CourtLis
 
 For a citation such as `598 U.S. 508`, the server:
 
-1. parses and canonicalizes the citation;
-2. optionally resolves authority metadata using CourtListener v4 citation lookup;
-3. performs documented keyword searches against CourtListener v4 search;
-4. uses `type=r` for federal docket + nested filing discovery and `type=rd` for filing-document candidates;
-5. preserves the query, source URL, retrieval timestamp, docket metadata, available snippet/text, and a content hash;
-6. independently confirms citation or quotation evidence with RECALL's shared dependency engine;
-7. groups confirmed occurrences by actual docket metadata;
-8. reports exactly how many unique filing candidates were checked.
+1. parses and canonicalizes the authority;
+2. optionally resolves authority metadata with CourtListener v4 citation lookup;
+3. builds documented keyword/phrase searches;
+4. uses `type=rd` as the flat federal filing-document search and `type=r` as docket/nested-document metadata context;
+5. follows CourtListener pagination only within a bounded candidate limit;
+6. hydrates RECAP candidates through `/api/rest/v4/recap-documents/{id}/` and requests `plain_text` where available;
+7. independently re-runs the shared citation / quotation dependency engine over the hydrated text;
+8. groups confirmed occurrences by actual docket metadata;
+9. preserves search query, retrieval timestamp, source URL, source mode, and SHA-256 content hash;
+10. reports exactly how many filing candidates were checked.
 
-CourtListener / RECAP coverage is **not every U.S. court filing**. RECALL says “public federal filing data available through CourtListener / RECAP,” never “all filings.”
+CourtListener / RECAP coverage is **not every U.S. court filing**. RECALL always describes this as “public federal filing data available through CourtListener / RECAP.”
 
-Search responses are bounded to a maximum of 50 unique candidates per trace in the hackathon build. If the source indicates additional results, the UI labels the trace as bounded.
+The hackathon live trace begins with 25 unique candidates and can expand to 50. It never claims “all filings” unless the returned result set was actually exhausted.
 
 ## Recorded public demo
 
 `/demo` is a deterministic replay of **real public RECAP source material captured during development**.
 
-It traces `598 U.S. 508` through three source-backed federal filings:
+The recorded trace uses the real authority `598 U.S. 508` and source-backed excerpts from three federal filings:
 
 - Thomson Reuters Enterprise Centre GmbH v. Ross Intelligence Inc., D. Del., Document 770, filed 2025-02-11
 - Kadrey et al. v. Meta Platforms, Inc., N.D. Cal., Document 598, filed 2025-06-25
 - Bartz et al. v. Anthropic PBC, N.D. Cal., Document 231, filed 2025-06-23
 
-The replay stores only a short citation-bearing capture for deterministic offline confirmation, plus the real public source URL, capture timestamp, and SHA-256 hash. It is visibly labeled **RECORDED PUBLIC TRACE** and never presented as live.
+The first two also contain the short Warhol quotation **“further purpose or different character”**, allowing RECALL to demonstrate confirmed quotation reuse without inventing a synthetic public filing.
 
-RECALL does **not** assert that `598 U.S. 508` is invalid. The recorded trace demonstrates downstream dependency mechanics using a real, verifiable authority and real filings.
+The replay preserves the real RECAP source URL, capture date, and SHA-256 hash of each captured excerpt. It is visibly labeled **RECORDED PUBLIC TRACE** and never presented as live.
+
+RECALL does **not** claim that `598 U.S. 508` is invalid. The recorded route demonstrates downstream dependency mechanics with a real authority and real public filings.
 
 ## Trace my corpus
 
 `/corpus` processes user-selected PDF, TXT, MD, and DOCX files in the browser.
 
-The same citation parser, authority normalizer, quote matcher, proposition matcher, dependency classifier, and blast-radius logic used by the public-source workflow powers imported corpora. Unknown document status, matter, and chronology remain unknown unless supplied.
+The same deterministic citation parser, authority normalizer, quote matcher, proposition matcher, dependency classifier, and blast-radius logic powers both imported corpora and public-source confirmation. Unknown document status, matter, and chronology stay unknown unless explicitly supplied.
 
 ## Architecture
 
 ```text
-                         ┌──────────────────────────────┐
-                         │ shared dependency engine     │
-                         │ citation → quote → possible  │
-                         └──────────────┬───────────────┘
-                                        │
-            ┌───────────────────────────┴───────────────────────────┐
-            │                                                       │
-CourtListener / RECAP                                      local corpus
-type=r + type=rd                                           PDF/TXT/MD/DOCX
-            │                                                       │
-candidate public filings                                  imported documents
-            └───────────────────────────┬───────────────────────────┘
-                                        │
-                              evidence classification
-                                        │
-                               blast-radius grouping
+public citation / quotation
+        │
+        ├── CourtListener v4 search (rd filing candidates + r docket context)
+        │       │
+        │       └── RECAP document detail → plain_text where available
+        │
+        └── imported local corpus
+                │
+                ▼
+       shared dependency engine
+   citation → quote → possible claim
+                │
+                ▼
+   confirmed / candidate / review-only
+                │
+                ▼
+     docket or matter blast radius
 ```
 
-Server-only CourtListener credentials never enter the client bundle. Public-source URLs are allowlisted to CourtListener hosts. The application never follows arbitrary URLs extracted from filings.
+Server-only CourtListener credentials never enter the client bundle. Outbound API calls are hardcoded to CourtListener. Public source links are allowlisted to CourtListener and CourtListener storage hosts. RECALL never follows arbitrary URLs extracted from legal text.
 
-## Citation parser
+## Dependency law
 
-The deterministic parser normalizes common U.S. reporters including U.S., S. Ct., F./F.2d/F.3d/F.4th, Fed. Appx., and several regional reporter families.
-
-Pin cites do not create separate authorities:
-
-```text
-598 U.S. 508
-598 U.S. 508, 526
-Warhol, 598 U.S. at 526   (only when case-name context makes the short form resolvable)
-```
-
-all refer to the same underlying authority when the short form is sufficiently anchored.
-
-## Quote fingerprinting
-
-Quotes are normalized for Unicode quote marks, whitespace, punctuation, and ellipsis forms. Confirmation uses conservative deterministic overlap. A loose paraphrase never becomes quote reuse.
-
-## Semantic review layer
-
-Proposition matching is intentionally review-only:
-
-> **Possible related proposition — human review required.**
-
-Semantic or lexical similarity cannot create a confirmed citation or quotation dependency.
-
-## Graph / evidence model
-
-Public nodes represent real source entities: AUTHORITY, FILING, DOCKET, QUOTE, PROPOSITION. Imported-corpus nodes represent explicit imported documents and supplied matters.
-
-Every confirmed edge carries:
-- raw matched text;
-- normalization / matching rule;
-- canonical authority identity where applicable;
-- source metadata;
-- source URL for public records.
+- Pin cites do not create new authorities.
+- Same case name or surname is never enough to merge authorities.
+- Semantic similarity can never create a confirmed dependency.
+- A public filing that only criticizes or invalidates the incident authority is excluded from confirmed dependency counts.
+- API failure and “not found” remain source states, not conclusions about an authority.
+- Every confirmed relationship preserves the exact evidence and rule that created it.
 
 ## Benchmark
 
-`npm run bench` runs the deterministic 50-relationship labeled benchmark and the 30-document negative-control corpus.
+`npm run bench` runs the deterministic labeled benchmark and the 30-document negative-control corpus.
 
-`npm run bench:live` runs a bounded current CourtListener trace over five real authorities **only when `COURTLISTENER_TOKEN` is configured**. Without the credential it prints an explicit SKIPPED state and exits successfully; no fixture is substituted.
+`npm run bench:live` runs a bounded current CourtListener trace over five real authorities **only when `COURTLISTENER_TOKEN` is configured**. Without the credential it prints an explicit SKIPPED state; it never substitutes fixture data and calls it live.
 
 The primary safety metric is **FALSE CONFIRMED DEPENDENCIES**.
 
-See `bench/PUBLIC_SAMPLE.md` for the independently source-checked public sample used to choose the five live benchmark authorities.
+See `bench/PUBLIC_SAMPLE.md` for the source-backed public sample.
 
 ## Environment
 
@@ -133,7 +111,7 @@ See `bench/PUBLIC_SAMPLE.md` for the independently source-checked public sample 
 COURTLISTENER_TOKEN=
 ```
 
-The token is required only for current live CourtListener API calls. The recorded public demo and local corpus mode require no external key.
+The token is required only for current CourtListener API calls. The recorded public demo and imported-corpus mode require no external key.
 
 ## Local development
 
@@ -167,9 +145,8 @@ npm run e2e
 - 429 → rate limited
 - timeout / 5xx → source unavailable
 - zero matches → zero matches
-- search hit without independently checkable occurrence → candidate, not confirmed
-
-An API failure never becomes a factual conclusion about an authority.
+- search hit without deterministic evidence → candidate, not confirmed
+- citation-lookup row status 404 → authority unresolved, never “fake”
 
 ## Privacy and security
 
@@ -177,19 +154,18 @@ An API failure never becomes a factual conclusion about an authority.
 - RECALL does not intentionally upload imported corpus text to its own API.
 - No analytics capture corpus text.
 - CourtListener token is server-only.
-- User input is length-bounded.
-- Public source URLs are restricted to CourtListener / CourtListener storage hosts.
-- No uploaded content is executed.
+- User input and file sizes are bounded.
+- Public source URLs are restricted to CourtListener / storage.courtlistener.com.
 - No arbitrary URL found inside a filing is fetched.
 - Raw corpus text is not logged by application code.
 
 ## Known limitations
 
 - CourtListener / RECAP is incomplete relative to all U.S. filings.
-- The live product verifies only text/snippet content returned in the bounded search path; a result without checkable text remains unconfirmed.
-- OCR is not included.
+- RECAP documents without extracted text can remain unconfirmed even when search surfaced them.
+- OCR is not included in the imported-corpus path.
 - Case-name-only identity is not sufficient to merge authorities.
-- Recorded demo data is a deliberately small public-source capture, not a claim about exhaustive history.
+- The recorded demo is a deliberately small public-source capture, not a claim about exhaustive history.
 - Historical copying or causation is not inferred.
 
 ## No-lineage-overclaim rule

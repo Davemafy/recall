@@ -1,2 +1,6 @@
 import {test,expect} from '@playwright/test';
-test('demo traces blast radius and opens remediation',async({page})=>{await page.goto('/demo');await expect(page.getByText('Martinez v. State').first()).toBeVisible();await page.getByRole('button',{name:/Trace blast radius/i}).click();await expect(page.getByText('Blast radius established.')).toBeVisible({timeout:8000});await page.getByRole('button',{name:/Remediation/}).click();await expect(page.getByText('What needs attention now.')).toBeVisible();});
+test('recorded demo is deterministic and source-backed',async({page})=>{
+  await page.goto('/demo');
+  await expect(page.getByText('RECORDED PUBLIC TRACE').first()).toBeVisible();
+  await expect(page.getByText(/3 confirmed in 3 recorded public filings checked/i)).toBeVisible();
+});

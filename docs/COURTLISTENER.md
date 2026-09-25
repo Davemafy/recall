@@ -1,90 +1,51 @@
-# CourtListener / RECAP integration
+# CourtListener / RECAP adapter
 
-Base API:
-
+Base:
 `https://www.courtlistener.com/api/rest/v4/`
 
 Authentication:
+`Authorization: Token <COURTLISTENER_TOKEN>`
 
-```http
-Authorization: Token <COURTLISTENER_TOKEN>
-```
+## Search strategy
 
-## Current v4 search contract
+RECALL uses:
+- `type=rd` for flat federal filing-document candidates;
+- `type=r` only as docket / nested-document context;
+- citation lookup for optional authority resolution.
 
-RECALL follows CourtListener's current v4 distinction:
+The trace starts with the exact canonical citation. Formatting / broader variants are fallback passes, not automatic fan-out.
 
-- `type=r` — federal dockets with up to three nested matching documents.
-- `type=rd` — flat federal filing documents from PACER / RECAP, without full docket metadata.
-- `type=d` — docket-only search.
-- `type=o` — case-law opinion clusters.
+## Candidate confirmation
 
-The product uses `rd` as the primary filing-candidate stream and `r` as docket/nested-document context.
+A search hit is retrieval only.
 
-## Search passes
+RECALL first inspects the returned source snippet locally. If it already contains deterministic evidence, no RECAP detail request is required.
 
-For a canonical citation:
+Only promising unconfirmed candidates are hydrated, capped at three per pass in the hackathon build.
 
-1. exact phrase, e.g. `"598 U.S. 508"`;
-2. keyword variant, e.g. `598 U.S. 508`;
-3. case-name + reporter-volume using documented `AND` syntax only when a resolved case name exists.
+## Concurrency
 
-For quotation traces, RECALL searches a bounded exact phrase fragment.
+CourtListener hydration concurrency: **2**.
 
-No undocumented operator is generated.
+A regression test asserts a simple successful exact trace stays within eight CourtListener requests and never exceeds two simultaneous requests.
 
-## Authority lookup
+## Rate limits
 
-Citation lookup returns per-citation `status` values. RECALL only treats a row with `status: 200` and at least one cluster as resolved.
+429 responses preserve `Retry-After`.
 
-A row-level 404 means **UNRESOLVED**, not fabricated. A 300 multiple-choice response is also left unresolved in the hackathon resolver rather than selecting a case silently.
+- short server-requested waits (<= 2.5 seconds) are honored once;
+- larger waits return immediately as `RATE_LIMITED`;
+- the UI keeps incident state and communicates the retry window.
 
-## Filing hydration
+5xx / timeout states retry once with bounded exponential backoff and then fail conservatively.
 
-A search hit is not proof.
+## Docket counts
 
-For each unique `rd` candidate, RECALL attempts to retrieve:
+Only known docket IDs / numbers are counted as unique dockets. Confirmed filings with unavailable docket metadata are reported separately.
 
-`/api/rest/v4/recap-documents/{id}/`
+## Coverage
 
-using field selection for:
-- `plain_text`
-- document description/number
-- `filepath_local`
-- availability/OCR metadata
+The UI says:
+> Searches public federal filing data available through CourtListener / RECAP.
 
-`plain_text` is preferred for deterministic confirmation. If it is unavailable, the candidate may be checked from the CourtListener search snippet, and the evidence record states that confirmation source explicitly.
-
-Docket metadata is hydrated from the corresponding docket result or docket detail API when necessary.
-
-## Pagination and bounds
-
-RECALL follows CourtListener `next` links only while they remain on an allowlisted CourtListener host. The prototype stops at the configured unique-candidate bound.
-
-The UI reports:
-> N confirmed in M filing candidates checked
-
-It never says “all filings” when the search was bounded.
-
-## Search count caveat
-
-CourtListener documents that `type=r` and `type=d` use approximate cardinality counts for large result sets. RECALL emphasizes checked candidate count rather than treating the reported total as exact.
-
-## Errors
-
-- HTTP 401 / 403 → `AUTH_ERROR`
-- HTTP 429 → `RATE_LIMITED`
-- timeout / 5xx → `SOURCE_UNAVAILABLE`
-- empty search → honest zero
-- no checkable text → `CANDIDATE_UNCONFIRMED`
-
-None of these states becomes a factual conclusion about the authority.
-
-## Source URL policy
-
-Only HTTPS URLs on:
-- `www.courtlistener.com`
-- `courtlistener.com`
-- `storage.courtlistener.com`
-
-are surfaced. The app never performs server-side fetches of arbitrary URLs extracted from a filing.
+It never claims to search every U.S. filing.

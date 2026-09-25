@@ -2035,3 +2035,37 @@
 .recallHomeFooter{background:#0b0b0a}.recallHomeFooter>div{border-right-color:#292a2e}
 .recallHomeFooter span{color:#696c75}.recallHomeFooter strong{color:#d0d0ce}
 .recallHomePage a:focus-visible{outline-color:#ff9a81}
+
+
+/* Incident creation follows the cobalt ledger rather than the discarded dark-dashboard pass. */
+.recallCreatePage{background:#1738c7;color:#fff}
+.recallCreatePage .recallHomeTopbar{background:#1738c7}
+.recallCreateIntro{border-right-color:#4560d6;background:#1738c7}
+.recallCreateIntro:after{color:#2345c8}
+.recallCreateEyebrow{color:#c7d0ff}
+.recallCreateIntro h1 em{color:#f4efe4}
+.recallCreateIntro>p{color:#c9d1f5}
+.recallCreateFeatured{border-color:#4560d6}
+.recallCreateFeatured:hover{background:#1c3dcc}
+.recallCreateFeatured>div>span{color:#ffb5a2}
+.recallCreateFeatured small{color:#aab7ef}
+.recallCreateFeatured>b{color:#2948cb}
+.recallCreateFeatured>em{color:#ffb5a2}
+.recallCreateBuilder{background:#f2ede2;color:#0b0b0a}
+.recallCreateBuilderHead{border-bottom-color:#cfc8ba}
+.recallCreateBuilderHead>div>span{color:#1738c7}
+.recallCreateSource{border-bottom-color:#cfc8ba}
+.recallCreateSource>span{color:#6e6a62}
+.recallCreateSource input{color:#0b0b0a}
+.recallCreateTable{border-bottom-color:#cfc8ba}
+.recallCreateRow{border-top-color:#d7d0c3}
+.recallCreateRow select,.recallCreateRow input{color:#0b0b0a}
+.recallCreateTrace{background:#1738c7}.recallCreateTrace b{color:#ffb5a2}
+.recallCreateResult{border-top-color:#0b0b0a}
+.recallCreateResultHead{border-bottom-color:#cfc8ba}
+.recallCreateResultHead>div>span{color:#1738c7}
+.recallCreateResultRows article{border-bottom-color:#cfc8ba}
+.recallCreateResultState{color:#1738c7}
+.recallCreateResultEvidence a{color:#1738c7}
+.recallCreateError{background:#26120e;color:#ffb5a2}
+.recallCreatePage input:focus-visible,.recallCreatePage select:focus-visible,.recallCreatePage button:focus-visible,.recallCreatePage a:focus-visible{outline-color:#e95f42}

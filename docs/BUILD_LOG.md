@@ -60,3 +60,23 @@ Final verification checkpoint on commit `ea5e47488d4d34e17cf0fb0b7c89ce37c411f0c
 - Playwright: 5/5 passed
 
 Deployment note: the connected Vercel project exists, but the most recent production deployment visible during this checkpoint was the earlier `node:crypto` failure. The client-side crypto dependency has since been removed and CI verifies the production build; a fresh Vercel deployment is still required.
+
+
+## M7 — Founder-grade incident workspace
+
+Rebuilt the flagship recorded incident around a real case-detail / matter-inbox product geometry instead of the previous editorial demo layout.
+
+Material changes:
+- incident shell now uses a three-column operational workspace: dependencies → impact → evidence
+- the dependency × filing matrix is the signature interaction
+- evidence stays visible in-context instead of opening a full-screen drawer
+- incident source, court finding, exact dependency evidence, downstream occurrence, and provenance are progressively disclosed
+- metric cards, giant product-screen headlines, graph-first presentation, and decorative UI were removed from the flagship flow
+- mobile collapses the same information into a linear incident → dependencies → impact → evidence sequence
+- visual system moved to a restrained 2026 neutral product palette with incident red used only for state emphasis
+
+Reference study:
+- Pixelnest Solutions — “AI-Powered Matter Inbox for Legal Case Management Dashboard” (Dribbble), used for workspace rhythm, column density, panel hierarchy, row spacing, and evidence-preview interaction
+- Sulaimon Adedamola — “Research Library > Case Detail Screen > Citations & References” (Dribbble), used for neutral legal-product palette discipline
+
+No Dribbble branding, product copy, or assets were copied into RECALL; only interaction/layout discipline was translated to RECALL’s own incident model.

@@ -1,69 +1,116 @@
 # UI anti-slop audit
 
-This pass was intentionally done before the visual reset.
+This pass was done specifically to break the generic AI-product look that kept surviving earlier iterations.
 
-## Patterns explicitly removed
+## Defaults explicitly rejected
 
-The 2026 product-design / AI-UI discussion repeatedly flags the same defaults:
-
-- Inter/Geist used without an intentional type system
-- purple/blue gradient as the default "AI" palette
+- Inter / Geist / system sans used without a typographic point of view
 - centered hero + three feature cards
-- rounded card shells around every concept
-- gray-on-white Shadcn/Radix dashboard composition
-- equal-weight sidebars/panels
+- rounded white shell floating on gray
+- equal-weight left / center / right panels
 - KPI card rows
-- badges/pills as the primary hierarchy
-- soft shadows and floating glass used as decoration
-- one dashboard skeleton reused for unrelated products
-- explanatory copy compensating for weak interaction design
+- pill-heavy status language
+- purple / blue "AI" gradient
+- generic evidence inspector sidebar
+- dark dashboard + orange accent as a shortcut to "premium"
+- graph-first incident visualization
+- one SaaS layout that could be relabeled as CRM, support, analytics, or security
 
-Research references:
-- Reddit / r/ClaudeAI: "unslop-ui" discussion, June 2026
-- Reddit / r/UXDesign: "What are the top AI slop design patterns?", March 2026
-- UntilNow: "AI UX Design: Why Everything Looks the Same, and How to Fix It", August 2026
-- SaaS UI Design: "Why Your SaaS UI Looks AI-Generated", June 2026
+## Research direction
 
-## Visual references studied
+The reset deliberately stopped looking at legal-tech UI as an aesthetic category.
 
-The reset deliberately ignored "legal tech" as an aesthetic category and studied stronger product categories:
+References studied instead:
 
-- Ronas IT — dark SaaS / mobile dashboard work: mineral-black base, warm red-orange signal color, very controlled neutral typography
-- Kolo fintech dashboard — deep black, blue-green and copper accents
-- Tubik fintech dashboard — strong data hierarchy and restrained lavender/indigo data colors
-- current Dribbble workspace / finance products — full-bleed product surfaces instead of rounded white shells floating on gray backgrounds
+- Halo Design Studio — **Tetra: Bold Minimalist Crypto Dashboard Interface**
+  - massive typography as data
+  - Swiss grid discipline
+  - borderless composition
+  - extreme negative space
+  - monochrome surfaces with one restrained signal color
+  - palette studied: #E9E9E9 / #6E6E6E / #B6C9B1 / #071107 / #3F483F / #235F24 / #775B3D
 
-## RECALL reset
+- Halo Design Studio — **Tetra: Minimalist Crypto Dashboard, Swap & Trade Flow**
+  - transaction-like primary actions
+  - data treated like poster typography instead of cards
+  - progressive disclosure rather than persistent chrome
 
-### Removed
-- outer rounded application card
-- light gray dashboard shell
-- three-equal-panel matter-inbox layout
-- Inter-first typography
-- serif-as-legal shorthand
-- generic evidence inspector column
-- metric cards
-- decorative pills
-- rounded-everything treatment
-- duplicate CTA language
+- current Dribbble brutalist / Swiss product work
+  - strong type and ruled structure instead of component-library decoration
+  - full-bleed working surfaces
+  - dense data made calm through hierarchy, not boxes
 
-### Replaced with
-- full-bleed mineral-black application surface
-- warm porcelain investigation canvas
-- signal vermilion (#ff5a36)
-- restrained ice-lilac (#aeb8ff) for secondary technical state
-- system-variable sans stack instead of Inter/Geist default
-- asymmetric incident rail + working stage
-- matrix as the primary incident artifact
-- evidence presented as a dark/light source comparison spread
-- integrated affected-document strip
-- no decorative graph
-- no provider/internal implementation details on the default surface
+## Typography
+
+The product now uses:
+
+- **Clash Display** — high-impact display / numeric hierarchy
+- **Satoshi** — product UI, body text, metadata
+
+Both are loaded from Fontshare.
+
+Why this pairing:
+- the display face gives the incident and blast-radius numbers a recognizable voice;
+- the UI face stays readable at dense product sizes;
+- citations no longer inherit a fake-law serif aesthetic;
+- the combination avoids the default Inter / Geist look.
+
+## Current product language
+
+### Palette
+
+Primary:
+- deep green-black — #071107
+- mineral gray — #E9E9E9
+- sage — #B6C9B1
+- forest signal — #235F24
+
+Secondary:
+- moss — #3F483F
+- umber — #775B3D
+
+The previous vermilion / purple AI-dashboard palette has been removed from the new flagship surfaces.
+
+### Flagship composition
+
+The recorded incident is no longer:
+sidebar → middle panel → inspector.
+
+It is now:
+
+1. incident identity
+2. **05 → 02** as the primary visual fact
+3. horizontal dependency rail
+4. dependency × filing blast-radius ledger
+5. source evidence and affected-work evidence shown as one paired spread
+6. affected filing strip
+7. provenance only on request
+
+The relationship itself is the visual object.
+
+### Quick Trace
+
+No metric-card dashboard.
+
+It is:
+- one large citation input
+- one confirmed / checked ratio
+- one evidence ledger
+- one source-evidence sheet
+
+### Corpus
+
+No dashed upload card floating in whitespace.
+
+It is:
+- one full-height local-work intake surface
+- document → authority count transition
+- one authority ledger
 
 ## Product-specific rule
 
-A screenshot with the RECALL wordmark hidden should still be identifiable as:
+A screenshot with the RECALL wordmark hidden should still communicate:
 
 incident source → disputed dependency → affected filing → exact evidence
 
-If the composition could be relabeled as CRM, analytics, support tickets, or project management without structural change, it fails this audit.
+If the composition can be relabeled as CRM, support, analytics, or project management without structural change, it fails this audit.

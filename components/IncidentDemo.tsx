@@ -24,151 +24,218 @@ const dateLabel=(value:string)=>new Intl.DateTimeFormat('en',{year:'numeric',mon
 
 export default function IncidentDemo(){
   const data=useMemo(()=>getRecordedIncident(),[]);
-  const [traced,setTraced]=useState(false);
-  const [selected,setSelected]=useState<{dependency:Dependency;filing?:Filing;relationship?:Relationship}|null>(null);
-  const [showProvenance,setShowProvenance]=useState(false);
-
   const dependencies=data.dependencies as Dependency[];
   const filings=data.filings as Filing[];
   const relationships=data.relationships as Relationship[];
 
-  const relationFor=(dependencyId:string,filingId:string)=>relationships.find(item=>item.dependencyId===dependencyId&&item.filingId===filingId);
-  const concentration=dependencies
-    .map(dependency=>({dependency,count:new Set(relationships.filter(r=>r.dependencyId===dependency.id).map(r=>r.filingId)).size}))
-    .sort((a,b)=>b.count-a.count);
+  const [traced,setTraced]=useState(false);
+  const [showProvenance,setShowProvenance]=useState(false);
+  const [selected,setSelected]=useState<{dependency:Dependency;filing?:Filing;relationship?:Relationship}>(()=>({
+    dependency:dependencies[0],
+    filing:filings.find(f=>f.dependencyIds.includes(dependencies[0].id)),
+    relationship:relationships.find(r=>r.dependencyId===dependencies[0].id)
+  }));
 
-  const openDependency=(dependency:Dependency)=>{
+  const relationFor=(dependencyId:string,filingId:string)=>relationships.find(item=>item.dependencyId===dependencyId&&item.filingId===filingId);
+
+  const selectDependency=(dependency:Dependency)=>{
     const relationship=relationships.find(r=>r.dependencyId===dependency.id);
     const filing=relationship?filings.find(f=>f.id===relationship.filingId):undefined;
     setShowProvenance(false);
     setSelected({dependency,filing,relationship});
   };
-  const openCell=(dependency:Dependency,filing:Filing)=>{
+
+  const selectRelationship=(dependency:Dependency,filing:Filing)=>{
     const relationship=relationFor(dependency.id,filing.id);
     if(!relationship)return;
     setShowProvenance(false);
     setSelected({dependency,filing,relationship});
   };
 
-  return <main className="incidentProduct">
-    <header className="productBar">
-      <Link href="/" className="productWordmark">RECALL</Link>
-      <div className="productContext">Johnson v. Dunn</div>
-      <div className="recordedState">Recorded public incident</div>
-    </header>
+  return <main className="recallRefPage">
+    <section className="recallRefShell">
+      <header className="recallRefTopbar">
+        <Link href="/" className="recallRefBrand">RECALL</Link>
+        <div className="recallRefTopTitle">Johnson v. Dunn</div>
+        <div className="recallRefMode"><span/>Recorded public incident</div>
+      </header>
 
-    <section className="incidentShell">
-      <div className="incidentSourceLine">
-        <span>COURT INCIDENT</span>
-        <a href={JOHNSON_DUNN_ORDER_URL} target="_blank" rel="noreferrer">View sanctions order ↗</a>
-      </div>
-
-      <div className="incidentHero">
-        <div>
-          <h1>Johnson v. Dunn</h1>
-          <p>{data.incident.court} · {data.incident.docketNumber} · {dateLabel(data.incident.sourceDate)}</p>
+      <div className="recallRefIncidentHeader">
+        <div className="recallRefBreadcrumb">Incidents <span>/</span> Johnson v. Dunn</div>
+        <div className="recallRefHeadingRow">
+          <div>
+            <h1>Johnson v. Dunn</h1>
+            <p>{data.incident.court} · {data.incident.docketNumber} · {dateLabel(data.incident.sourceDate)}</p>
+          </div>
+          <a href={JOHNSON_DUNN_ORDER_URL} target="_blank" rel="noreferrer">View source order ↗</a>
         </div>
-        <div className="incidentStatement">
+        <div className="recallRefCourtFinding">
+          <span>COURT FINDING</span>
           <strong>The court identified five problematic citations across two motions.</strong>
-          <span>RECALL starts after that finding and traces the dependencies.</span>
         </div>
       </div>
 
-      <div className="incidentSourceExcerpt">
-        <span>FROM THE ORDER · PAGE {data.incident.sourceExcerpt.pdfPageNumber}</span>
-        <blockquote>“{data.incident.sourceExcerpt.exactText}”</blockquote>
-      </div>
-
-      <section className="dependencySection" aria-labelledby="dependencies-heading">
-        <div className="sectionHeading">
-          <div><span>DEPENDENCIES</span><h2 id="dependencies-heading">5 under review</h2></div>
-          {!traced&&<button className="traceImpactButton" onClick={()=>setTraced(true)}>Trace impact <span aria-hidden>→</span></button>}
-          {traced&&<div className="traceComplete">Trace complete</div>}
-        </div>
-
-        <div className="dependencyList">
-          {dependencies.map((dependency,index)=><button key={dependency.id} className="dependencyRow" onClick={()=>openDependency(dependency)}>
-            <span className="dependencyIndex">{String(index+1).padStart(2,'0')}</span>
-            <span className="dependencyIdentity"><strong>{dependency.rawText}</strong><small>{dependency.incidentFinding}</small></span>
-            <span className="dependencyEvidence">Order p. {dependency.incidentEvidence.pdfPageNumber}</span>
-            <span className="rowArrow" aria-hidden>↗</span>
-          </button>)}
-        </div>
-      </section>
-
-      {traced&&<section className="impactSection" aria-labelledby="impact-heading">
-        <div className="impactReveal">
-          <span>IMPACT</span>
-          <h2 id="impact-heading">{data.summary.confirmedCitationRelationships} confirmed relationships <em>across {data.summary.confirmedAffectedFilings} filed motions · {data.summary.uniqueDockets} docket</em></h2>
-          <p>Each relationship below is documented by the court’s sanctions order. No semantic matches are included in the confirmed count.</p>
-        </div>
-
-        <div className="matrixWrap" role="region" aria-label="Dependency by filing matrix" tabIndex={0}>
-          <table className="impactMatrix">
-            <thead><tr><th scope="col">Dependency</th>{filings.map(filing=><th scope="col" key={filing.id}><span>DOC. {filing.documentNumber}</span>{filing.title}</th>)}</tr></thead>
-            <tbody>{dependencies.map(dependency=><tr key={dependency.id}>
-              <th scope="row"><button onClick={()=>openDependency(dependency)}>{dependency.caseName||dependency.rawText.split(',')[0]}<small>{dependency.canonicalCitation||dependency.rawText}</small></button></th>
-              {filings.map(filing=>{
-                const relationship=relationFor(dependency.id,filing.id);
-                return <td key={filing.id}>{relationship?
-                  <button className="matrixHit" aria-label={`${dependency.caseName||dependency.rawText} — ${relationshipLabel(relationship.state)} in Document ${filing.documentNumber}`} onClick={()=>openCell(dependency,filing)}>
-                    <span aria-hidden>●</span><small>{relationshipLabel(relationship.state)}</small>
-                  </button>:
-                  <span className="matrixNone" aria-label="No documented relationship">—</span>}
-                </td>
-              })}
-            </tr>)}</tbody>
-          </table>
-        </div>
-
-        <div className="impactLower">
-          <section className="affectedWork" aria-labelledby="affected-heading">
-            <div className="miniHeading"><span>AFFECTED WORK</span><h3 id="affected-heading">2 filed motions</h3></div>
-            {filings.map(filing=><article className="filingRow" key={filing.id}>
-              <div className="filingNumber">DOC. {filing.documentNumber}</div>
-              <div><strong>{filing.title}</strong><span>{dateLabel(filing.filingDate)} · {filing.dependencyIds.length} documented {filing.dependencyIds.length===1?'dependency':'dependencies'}</span></div>
-              <button onClick={()=>{const dep=dependencies.find(d=>filing.dependencyIds.includes(d.id))!;openCell(dep,filing)}}>Inspect evidence</button>
-            </article>)}
-          </section>
-
-          <aside className="concentration">
-            <div className="miniHeading"><span>DEPENDENCY CONCENTRATION</span><h3>Incident topology</h3></div>
-            <p>Four disputed authorities occur in Document 174. A fifth occurs in Document 182. The recorded incident does not infer copying or chronology beyond the court record.</p>
-            <div className="concentrationBars">
-              {concentration.map(({dependency,count})=><div key={dependency.id}><span>{dependency.caseName||dependency.rawText.split(',')[0]}</span><i><b style={{width:`${count/filings.length*100}%`}}/></i><em>{count} filing</em></div>)}
+      <div className="recallRefWorkspace">
+        <aside className="recallRefDependencies" aria-labelledby="dependencies-heading">
+          <div className="recallRefPanelHeader">
+            <div>
+              <span>DEPENDENCIES</span>
+              <strong id="dependencies-heading">{dependencies.length} under review</strong>
             </div>
-          </aside>
-        </div>
-      </section>}
+          </div>
+
+          <div className="recallRefDependencyList">
+            {dependencies.map((dependency,index)=>{
+              const active=selected?.dependency.id===dependency.id;
+              return <button
+                key={dependency.id}
+                className={active?'is-active':''}
+                onClick={()=>selectDependency(dependency)}
+              >
+                <span className="recallRefDepNumber">{String(index+1).padStart(2,'0')}</span>
+                <span className="recallRefDepText">
+                  <strong>{dependency.caseName||dependency.rawText.split(',')[0]}</strong>
+                  <small>{dependency.canonicalCitation||dependency.rawText}</small>
+                  <em>Order p. {dependency.incidentEvidence.pdfPageNumber}</em>
+                </span>
+              </button>
+            })}
+          </div>
+        </aside>
+
+        <section className="recallRefMain">
+          {!traced?<div className="recallRefPretrace">
+            <div className="recallRefSourceBlock">
+              <div className="recallRefSectionLabel">INCIDENT SOURCE · PAGE {data.incident.sourceExcerpt.pdfPageNumber}</div>
+              <blockquote>“{data.incident.sourceExcerpt.exactText}”</blockquote>
+              <a href={JOHNSON_DUNN_ORDER_URL} target="_blank" rel="noreferrer">Open sanctions order ↗</a>
+            </div>
+
+            <div className="recallRefTraceMoment">
+              <div>
+                <span>READY TO TRACE</span>
+                <h2>Find where these dependencies appear.</h2>
+                <p>RECALL will resolve the five source-backed dependencies against the recorded public incident evidence and assemble the affected work.</p>
+              </div>
+              <button className="recallRefPrimary" onClick={()=>setTraced(true)}>Trace impact <span>→</span></button>
+            </div>
+          </div>:<div className="recallRefImpact" aria-labelledby="impact-heading">
+            <div className="recallRefImpactHeader">
+              <div>
+                <span>IMPACT</span>
+                <h2 id="impact-heading">{data.summary.confirmedCitationRelationships} confirmed relationships</h2>
+                <p>across {data.summary.confirmedAffectedFilings} filed motions · {data.summary.uniqueDockets} docket</p>
+              </div>
+              <div className="recallRefTraceDone">Trace complete</div>
+            </div>
+
+            <div className="recallRefMatrixWrap" role="region" aria-label="Dependency by filing matrix" tabIndex={0}>
+              <table className="recallRefMatrix">
+                <thead>
+                  <tr>
+                    <th scope="col">Dependency</th>
+                    {filings.map(filing=><th scope="col" key={filing.id}>
+                      <span>DOC. {filing.documentNumber}</span>
+                      <strong>{filing.title}</strong>
+                    </th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {dependencies.map(dependency=><tr key={dependency.id}>
+                    <th scope="row">
+                      <button onClick={()=>selectDependency(dependency)}>
+                        <strong>{dependency.caseName||dependency.rawText.split(',')[0]}</strong>
+                        <small>{dependency.canonicalCitation||dependency.rawText}</small>
+                      </button>
+                    </th>
+                    {filings.map(filing=>{
+                      const relationship=relationFor(dependency.id,filing.id);
+                      return <td key={filing.id}>
+                        {relationship?<button
+                          className="recallRefMatrixHit"
+                          aria-label={`${dependency.caseName||dependency.rawText} — ${relationshipLabel(relationship.state)} in Document ${filing.documentNumber}`}
+                          onClick={()=>selectRelationship(dependency,filing)}
+                        >
+                          <span aria-hidden>●</span>
+                          <small>{relationshipLabel(relationship.state)}</small>
+                        </button>:<span className="recallRefMatrixNone" aria-label="No documented relationship">—</span>}
+                      </td>
+                    })}
+                  </tr>)}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="recallRefAffected">
+              <div className="recallRefSectionHeading">
+                <div><span>AFFECTED WORK</span><strong>{filings.length} filed motions</strong></div>
+                <small>Documented by the sanctions order</small>
+              </div>
+              {filings.map(filing=><button
+                key={filing.id}
+                className="recallRefFilingRow"
+                onClick={()=>{
+                  const dep=dependencies.find(d=>filing.dependencyIds.includes(d.id));
+                  if(dep)selectRelationship(dep,filing);
+                }}
+              >
+                <span className="recallRefFileBadge">DOC. {filing.documentNumber}</span>
+                <span className="recallRefFileIdentity">
+                  <strong>{filing.title}</strong>
+                  <small>{dateLabel(filing.filingDate)} · {filing.dependencyIds.length} documented {filing.dependencyIds.length===1?'dependency':'dependencies'}</small>
+                </span>
+                <span className="recallRefInspect">Inspect evidence ↗</span>
+              </button>)}
+            </div>
+          </div>}
+        </section>
+
+        <aside className="recallRefEvidence" aria-label="Relationship evidence">
+          <div className="recallRefPanelHeader">
+            <div><span>EVIDENCE</span><strong>Why this relationship exists</strong></div>
+          </div>
+
+          {selected?<div className="recallRefEvidenceBody">
+            <div className="recallRefSelectedTitle">
+              <span>{selected.relationship?relationshipLabel(selected.relationship.state):'Incident dependency'}</span>
+              <h2>{selected.dependency.caseName||selected.dependency.rawText.split(',')[0]}</h2>
+              <p>{selected.dependency.rawText}</p>
+            </div>
+
+            <section className="recallRefEvidenceSection">
+              <div className="recallRefEvidenceLabel">
+                <span>INCIDENT SOURCE</span>
+                <small>Sanctions Order · p. {selected.dependency.incidentEvidence.pdfPageNumber}</small>
+              </div>
+              <blockquote>“{selected.dependency.incidentEvidence.exactText}”</blockquote>
+              {selected.dependency.incidentFinding&&<p className="recallRefFinding">{selected.dependency.incidentFinding}</p>}
+              <a href={selected.dependency.incidentEvidence.sourceUrl} target="_blank" rel="noreferrer">Court order ↗</a>
+            </section>
+
+            {selected.relationship&&selected.filing&&<section className="recallRefEvidenceSection">
+              <div className="recallRefEvidenceLabel">
+                <span>AFFECTED FILING</span>
+                <small>Document {selected.filing.documentNumber}</small>
+              </div>
+              <strong className="recallRefFilingTitle">{selected.filing.title}</strong>
+              <blockquote>“{selected.relationship.evidence.exactText}”</blockquote>
+              <p>{selected.relationship.evidence.location}. {selected.relationship.evidence.explanation}</p>
+              <a href={selected.relationship.evidence.sourceUrl} target="_blank" rel="noreferrer">Public source ↗</a>
+            </section>}
+
+            <button className="recallRefProvenanceToggle" onClick={()=>setShowProvenance(value=>!value)} aria-expanded={showProvenance}>
+              View provenance <span>{showProvenance?'−':'+'}</span>
+            </button>
+
+            {showProvenance&&<dl className="recallRefProvenance">
+              <div><dt>Relationship</dt><dd>{selected.relationship?relationshipLabel(selected.relationship.state):'Incident dependency'}</dd></div>
+              <div><dt>Incident evidence SHA-256</dt><dd><code>{selected.dependency.incidentEvidence.sha256}</code></dd></div>
+              <div><dt>Capture date</dt><dd>{data.capturedAt}</dd></div>
+              <div><dt>Source mode</dt><dd>Recorded public incident</dd></div>
+            </dl>}
+          </div>:<div className="recallRefEvidenceEmpty">Select a dependency or matrix cell to inspect its evidence.</div>}
+        </aside>
+      </div>
     </section>
-
-    {selected&&<div className="evidenceOverlay" onClick={()=>setSelected(null)}>
-      <aside className="incidentEvidencePane" onClick={event=>event.stopPropagation()} aria-label="Relationship evidence">
-        <button className="evidenceClose" aria-label="Close evidence" onClick={()=>setSelected(null)}>×</button>
-        <div className="evidenceTitle"><span>EVIDENCE</span><h2>{selected.dependency.caseName||selected.dependency.rawText.split(',')[0]}</h2><p>{selected.dependency.rawText}</p></div>
-
-        <div className="evidencePair">
-          <section>
-            <span>INCIDENT SOURCE</span>
-            <strong>Sanctions Order · page {selected.dependency.incidentEvidence.pdfPageNumber}</strong>
-            <blockquote>“{selected.dependency.incidentEvidence.exactText}”</blockquote>
-            {selected.dependency.incidentFinding&&<p className="incidentFinding">{selected.dependency.incidentFinding}</p>}
-            <a href={selected.dependency.incidentEvidence.sourceUrl} target="_blank" rel="noreferrer">Open court order ↗</a>
-          </section>
-          {selected.relationship&&selected.filing&&<section>
-            <span>AFFECTED FILING</span>
-            <strong>Document {selected.filing.documentNumber} · {selected.filing.title}</strong>
-            <blockquote>“{selected.relationship.evidence.exactText}”</blockquote>
-            <p>{selected.relationship.evidence.location}. {selected.relationship.evidence.explanation}</p>
-            <a href={selected.relationship.evidence.sourceUrl} target="_blank" rel="noreferrer">Open supporting public source ↗</a>
-          </section>}
-        </div>
-
-        <button className="provenanceToggle" onClick={()=>setShowProvenance(value=>!value)} aria-expanded={showProvenance}>View provenance <span aria-hidden>{showProvenance?'−':'+'}</span></button>
-        {showProvenance&&<div className="provenanceDetail">
-          <dl><div><dt>Relationship</dt><dd>{selected.relationship?relationshipLabel(selected.relationship.state):'Incident dependency'}</dd></div><div><dt>Incident evidence SHA-256</dt><dd><code>{selected.dependency.incidentEvidence.sha256}</code></dd></div><div><dt>Capture date</dt><dd>{data.capturedAt}</dd></div><div><dt>Source mode</dt><dd>Recorded public incident</dd></div></dl>
-        </div>}
-      </aside>
-    </div>}
   </main>
 }

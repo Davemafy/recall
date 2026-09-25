@@ -14,7 +14,7 @@ type TraceResponse={
   diagnostics?:{courtlistenerRequests?:number;firecrawlRequests?:number;cacheHits?:number};
 };
 
-const newDraft=(index:number):DependencyDraft=>({id:`dependency-${index}`,type:'AUTHORITY',text:''});
+const newDraft=(index:number):DependencyDraft=>({id:'dependency-'+index,type:'AUTHORITY',text:''});
 
 export default function IncidentEntry(){
   const [sourceUrl,setSourceUrl]=useState('');
@@ -24,7 +24,6 @@ export default function IncidentEntry(){
   const [result,setResult]=useState<TraceResponse|null>(null);
 
   const usable=useMemo(()=>dependencies.filter(item=>item.text.trim()),[dependencies]);
-
   const update=(id:string,patch:Partial<DependencyDraft>)=>setDependencies(items=>items.map(item=>item.id===id?{...item,...patch}:item));
   const add=()=>setDependencies(items=>items.length>=10?items:[...items,newDraft(items.length+1)]);
   const remove=(id:string)=>setDependencies(items=>items.length===1?items:items.filter(item=>item.id!==id));
@@ -52,72 +51,99 @@ export default function IncidentEntry(){
 
   const documentById=new Map((result?.documents||[]).map(document=>[String(document.id),document]));
 
-  return <main className="incidentEntry">
-    <header className="productBar"><Link href="/" className="productWordmark">RECALL</Link><div className="productContext">Open incident</div><Link href="/trace" className="quietTopLink">Quick trace</Link></header>
-    <section className="incidentEntryBody">
-      <div className="entryEyebrow">LEGAL INCIDENT RESPONSE</div>
-      <h1>Start with what was flagged.</h1>
-      <p>Open the source-backed recorded incident, or create a review from dependencies you already know deserve investigation. RECALL traces impact; it does not decide that an authority is bad for you.</p>
+  return <main className="recallCreatePage">
+    <header className="recallHomeTopbar">
+      <Link href="/" className="recallHomeBrand">RECALL</Link>
+      <nav aria-label="Primary">
+        <Link href="/incident">Incidents</Link>
+        <Link href="/trace">Quick trace</Link>
+        <Link href="/corpus">Corpus</Link>
+      </nav>
+      <span>Open incident</span>
+    </header>
 
-      <Link className="featuredIncident" href="/incident/demo">
-        <span>RECORDED PUBLIC INCIDENT</span>
-        <strong>Johnson v. Dunn</strong>
-        <p>N.D. Alabama · Five problematic citations identified across two motions</p>
-        <em>Open incident →</em>
-      </Link>
+    <section className="recallCreateLayout">
+      <aside className="recallCreateIntro">
+        <div className="recallCreateEyebrow">INCIDENT / 01</div>
+        <h1>Start with<br/>what was <em>flagged.</em></h1>
+        <p>Bring dependencies that already deserve review. RECALL traces impact; it does not decide that an authority is bad for you.</p>
 
-      <section className="manualIncidentBuilder" aria-labelledby="manual-incident-heading">
-        <div className="manualIncidentHeading">
-          <div><span>NEW INCIDENT</span><h2 id="manual-incident-heading">Trace dependencies already under review.</h2></div>
-          <small>Up to 10 dependencies · public federal filing search</small>
+        <Link className="recallCreateFeatured" href="/incident/demo">
+          <div>
+            <span>RECORDED PUBLIC INCIDENT</span>
+            <strong>Johnson v. Dunn</strong>
+            <small>N.D. Alabama · 5 problematic citations · 2 motions</small>
+          </div>
+          <b>05</b>
+          <em>Open ↗</em>
+        </Link>
+      </aside>
+
+      <section className="recallCreateBuilder" aria-labelledby="manual-incident-heading">
+        <div className="recallCreateBuilderHead">
+          <div>
+            <span>NEW INCIDENT</span>
+            <h2 id="manual-incident-heading">Trace dependencies under review.</h2>
+          </div>
+          <small>Up to 10 · public federal filing search</small>
         </div>
 
-        <label className="incidentSourceInput">
+        <label className="recallCreateSource">
           <span>INCIDENT SOURCE URL <em>optional · provenance only</em></span>
           <input value={sourceUrl} onChange={event=>setSourceUrl(event.target.value)} placeholder="https://… court order or public source"/>
         </label>
 
-        <div className="manualDependencies">
-          {dependencies.map((dependency,index)=><div className="manualDependencyRow" key={dependency.id}>
-            <span className="manualNumber">{String(index+1).padStart(2,'0')}</span>
-            <select value={dependency.type} onChange={event=>update(dependency.id,{type:event.target.value as DependencyDraft['type']})} aria-label={`Dependency ${index+1} type`}>
+        <div className="recallCreateTable">
+          <div className="recallCreateTableHead">
+            <span>#</span><span>TYPE</span><span>DEPENDENCY</span><span/>
+          </div>
+          {dependencies.map((dependency,index)=><div className="recallCreateRow" key={dependency.id}>
+            <span className="recallCreateNumber">{String(index+1).padStart(2,'0')}</span>
+            <select value={dependency.type} onChange={event=>update(dependency.id,{type:event.target.value as DependencyDraft['type']})} aria-label={'Dependency '+(index+1)+' type'}>
               <option value="AUTHORITY">Authority</option>
               <option value="QUOTATION">Quotation</option>
             </select>
-            <input value={dependency.text} onChange={event=>update(dependency.id,{text:event.target.value})} placeholder={dependency.type==='AUTHORITY'?'e.g. 550 U.S. 544 or 2006 WL 8438651':'Paste the disputed quotation'} aria-label={`Dependency ${index+1}`}/>
-            <button onClick={()=>remove(dependency.id)} aria-label={`Remove dependency ${index+1}`}>×</button>
+            <input value={dependency.text} onChange={event=>update(dependency.id,{text:event.target.value})} placeholder={dependency.type==='AUTHORITY'?'550 U.S. 544 or 2006 WL 8438651':'Paste the disputed quotation'} aria-label={'Dependency '+(index+1)}/>
+            <button onClick={()=>remove(dependency.id)} aria-label={'Remove dependency '+(index+1)}>×</button>
           </div>)}
         </div>
 
-        <div className="manualIncidentActions">
-          <button className="addDependencyButton" onClick={add} disabled={dependencies.length>=10}>+ Add dependency</button>
-          <button className="traceImpactButton" onClick={trace} disabled={busy||!usable.length}>{busy?`Tracing ${usable.length} dependenc${usable.length===1?'y':'ies'}…`:'Trace impact →'}</button>
+        <div className="recallCreateActionBar">
+          <button className="recallCreateAdd" onClick={add} disabled={dependencies.length>=10}>+ Add dependency</button>
+          <div>
+            <span>{usable.length} ready</span>
+            <button className="recallCreateTrace" onClick={trace} disabled={busy||!usable.length}>
+              {busy?'Tracing '+usable.length+'…':'Trace impact'} <b>↗</b>
+            </button>
+          </div>
         </div>
-        {sourceUrl&&<p className="manualSourceNote">Source URL is preserved as incident context only. RECALL does not treat the URL itself as proof.</p>}
-        {error&&<div className="manualTraceError" role="alert">{error}</div>}
+
+        {sourceUrl&&<p className="recallCreateNote">Source URL is preserved as incident context only. The URL itself is never treated as proof.</p>}
+        {error&&<div className="recallCreateError" role="alert">{error}</div>}
+
+        {result?.summary&&<section className="recallCreateResult" aria-live="polite">
+          <div className="recallCreateResultHead">
+            <div><span>IMPACT</span><h2>{result.summary.confirmedRelationships} confirmed relationships</h2></div>
+            <p><strong>{result.summary.confirmedAffectedFilings}</strong> filings <i/> <strong>{result.summary.uniqueDockets}</strong> dockets</p>
+          </div>
+
+          <div className="recallCreateResultRows">
+            {(result.relationships||[]).map(relationship=>{
+              const document=documentById.get(String(relationship.filingId));
+              const dependency=usable.find(item=>item.id===relationship.dependencyId);
+              return <article key={relationship.id}>
+                <div className="recallCreateResultState">{relationship.state==='POSSIBLE_RELATED_PROPOSITION'?'REVIEW':'CONFIRMED'}</div>
+                <div className="recallCreateResultDependency"><strong>{dependency?.text||relationship.dependencyId}</strong></div>
+                <div className="recallCreateResultDocument"><strong>{document?.title||document?.caseName||'Public filing'}</strong><small>{document?.court||'Court unavailable'}{document?.docketNumber?' · '+document.docketNumber:''}</small></div>
+                <div className="recallCreateResultEvidence"><blockquote>{relationship.evidence?.raw||'Evidence available in source detail.'}</blockquote>{relationship.publicSourceUrl&&<a href={relationship.publicSourceUrl} target="_blank" rel="noreferrer">Public source ↗</a>}</div>
+              </article>
+            })}
+            {!result.relationships?.length&&<p className="recallCreateEmpty">No confirmed or review-only relationships were found in the checked public-source candidates.</p>}
+          </div>
+
+          {result.diagnostics&&<details className="recallCreateDiagnostics"><summary>Trace diagnostics</summary><div><span>CourtListener <b>{result.diagnostics.courtlistenerRequests??0}</b></span><span>Firecrawl <b>{result.diagnostics.firecrawlRequests??0}</b></span><span>Cache hits <b>{result.diagnostics.cacheHits??0}</b></span></div></details>}
+        </section>}
       </section>
-
-      {result?.summary&&<section className="manualIncidentResult" aria-live="polite">
-        <div className="sectionHeading">
-          <div><span>IMPACT</span><h2>{result.summary.confirmedRelationships} confirmed relationships</h2></div>
-          <div className="manualResultMeta">{result.summary.confirmedAffectedFilings} filings · {result.summary.uniqueDockets} identified dockets</div>
-        </div>
-
-        <div className="manualResultRows">
-          {(result.relationships||[]).map(relationship=>{
-            const document=documentById.get(String(relationship.filingId));
-            const dependency=usable.find(item=>item.id===relationship.dependencyId);
-            return <article key={relationship.id}>
-              <div><span>{relationship.state==='POSSIBLE_RELATED_PROPOSITION'?'REVIEW':'CONFIRMED'}</span><strong>{dependency?.text||relationship.dependencyId}</strong></div>
-              <div><strong>{document?.title||document?.caseName||'Public filing'}</strong><small>{document?.court||'Court unavailable'}{document?.docketNumber?` · ${document.docketNumber}`:''}</small></div>
-              <div><blockquote>{relationship.evidence?.raw||'Evidence available in source detail.'}</blockquote>{relationship.publicSourceUrl&&<a href={relationship.publicSourceUrl} target="_blank" rel="noreferrer">Public source ↗</a>}</div>
-            </article>
-          })}
-          {!result.relationships?.length&&<p className="emptyState">No confirmed or review-only relationships were found in the checked public-source candidates.</p>}
-        </div>
-
-        {result.diagnostics&&<details className="manualDiagnostics"><summary>Trace diagnostics</summary><div><span>CourtListener requests <b>{result.diagnostics.courtlistenerRequests??0}</b></span><span>Firecrawl requests <b>{result.diagnostics.firecrawlRequests??0}</b></span><span>Cache hits <b>{result.diagnostics.cacheHits??0}</b></span></div></details>}
-      </section>}
     </section>
   </main>
 }

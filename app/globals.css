@@ -5,3 +5,43 @@
 @media(max-width:1100px){.investigationGrid{grid-template-columns:210px minmax(0,1fr)}.summaryRail{grid-column:1/-1;border-left:0;border-top:1px solid var(--line);display:grid;grid-template-columns:200px 1fr;gap:24px}.affectedList{grid-column:2;grid-row:1/4}.incidentHeader{grid-template-columns:1fr auto}.incidentHeader>p{grid-column:1/-1}.queueView{grid-template-columns:1fr;gap:24px}}
 @media(max-width:760px){.mastNote,.incidentCrumb{display:none}.hero{min-height:620px;padding-top:68px}.hero h1{font-size:56px}.landingRule{grid-template-columns:1fr}.ruleNumber{font-size:34px}.incidentHeader{grid-template-columns:1fr}.incidentActions{margin-top:8px}.investigationGrid{display:block}.incidentRail{border-right:0;border-bottom:1px solid var(--line)}.summaryRail{display:block;border-top:1px solid var(--line)}.graphStage{padding:18px 10px}.graphShell{overflow:auto}.graphSvg{min-width:820px;height:460px}.graphLegend{position:sticky;left:0;width:max-content}.summaryRail .affectedList{display:block}.queueList article{grid-template-columns:70px 1fr}.queueList select{grid-column:2}.proofStrip{flex-direction:column}.importSummary{align-items:flex-start;flex-wrap:wrap}.importSummary .button{margin-left:0;width:100%}.authorityBrowser button{grid-template-columns:1fr}.authorityBrowser button em{grid-row:3}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+
+/* Public filing trace */
+.sourceMode{font-size:9px;font-weight:700;letter-spacing:.16em;padding:7px 10px;border:1px solid var(--line);border-radius:999px}
+.sourceMode.live{color:var(--green);border-color:#aebfb5}.sourceMode.recorded{color:var(--amber);border-color:#c8b99f}
+.traceLandingHero{padding-bottom:72px}.landingTraceForm{max-width:840px;margin-top:38px;border-top:1px solid var(--ink);padding-top:14px}
+.landingTraceForm>label{display:block;font-size:9px;letter-spacing:.18em;font-weight:700;color:var(--muted);margin-bottom:10px}
+.landingTraceForm>div{display:grid;grid-template-columns:1fr auto;border-bottom:1px solid var(--ink)}
+.landingTraceForm input{font:400 25px Georgia,serif;border:0;background:transparent;padding:16px 0;outline:none;min-width:0;color:var(--ink)}
+.landingTraceForm button{border:0;background:var(--red);color:white;padding:0 24px;font-size:10px;letter-spacing:.12em;cursor:pointer}
+.landingTraceForm small{display:block;color:var(--muted);font-size:10px;margin-top:9px}
+.traceHero{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:72px;padding:64px clamp(22px,6vw,92px) 54px;border-bottom:1px solid var(--line);background:var(--paper2)}
+.traceInputSide{max-width:900px}.traceInputSide h1{font:400 clamp(42px,5vw,72px)/.98 Georgia,serif;letter-spacing:-.035em;margin:0 0 20px;max-width:850px}
+.traceInputSide>p{font:18px/1.65 Georgia,serif;color:var(--muted);max-width:720px}
+.traceLaw{align-self:end;border-top:1px solid var(--ink);padding-top:18px}.traceLaw p{font-size:12px;line-height:1.6;color:var(--muted)}
+.traceForm{margin-top:30px;display:grid;gap:18px}.traceForm label span{display:block;font-size:9px;font-weight:700;letter-spacing:.16em;color:var(--muted);margin-bottom:7px}
+.traceForm input,.traceForm textarea{display:block;width:100%;border:0;border-bottom:1px solid var(--ink);background:transparent;font:19px/1.5 Georgia,serif;padding:10px 0;resize:vertical;outline:none;color:var(--ink)}
+.traceForm textarea{min-height:76px}.traceForm .button{justify-self:start}.recordedStamp{margin-top:28px;display:flex;align-items:baseline;gap:14px;border-top:1px solid var(--line);padding-top:16px}.recordedStamp span{font-size:9px;letter-spacing:.15em;color:var(--muted)}.recordedStamp strong{font:18px Georgia,serif}.recordedStamp small{color:var(--muted)}
+.traceProgress{display:flex;gap:26px;flex-wrap:wrap;padding:16px clamp(22px,6vw,92px);border-bottom:1px solid var(--line);font-size:10px;letter-spacing:.1em;color:var(--muted);background:var(--paper)}
+.traceProgress span:before{content:'•';color:var(--red);margin-right:8px}
+.traceSummary{display:grid;grid-template-columns:minmax(280px,1.15fr) 1fr;gap:50px;padding:44px clamp(22px,6vw,92px);border-bottom:1px solid var(--line)}
+.summaryLead>span,.sectionEyebrow{display:block;font-size:9px;font-weight:700;letter-spacing:.2em;color:var(--muted);margin-bottom:12px}
+.summaryLead h2{font:400 34px/1.15 Georgia,serif;margin:0 0 9px}.summaryLead p{font-size:13px;color:var(--muted)}
+.traceMetrics{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-left:1px solid var(--line)}.traceMetrics div{padding:6px 16px;border-right:1px solid var(--line)}
+.traceMetrics b{display:block;font:400 35px Georgia,serif}.traceMetrics span{display:block;font-size:9px;line-height:1.3;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:5px}
+.coverageNote{grid-column:1/-1;border-top:1px solid var(--line);padding-top:12px;font-size:11px;color:var(--muted)}.coverageNote strong{color:var(--ink)}
+.traceEvidenceGrid{display:grid;grid-template-columns:minmax(0,1fr) 330px;min-height:560px}.traceEvidenceMain{padding:44px clamp(22px,4vw,60px);border-right:1px solid var(--line)}
+.traceEvidenceMain>h2{font:400 34px Georgia,serif;margin:0 0 30px}.traceRightRail{padding:44px 22px;background:var(--paper)}
+.sourceMap{border-top:1px solid var(--ink)}.sourceAuthority{padding:18px 0 25px;display:flex;justify-content:space-between;gap:20px}.sourceAuthority span,.docketHead span{font-size:8px;letter-spacing:.16em;color:var(--red);font-weight:700}.sourceAuthority strong{font:400 21px Georgia,serif}
+.sourceDockets{display:grid;gap:0}.docketGroup{position:relative;padding:20px 0 22px 32px;border-top:1px solid var(--line)}.docketStem{position:absolute;left:8px;top:0;bottom:0;border-left:1px solid #aaa095}.docketStem:before{content:'';position:absolute;left:-4px;top:30px;width:7px;height:7px;border:1px solid var(--red);background:var(--paper2);transform:rotate(45deg)}
+.docketHead{margin-bottom:15px}.docketHead strong{display:block;font:400 19px Georgia,serif;margin:4px 0}.docketHead small{font-size:10px;color:var(--muted)}
+.filingNode,.sourceResult{display:block;width:100%;border:0;border-top:1px solid var(--line);background:transparent;text-align:left;padding:12px 0;cursor:pointer;color:inherit}.filingNode:hover,.sourceResult:hover{background:#eee8df}
+.filingNode span,.sourceResult span{font-size:9px;letter-spacing:.08em;color:var(--muted)}.filingNode strong,.sourceResult strong{display:block;font:400 16px Georgia,serif;margin:4px 0}.filingNode small,.sourceResult small{font-size:10px;color:var(--muted)}
+.candidateNote,.possibleNote,.emptyState{font-size:11px;line-height:1.55;color:var(--muted);padding:15px 0;border-top:1px solid var(--line)}.possibleNote{color:var(--amber)}
+.traceTimeline{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--ink);margin:0 clamp(22px,6vw,92px) 70px}.traceTimeline div{padding:22px 0}.traceTimeline div+div{border-left:1px solid var(--line);padding-left:24px}.traceTimeline span{display:block;font-size:9px;letter-spacing:.13em;color:var(--muted)}.traceTimeline strong{display:block;font:400 24px Georgia,serif;margin-top:6px}
+.publicDrawer .sourceFact{padding:14px 0;border-top:1px solid var(--ink)}.sourceFact span,.sourceFacts span{display:block;font-size:8px;letter-spacing:.15em;color:var(--muted);margin-bottom:4px}.sourceFact strong{font-size:11px}
+.sourceFacts{border-top:1px solid var(--line);margin:15px 0 25px}.sourceFacts p{padding:11px 0;margin:0;border-bottom:1px solid var(--line);font-size:12px;word-break:break-word}.sourceFacts code{font-size:10px}
+.errorBox strong{display:block}.errorBox p{margin:6px 0}.errorBox a{font-size:12px;color:var(--red)}
+@media(max-width:900px){.traceHero{grid-template-columns:1fr;gap:28px}.traceLaw{max-width:580px}.traceSummary{grid-template-columns:1fr}.traceMetrics{border-left:0;border-top:1px solid var(--line);padding-top:18px}.traceEvidenceGrid{grid-template-columns:1fr}.traceEvidenceMain{border-right:0}.traceRightRail{border-top:1px solid var(--line)}}
+@media(max-width:620px){.landingTraceForm>div{grid-template-columns:1fr}.landingTraceForm button{padding:16px 10px}.traceMetrics{grid-template-columns:1fr 1fr}.traceMetrics div{border-bottom:1px solid var(--line)}.traceTimeline{grid-template-columns:1fr}.traceTimeline div+div{border-left:0;border-top:1px solid var(--line);padding-left:0}.traceHero{padding-top:40px}.traceEvidenceMain{padding-left:18px;padding-right:18px}}

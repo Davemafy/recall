@@ -1,38 +1,54 @@
 # Benchmark
 
-RECALL maintains two benchmark layers.
+RECALL has three benchmark layers.
 
-## A. Deterministic labeled benchmark
+## 1. Labeled relationship benchmark
 
-`npm run bench`
-
-50 labeled relationships cover:
+At least 50 relationships covering:
 - exact citations
-- formatting / pin-cite variants
-- exact quotation reuse
-- punctuation/ellipsis quotation reuse
-- semantic-review positives
-- case-name negatives
-- surname negatives
-- different-reporter negatives
+- pin cites
+- quote reuse
+- formatting variants
+- semantic-only cases
+- same-name negatives
 - same-topic negatives
-- critical-discussion negatives
+- critical discussion
 - unrelated controls
 
-A separate 30-document synthetic corpus measures document-level blast-radius precision and recall.
+Primary safety metric:
+**FALSE CONFIRMED DEPENDENCIES**
 
-Primary metric: **FALSE CONFIRMED DEPENDENCIES**.
+## 2. Corpus blast-radius benchmark
 
-## B. Public-source sample
+The 30-document deterministic corpus reports:
+- affected-document precision
+- affected-document recall
+- confirmed citation / quote edges
+- possible relationships
 
-`bench/PUBLIC_SAMPLE.md` records five real, resolvable U.S. authorities selected after verifying actual occurrences in a public RECAP filing.
+## 3. Real incident benchmark
 
-`npm run bench:live` runs a bounded current CourtListener trace for those five authorities when `COURTLISTENER_TOKEN` is available.
+The recorded Johnson incident reports only the captured incident facts:
+- court-identified dependencies
+- dependencies normalized
+- dependencies traced
+- confirmed affected filings
+- confirmed citation relationships
+- quote reuse
+- unconfirmed candidates
+- unique dockets
 
-Without the token, the live benchmark prints an explicit SKIPPED state and records no invented metrics.
+No global public-corpus recall claim is made.
 
-The public sample does not claim ground-truth recall over all CourtListener / RECAP data.
+## Live benchmark
 
-## Recorded public trace
+`npm run bench:live` traces five resolvable real authorities only when `COURTLISTENER_TOKEN` exists.
 
-The deterministic `/demo` capture independently confirms three real RECAP filings containing `598 U.S. 508`. This provides source-backed offline replay but is not presented as a current live-corpus benchmark.
+Each result now records:
+- CourtListener requests
+- Firecrawl requests
+- cache hits
+- documents hydrated
+- search passes used
+
+Without credentials it prints an explicit SKIPPED state.

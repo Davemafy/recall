@@ -10,12 +10,10 @@ import {FIGMA_ASSETS_B} from '../lib/figma-assets-b';
 
 const nav=[
   {href:'/',label:'Dashboard',icon:FIGMA_ASSETS_A.grid},
-  {href:'/incidents',label:'Incidents',icon:FIGMA_ASSETS_A.bars},
+  {href:'/incident',label:'New incident',icon:FIGMA_ASSETS_A.bars},
   {href:'/trace',label:'Quick trace',icon:FIGMA_ASSETS_A.calendar},
-  {href:'/corpus',label:'Corpus',icon:FIGMA_ASSETS_A.cursor},
-  {href:'/evidence',label:'Evidence',icon:FIGMA_ASSETS_A.user},
-  {href:'/activity',label:'Activity',icon:FIGMA_ASSETS_B.bell},
-  {href:'/settings',label:'Settings',icon:FIGMA_ASSETS_A.settings}
+  {href:'/corpus',label:'Local corpus',icon:FIGMA_ASSETS_A.cursor},
+  {href:'/incident/demo',label:'Recorded incident',icon:FIGMA_ASSETS_A.user}
 ];
 
 type Menu='status'|'settings'|'profile'|null;
@@ -43,7 +41,7 @@ export default function CockpitShell({
 }:{
   pageTitle:string;
   heading:string;
-  code:string;
+  code?:string;
   action?:ReactNode;
   status?:string;
   children:ReactNode;
@@ -55,30 +53,17 @@ export default function CockpitShell({
   useEffect(()=>{
     const stored=window.localStorage.getItem('recall-theme');
     if(stored==='light'||stored==='dark') setTheme(stored);
-    const onTheme=(event:Event)=>{
-      const next=(event as CustomEvent<{theme?:Theme}>).detail?.theme;
-      if(next==='light'||next==='dark') setTheme(next);
-    };
-    const onStorage=(event:StorageEvent)=>{
-      if(event.key==='recall-theme'&&(event.newValue==='light'||event.newValue==='dark')) setTheme(event.newValue);
-    };
-    window.addEventListener('recall-theme-change',onTheme);
-    window.addEventListener('storage',onStorage);
-    return()=>{
-      window.removeEventListener('recall-theme-change',onTheme);
-      window.removeEventListener('storage',onStorage);
-    };
   },[]);
 
   const setAppearance=(next:Theme)=>{
     setTheme(next);
     window.localStorage.setItem('recall-theme',next);
-    window.dispatchEvent(new CustomEvent('recall-theme-change',{detail:{theme:next}}));
   };
 
   const isActive=(href:string)=>{
     if(href==='/') return pathname==='/';
-    if(href==='/incidents') return pathname==='/incidents'||pathname==='/incident'||pathname.startsWith('/incident/')||pathname==='/demo';
+    if(href==='/incident') return pathname==='/incident';
+    if(href==='/incident/demo') return pathname==='/incident/demo'||pathname==='/demo';
     return pathname===href||pathname.startsWith(href+'/');
   };
 
@@ -104,7 +89,7 @@ export default function CockpitShell({
         </div>
 
         <div className="fc-utility-nav">
-          <button className={'fc-nav-item '+(menu==='settings'?'is-active':'')} aria-label="Quick settings" title="Quick settings" aria-expanded={menu==='settings'} onClick={()=>toggle('settings')}><img src={FIGMA_ASSETS_A.settings} alt=""/></button>
+          <button className={'fc-nav-item '+(menu==='settings'?'is-active':'')} aria-label="Interface settings" title="Interface settings" aria-expanded={menu==='settings'} onClick={()=>toggle('settings')}><img src={FIGMA_ASSETS_A.settings} alt=""/></button>
           <Link className="fc-nav-item" href="/" aria-label="Return to dashboard" title="Return to dashboard"><img src={FIGMA_ASSETS_A.logout} alt=""/></Link>
           <div className="fc-theme-switch" role="group" aria-label="Appearance">
             <button className={theme==='light'?'is-selected':''} aria-label="Use light theme" aria-pressed={theme==='light'} onClick={()=>setAppearance('light')}><img src={FIGMA_ASSETS_A.sun} alt=""/></button>
@@ -114,10 +99,9 @@ export default function CockpitShell({
 
         {menu==='settings'&&<div className="fc-popover fc-settings-popover" role="dialog" aria-label="Interface settings">
           <div className="fc-popover-kicker">INTERFACE</div>
-          <strong>Quick settings</strong>
-          <p>Appearance is stored only in this browser.</p>
+          <strong>Appearance</strong>
+          <p>Dark is the authored RECALL surface. Light keeps the same hierarchy with corrected contrast.</p>
           <div className="fc-setting-row"><span>Theme</span><div><button className={theme==='light'?'is-selected':''} onClick={()=>setAppearance('light')}>Light</button><button className={theme==='dark'?'is-selected':''} onClick={()=>setAppearance('dark')}>Dark</button></div></div>
-          <Link href="/settings" onClick={()=>setMenu(null)}>Open workspace settings ↗</Link>
         </div>}
       </aside>
 
@@ -128,7 +112,7 @@ export default function CockpitShell({
             <div className="fc-account-controls">
               <div className="fc-quick-actions">
                 <Link href="/trace" className="fc-header-action" aria-label="Search public filings" title="Quick trace"><img src={FIGMA_ASSETS_B.search} alt=""/></Link>
-                <button className={'fc-header-action '+(menu==='status'?'is-active':'')} aria-label="Incident status" aria-expanded={menu==='status'} title="Workspace status" onClick={()=>toggle('status')}><img src={FIGMA_ASSETS_B.bell} alt=""/><i/></button>
+                <button className={'fc-header-action '+(menu==='status'?'is-active':'')} aria-label="Incident status" aria-expanded={menu==='status'} title="Incident status" onClick={()=>toggle('status')}><img src={FIGMA_ASSETS_B.bell} alt=""/><i/></button>
               </div>
               <button className={'fc-profile '+(menu==='profile'?'is-active':'')} aria-label="Open RECALL workspace menu" aria-expanded={menu==='profile'} onClick={()=>toggle('profile')}>
                 <span className="fc-profile-mark">R</span>
@@ -142,21 +126,19 @@ export default function CockpitShell({
             <div className="fc-popover-kicker">WORKSPACE STATUS</div>
             <strong>{status}</strong>
             <p>Confirmed relationships require source evidence. Search results and semantic similarity remain unconfirmed.</p>
-            <div className="fc-popover-links"><Link href="/evidence" onClick={()=>setMenu(null)}>Evidence ledger ↗</Link><Link href="/activity" onClick={()=>setMenu(null)}>Recent activity ↗</Link></div>
+            <Link href="/trace" onClick={()=>setMenu(null)}>Open Quick Trace ↗</Link>
           </div>}
 
           {menu==='profile'&&<div className="fc-popover fc-profile-popover" role="menu" aria-label="RECALL workspace menu">
             <div className="fc-popover-kicker">RECALL</div>
-            <Link href="/incidents" role="menuitem" onClick={()=>setMenu(null)}>Incidents</Link>
             <Link href="/incident/demo" role="menuitem" onClick={()=>setMenu(null)}>Recorded incident</Link>
+            <Link href="/incident" role="menuitem" onClick={()=>setMenu(null)}>New incident</Link>
             <Link href="/trace" role="menuitem" onClick={()=>setMenu(null)}>Quick trace</Link>
-            <Link href="/evidence" role="menuitem" onClick={()=>setMenu(null)}>Evidence ledger</Link>
-            <Link href="/activity" role="menuitem" onClick={()=>setMenu(null)}>Activity</Link>
-            <Link href="/settings" role="menuitem" onClick={()=>setMenu(null)}>Settings</Link>
+            <Link href="/corpus" role="menuitem" onClick={()=>setMenu(null)}>Local corpus</Link>
           </div>}
 
           <div className="fc-incident-heading">
-            <h1>{heading}, <span>{code}</span></h1>
+            <h1>{heading}{code&&<>, <span>{code}</span></>}</h1>
             {action}
           </div>
         </header>

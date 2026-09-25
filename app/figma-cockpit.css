@@ -705,3 +705,192 @@ button.fc-dot{cursor:pointer}
   .fc-settings-popover{left:14px;top:82px;bottom:auto}
   .fc-status-popover,.fc-profile-popover{right:14px;top:82px}
 }
+
+
+/* =========================================================
+   STRICT RECORDING QA PASS
+   Keep the authored Figma composition; remove empty furniture,
+   repair compact-viewport behavior, and strengthen state clarity.
+   ========================================================= */
+
+.fc-action-row{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.fc-quiet-action{
+  height:36px;padding:0 11px;border:1px solid #333535;border-radius:8px;
+  background:transparent;color:#858787;font-size:10px;cursor:pointer;
+}
+.fc-quiet-action:hover{background:#1b1c1c;color:#f2f2f2}
+.fc-run-boundary{
+  margin:14px 0 0;padding-top:12px;border-top:1px solid #272828;
+  max-width:760px;color:#7c7e7e;font-size:10px;line-height:1.5
+}
+.fc-corpus-boundary{margin:0 20px 18px}
+.fc-results-reveal{animation:fcQaReveal .18s ease-out both}
+@keyframes fcQaReveal{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.fc-context-anchor{position:relative;z-index:30}
+.fc-more.is-active{box-shadow:inset 0 0 0 1px #555}
+.fc-context-menu{
+  position:absolute;z-index:90;top:calc(100% + 7px);right:0;width:190px;padding:5px;
+  border:1px solid #303131;border-radius:10px;background:#151616;
+  box-shadow:0 18px 46px rgba(0,0,0,.42)
+}
+.fc-context-menu a,.fc-context-menu button{
+  width:100%;min-height:34px;padding:0 9px;border:0;border-radius:7px;background:transparent;
+  color:#b9baba;display:flex;align-items:center;justify-content:space-between;text-align:left;
+  font-size:10px;cursor:pointer
+}
+.fc-context-menu a:hover,.fc-context-menu button:hover,.fc-context-menu button.is-selected{background:#202121;color:#fff}
+.fc-filter{border:0;cursor:pointer}
+.fc-filter-menu{width:150px}
+.fc-dot.is-row-context:not(.is-hot){background:#373838}
+.fc-dot.is-hot.is-selected{outline:2px solid rgba(255,255,255,.82);outline-offset:2px}
+
+.fc-entry-result-panel{
+  min-height:240px;border-radius:18px;background:var(--fc-panel);overflow:hidden;flex:none
+}
+.fc-result-list-wide{
+  padding:0 20px 18px;display:grid;grid-template-columns:1fr 1fr;gap:0 18px
+}
+.fc-result-list-wide article{min-height:58px;border-top:1px solid #252626}
+
+.fc-focused-workspace{height:auto!important;min-height:430px;flex:1}
+.fc-focused-workspace .fc-trace-form,
+.fc-focused-workspace .fc-builder-body{height:auto!important;max-height:none!important;flex:1}
+.fc-focused-workspace.fc-corpus-panel .fc-dropzone{height:min(420px,calc(100vh - 250px));min-height:270px}
+
+/* Quick settings no longer covers the lower-left investigation surface. */
+.fc-settings-popover{left:auto!important;right:20px!important;top:76px!important;bottom:auto!important;width:220px!important}
+
+/* Light theme is treated as a real surface instead of dark components pasted onto white. */
+.fc-scene[data-theme="light"]{
+  --fc-muted:#60635d;
+  --fc-dim:#9a9b96;
+}
+.fc-scene[data-theme="light"] .fc-nav-item img,
+.fc-scene[data-theme="light"] .fc-header-action img,
+.fc-scene[data-theme="light"] .fc-chevron,
+.fc-scene[data-theme="light"] .fc-theme-switch img,
+.fc-scene[data-theme="light"] .fc-more img,
+.fc-scene[data-theme="light"] .fc-filter img{
+  filter:brightness(0) saturate(100%);
+  opacity:.62;
+}
+.fc-scene[data-theme="light"] .fc-nav-item.is-active img,
+.fc-scene[data-theme="light"] .fc-theme-switch button.is-selected img{opacity:.9}
+.fc-scene[data-theme="light"] .fc-sidebar{border-right:1px solid #d0cfc9}
+.fc-scene[data-theme="light"] .fc-dropzone{
+  background:#efeee9;border-color:#c9c8c2;color:#181916
+}
+.fc-scene[data-theme="light"] .fc-dropzone>strong{color:#181916}
+.fc-scene[data-theme="light"] .fc-dropzone>small,
+.fc-scene[data-theme="light"] .fc-panel-heading small,
+.fc-scene[data-theme="light"] .fc-event small,
+.fc-scene[data-theme="light"] .fc-profile-copy small,
+.fc-scene[data-theme="light"] .fc-dependency-row small,
+.fc-scene[data-theme="light"] .fc-authority-list small{color:#60635d}
+.fc-scene[data-theme="light"] .fc-builder-row,
+.fc-scene[data-theme="light"] .fc-trace-list button,
+.fc-scene[data-theme="light"] .fc-authority-list button{background:transparent}
+.fc-scene[data-theme="light"] .fc-builder-row input,
+.fc-scene[data-theme="light"] .fc-builder-row select,
+.fc-scene[data-theme="light"] .fc-remediation-list select{
+  background:#efeee9;color:#181916;border-color:#d0cfc9
+}
+.fc-scene[data-theme="light"] .fc-context-menu{background:#f7f6f2;border-color:#d0cfc9}
+.fc-scene[data-theme="light"] .fc-context-menu a,
+.fc-scene[data-theme="light"] .fc-context-menu button{color:#5a5c56}
+.fc-scene[data-theme="light"] .fc-context-menu a:hover,
+.fc-scene[data-theme="light"] .fc-context-menu button:hover,
+.fc-scene[data-theme="light"] .fc-context-menu button.is-selected{background:#e6e5df;color:#181916}
+.fc-scene[data-theme="light"] .fc-run-boundary{border-color:#d5d4ce;color:#5d605a}
+.fc-scene[data-theme="light"] .fc-entry-result-panel{background:#f7f6f2}
+.fc-scene[data-theme="light"] .fc-quiet-action{border-color:#cac9c3;color:#5f615b}
+.fc-scene[data-theme="light"] .fc-quiet-action:hover{background:#e6e5df;color:#181916}
+.fc-scene[data-theme="light"] .fc-dot.is-row-context:not(.is-hot){background:#babbb5}
+
+/* Preserve the authored hierarchy while making the recorded laptop viewport demoable. */
+@media(min-width:981px) and (max-height:700px){
+  .fc-main{padding:10px 14px 10px!important;gap:8px!important}
+  .fc-header{height:76px!important;gap:8px!important}
+  .fc-topbar{height:34px!important}
+  .fc-page-title{font-size:16px!important}
+  .fc-quick-actions{height:34px!important;padding:3px!important;border-radius:11px!important}
+  .fc-header-action{width:28px!important;height:28px!important;border-radius:7px!important}
+  .fc-header-action img{width:14px!important;height:14px!important}
+  .fc-profile{height:34px!important;width:184px!important;border-radius:11px!important;padding:0 7px!important}
+  .fc-profile-mark{width:25px!important;height:25px!important;font-size:11px!important}
+  .fc-profile-copy strong{font-size:10px!important}
+  .fc-profile-copy small{font-size:9px!important}
+  .fc-incident-heading{height:34px!important}
+  .fc-incident-heading h1{font-size:28px!important}
+  .fc-metal-button{height:34px!important;min-width:96px!important;padding:0 13px!important;font-size:11px!important}
+
+  .fc-summary{height:72px!important;gap:8px!important}
+  .fc-summary-card{height:72px!important;padding:9px 11px!important;border-radius:12px!important}
+  .fc-summary-label{gap:7px!important;font-size:10px!important}
+  .fc-metric-icon{width:28px!important;height:28px!important;border-radius:6px!important}
+  .fc-metric-icon img{width:14px!important;height:14px!important}
+  .fc-summary-card>strong{font-size:17px!important}
+
+  .fc-timeline{height:190px!important;min-height:190px!important;border-radius:13px!important}
+  .fc-panel-heading{height:44px!important;padding:11px 14px 0!important}
+  .fc-panel-heading.compact{height:42px!important;padding-top:10px!important}
+  .fc-panel-heading h2{font-size:15px!important;line-height:18px!important}
+  .fc-panel-heading small{margin-top:2px!important;font-size:9px!important}
+  .fc-more{width:30px!important;height:30px!important}
+  .fc-timeline-plot{height:146px!important;margin:0 14px!important}
+  .fc-time-labels{height:21px!important}
+  .fc-time-labels span{font-size:8px!important}
+  .fc-time-grid{inset:21px 0 7px!important}
+  .fc-now-line{height:138px!important}
+  .fc-now-line span{top:-22px!important;height:22px!important;font-size:8px!important}
+  .fc-event{height:46px!important;padding:7px 9px!important;gap:8px!important}
+  .fc-event>b{width:5px!important;height:30px!important}
+  .fc-event strong{font-size:9px!important;line-height:12px!important}
+  .fc-event small{margin-top:2px!important;font-size:8px!important}
+  .event-a,.event-c{top:34px!important}
+  .event-b,.event-d{top:88px!important}
+
+  .fc-insights{height:220px!important;gap:8px!important}
+  .fc-panel{height:220px!important;border-radius:13px!important}
+  .fc-dependency-list{height:178px!important;padding:0 12px 10px!important;gap:4px!important}
+  .fc-dependency-row{min-height:30px!important;padding-left:9px!important}
+  .fc-dependency-row strong{font-size:9px!important}
+  .fc-dependency-row small{font-size:8px!important;margin-top:1px!important}
+  .fc-flag{height:21px!important;font-size:8px!important}
+  .fc-filter{height:28px!important;padding:0 8px!important;font-size:9px!important}
+  .fc-dot-panel{padding:0 12px 8px!important}
+  .fc-dot-map{height:170px!important}
+  .fc-dot-row-labels{bottom:25px!important}
+  .fc-dots{height:132px!important;top:0!important}
+  .fc-dot{width:16px!important;height:16px!important}
+  .fc-dot-axis{font-size:8px!important}
+  .fc-stream-chart{height:174px!important}
+  .fc-stream-atmosphere{height:148px!important}
+  .fc-stream.outer{height:126px!important}
+  .fc-stream.middle{height:96px!important}
+  .fc-stream.core{height:58px!important}
+  .fc-stream-tag{font-size:7px!important}
+  .fc-stream-axis{font-size:8px!important}
+
+  .fc-focused-workspace{min-height:calc(100vh - 104px)!important}
+  .fc-focused-workspace .fc-panel-heading{height:48px!important}
+  .fc-focused-workspace.fc-corpus-panel .fc-dropzone{
+    height:calc(100vh - 190px)!important;min-height:300px!important
+  }
+  .fc-entry-result-panel{min-height:190px;border-radius:13px}
+  .fc-result-list-wide article{min-height:46px}
+}
+
+/* Keep important explanatory type above texture-size. */
+.fc-callout-body p,
+.fc-trace-list p,
+.fc-authority-list p,
+.fc-inline-note,
+.fc-run-boundary,
+.fc-evidence-mini small{font-size:max(10px,0.72rem)}
+
+@media(max-width:620px){
+  .fc-action-row{justify-content:flex-start}
+  .fc-result-list-wide{grid-template-columns:1fr}
+}

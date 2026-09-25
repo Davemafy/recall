@@ -1,9 +1,7 @@
 'use client';
 
 import {useMemo,useState} from 'react';
-import Link from 'next/link';
 import CockpitShell,{SummaryCards} from './CockpitShell';
-import {downloadJson,recordActivity} from '../lib/recall-client';
 
 type DependencyDraft={id:string;type:'AUTHORITY'|'QUOTATION';text:string};
 type TraceResponse={
@@ -22,75 +20,114 @@ export default function IncidentEntry(){
   const [error,setError]=useState('');
   const [result,setResult]=useState<TraceResponse|null>(null);
   const usable=useMemo(()=>dependencies.filter(item=>item.text.trim()),[dependencies]);
+
   const update=(id:string,patch:Partial<DependencyDraft>)=>setDependencies(items=>items.map(item=>item.id===id?{...item,...patch}:item));
   const add=()=>setDependencies(items=>items.length>=10?items:[...items,newDraft(items.length+1)]);
   const remove=(id:string)=>setDependencies(items=>items.length===1?items:items.filter(item=>item.id!==id));
+  const reset=()=>{setSourceUrl('');setDependencies([newDraft(1)]);setError('');setResult(null)};
 
   const trace=async()=>{
-    if(!usable.length){setError('Add at least one citation or quotation under review.');return}
-    setBusy(true);setError('');setResult(null);
+    if(!usable.length){
+      setError('Add at least one citation or quotation under review.');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    setResult(null);
     try{
-      const response=await fetch('/api/incident/trace',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dependencies:usable.map(item=>({id:item.id,dependencyType:item.type,rawText:item.text.trim(),quotation:item.type==='QUOTATION'?item.text.trim():undefined}))})});
+      const response=await fetch('/api/incident/trace',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          dependencies:usable.map(item=>({
+            id:item.id,
+            dependencyType:item.type,
+            rawText:item.text.trim(),
+            quotation:item.type==='QUOTATION'?item.text.trim():undefined
+          }))
+        })
+      });
       const data=await response.json();
-      if(!response.ok||!data.ok){setError(data.message||'Incident trace could not complete.');return}
+      if(!response.ok||!data.ok){
+        setError(data.message||'Incident trace could not complete.');
+        return;
+      }
       setResult(data);
-      recordActivity({kind:'INCIDENT',title:'Incident trace · '+usable.length+' dependencies',subtitle:(data.summary?.confirmedAffectedFilings??0)+' affected filings · '+(data.summary?.confirmedRelationships??0)+' confirmed relationships',confirmed:data.summary?.confirmedRelationships??0,checked:data.summary?.dependenciesTraced??usable.length,dockets:data.summary?.uniqueDockets??0,href:'/incident'});
-    }catch{setError('Incident trace could not reach the public-source service.')}
-    finally{setBusy(false)}
+    }catch{
+      setError('Incident trace could not reach the public-source service.');
+    }finally{
+      setBusy(false);
+    }
   };
 
   const documentById=new Map((result?.documents||[]).map(document=>[String(document.id),document]));
-  const reset=()=>{setSourceUrl('');setDependencies([newDraft(1)]);setResult(null);setError('')};
-  const exportResult=()=>result&&downloadJson('recall-incident-trace.json',{sourceUrl:sourceUrl||null,summary:result.summary,documents:result.documents,relationships:result.relationships,diagnostics:result.diagnostics});
-  const action=<div className="fc-action-row">{result&&<button className="fc-secondary-button" onClick={exportResult}>Export result</button>}<button className="fc-metal-button" onClick={trace} disabled={busy||!usable.length}>{busy?'Tracing…':'Trace impact'}</button></div>;
 
-  return <CockpitShell pageTitle="New incident" heading="Incident" code="#OPEN" status="Public federal filing search" action={action}>
-    <SummaryCards items={[
-      {label:'Dependencies Ready',value:String(usable.length).padStart(2,'0')},
-      {label:'Affected Filings',value:result?.summary?String(result.summary.confirmedAffectedFilings).padStart(2,'0'):'—'},
-      {label:'Confirmed Relations',value:result?.summary?String(result.summary.confirmedRelationships).padStart(2,'0'):'—',icon:'vertical'},
-      {label:'Dockets',value:result?.summary?String(result.summary.uniqueDockets).padStart(2,'0'):'—',icon:'vertical'}
-    ]}/>
+  return <CockpitShell
+    pageTitle="New incident"
+    heading="New incident"
+    status="Public federal filing search"
+    action={<div className="fc-action-row">
+      {(usable.length>0||result)&&<button className="fc-quiet-action" onClick={reset}>Reset</button>}
+      <button className="fc-metal-button" onClick={trace} disabled={busy||!usable.length}>{busy?'Tracing…':'Trace impact'}</button>
+    </div>}
+  >
+    {result&&<SummaryCards items={[
+      {label:'Dependencies Traced',value:String(result.summary?.dependenciesTraced??usable.length).padStart(2,'0')},
+      {label:'Affected Filings',value:String(result.summary?.confirmedAffectedFilings??0).padStart(2,'0')},
+      {label:'Confirmed Relations',value:String(result.summary?.confirmedRelationships??0).padStart(2,'0'),icon:'vertical'},
+      {label:'Dockets',value:String(result.summary?.uniqueDockets??0).padStart(2,'0'),icon:'vertical'}
+    ]}/>}
 
-    <section className="fc-timeline fc-builder-panel">
+    <section className={'fc-timeline fc-builder-panel '+(!result?'fc-focused-workspace':'')}>
       <header className="fc-panel-heading">
         <div><h2>Dependencies under review</h2><small>Up to 10 · search results remain candidates until source text confirms them</small></div>
-        <span className="fc-state-chip">{busy?'TRACING':'READY'}</span>
+        <span className="fc-state-chip">{busy?'TRACING':result?'TRACED':usable.length?String(usable.length).padStart(2,'0')+' READY':'OPEN'}</span>
       </header>
       <div className="fc-builder-body">
         <label className="fc-field">
-          <span>INCIDENT SOURCE URL <em>optional · provenance only</em></span>
+          <span>INCIDENT SOURCE URL <em>optional · context only</em></span>
           <input value={sourceUrl} onChange={e=>setSourceUrl(e.target.value)} placeholder="https://… court order or public source"/>
         </label>
+
         <div className="fc-builder-head"><span>#</span><span>TYPE</span><span>DEPENDENCY</span><span/></div>
         {dependencies.map((dependency,index)=><div className="fc-builder-row" key={dependency.id}>
           <span>{String(index+1).padStart(2,'0')}</span>
-          <select value={dependency.type} onChange={e=>update(dependency.id,{type:e.target.value as DependencyDraft['type']})} aria-label={'Dependency '+(index+1)+' type'}><option value="AUTHORITY">Authority</option><option value="QUOTATION">Quotation</option></select>
-          <input value={dependency.text} onChange={e=>update(dependency.id,{text:e.target.value})} placeholder={dependency.type==='AUTHORITY'?'550 U.S. 544 or 2006 WL 8438651':'Paste disputed quotation'} aria-label={'Dependency '+(index+1)}/>
+          <select value={dependency.type} onChange={e=>update(dependency.id,{type:e.target.value as DependencyDraft['type']})} aria-label={'Dependency '+(index+1)+' type'}>
+            <option value="AUTHORITY">Authority</option>
+            <option value="QUOTATION">Quotation</option>
+          </select>
+          <input
+            value={dependency.text}
+            onChange={e=>update(dependency.id,{text:e.target.value})}
+            placeholder={dependency.type==='AUTHORITY'?'550 U.S. 544 or 2006 WL 8438651':'Paste disputed quotation'}
+            aria-label={'Dependency '+(index+1)+' text'}
+          />
           <button onClick={()=>remove(dependency.id)} aria-label={'Remove dependency '+(index+1)}>×</button>
         </div>)}
-        <div className="fc-builder-actions"><div><button onClick={add} disabled={dependencies.length>=10}>+ Add dependency</button>{(usable.length>0||result)&&<button className="fc-inline-reset" onClick={reset}>Reset</button>}</div><span>{usable.length} ready</span></div>
+
+        <div className="fc-builder-actions"><button onClick={add} disabled={dependencies.length>=10}>+ Add dependency</button><span>{usable.length} ready</span></div>
+        {!result&&!busy&&!error&&<p className="fc-run-boundary">Discovery finds candidate filings. Source text decides whether a dependency is confirmed. Unresolved source text stays unconfirmed.</p>}
         {sourceUrl&&<p className="fc-inline-note">Source URL is incident context only. The URL itself is never treated as proof.</p>}
         {error&&<div className="fc-error" role="alert">{error}</div>}
       </div>
     </section>
 
-    <section className="fc-insights fc-entry-insights">
-      <section className="fc-panel">
-        <header className="fc-panel-heading compact"><div><h2>Recorded Incident</h2><small>Public replay</small></div><strong className="fc-panel-total">05</strong></header>
-        <div className="fc-callout-body"><strong>Johnson v. Dunn</strong><p>N.D. Alabama · five problematic citations across two motions.</p><Link href="/incident/demo">Open recorded incident ↗</Link></div>
-      </section>
-      <section className="fc-panel">
-        <header className="fc-panel-heading compact"><div><h2>Confirmation Law</h2><small>Deterministic first</small></div></header>
-        <div className="fc-callout-body"><p>Search hit ≠ confirmation. A relationship becomes confirmed only when available source text independently proves the citation or quotation occurrence.</p></div>
-      </section>
-      <section className="fc-panel">
-        <header className="fc-panel-heading compact"><div><h2>Trace Output</h2><small>{result?.summary?'Completed':'Awaiting run'}</small></div></header>
-        <div className="fc-result-list">
-          {(result?.relationships||[]).slice(0,5).map(rel=>{const doc=documentById.get(String(rel.filingId));const dep=usable.find(d=>d.id===rel.dependencyId);return <article key={rel.id}><span>{rel.state==='POSSIBLE_RELATED_PROPOSITION'?'REVIEW':'CONFIRMED'}</span><div><strong>{dep?.text||rel.dependencyId}</strong><small>{doc?.title||doc?.caseName||'Public filing'}</small></div></article>})}
-          {!result?.relationships?.length&&<p>No relationship evidence yet.</p>}
-        </div>
-      </section>
-    </section>
+    {result&&<section className="fc-entry-result-panel fc-results-reveal">
+      <header className="fc-panel-heading compact">
+        <div><h2>Resolved relationships</h2><small>{result.relationships?.length||0} relationships returned · {result.summary?.possibleRelationships??0} review-only</small></div>
+        <strong className="fc-panel-total">{String(result.summary?.confirmedRelationships??0).padStart(2,'0')}</strong>
+      </header>
+      <div className="fc-result-list fc-result-list-wide">
+        {(result.relationships||[]).slice(0,8).map(rel=>{
+          const doc=documentById.get(String(rel.filingId));
+          const dep=usable.find(d=>d.id===rel.dependencyId);
+          return <article key={rel.id}>
+            <span>{rel.state==='POSSIBLE_RELATED_PROPOSITION'?'REVIEW':'CONFIRMED'}</span>
+            <div><strong>{dep?.text||rel.dependencyId}</strong><small>{doc?.title||doc?.caseName||'Public filing'} · {doc?.docketNumber||'Docket unavailable'}</small></div>
+          </article>
+        })}
+        {!result.relationships?.length&&<p>No relationship evidence returned.</p>}
+      </div>
+    </section>}
   </CockpitShell>
 }

@@ -1,7 +1,6 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import './figma-cockpit.css';
-import './product-completeness.css';
 
 export const metadata:Metadata={
   title:'RECALL — Legal incident response',

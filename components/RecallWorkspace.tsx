@@ -97,7 +97,7 @@ export default function RecallWorkspace({mode,documents,incident}:Props){
         </div>
         <div className="corpusIncidentEvidenceBody">
           {selectedEdges.map((edge:any)=><article key={edge.id}>
-            <div><span>{relationshipLabel(edge.type)}</span>{edge.type===RELATIONSHIP_STATE.POSSIBLE&&<small>REVIEW ONLY</small>}</div>
+            <div><span>{relationLabel(edge.type)}</span>{edge.type===RELATIONSHIP_STATE.POSSIBLE&&<small>REVIEW ONLY</small>}</div>
             <blockquote>“{edge.evidence.raw}”</blockquote>
             <p>{edge.evidence.rule}</p>
             {edge.type===RELATIONSHIP_STATE.POSSIBLE&&<strong>Similarity does not prove lineage.</strong>}

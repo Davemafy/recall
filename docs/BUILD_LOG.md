@@ -110,3 +110,27 @@ New direction:
 - same visual system carried through landing, incident creation, Quick Trace, and Corpus surfaces
 
 The UI is intentionally not styled as “legal tech.” Product truth remains legal; visual language is drawn from contemporary fintech/workspace/data-product references.
+
+
+## M8 — anti-slop visual reset
+
+The previous incident UI still read as generated product chrome, so the visual system was rebuilt again around a stricter type-led composition.
+
+Changes:
+- replaced the flagship three-panel workspace with a borderless incident canvas
+- made the core fact — 5 disputed dependencies → 2 filed motions — the primary visual object
+- moved dependencies into a horizontal rail rather than a conventional sidebar
+- rebuilt the blast radius as a ruled dependency × filing ledger
+- paired incident-source evidence and affected-work evidence in one split spread
+- removed generic metric cards, rounded shells, badge soup, decorative graph UI, and inspector-sidebars from the flagship
+- switched typography to Clash Display + Satoshi from Fontshare
+- replaced the previous AI-dashboard accent palette with mineral gray / green-black / sage / forest green
+- rebuilt Quick Trace as a single evidence ledger with a confirmed/checked ratio
+- rebuilt Corpus import and imported-corpus incidents around ledgers instead of drag-card / graph-dashboard patterns
+- documented the explicit anti-slop audit in docs/UI_AUDIT.md
+
+Reference direction:
+- Halo Design Studio — Tetra (Swiss grid, massive typography, borderless composition, restrained palette)
+- Fontshare — Clash Display + Satoshi pairing
+
+No legal-tech visual conventions were used as the design reference.

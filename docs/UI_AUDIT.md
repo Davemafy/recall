@@ -1,116 +1,102 @@
-# UI anti-slop audit
+# UI anti-slop audit — incident command reset
 
-This pass was done specifically to break the generic AI-product look that kept surviving earlier iterations.
+This pass replaces the earlier "premium SaaS" reflex with a product-specific incident-command grammar.
 
-## Defaults explicitly rejected
+## Primary reference studied
 
-- Inter / Geist / system sans used without a typographic point of view
-- centered hero + three feature cards
-- rounded white shell floating on gray
-- equal-weight left / center / right panels
-- KPI card rows
-- pill-heavy status language
-- purple / blue "AI" gradient
-- generic evidence inspector sidebar
-- dark dashboard + orange accent as a shortcut to "premium"
-- graph-first incident visualization
-- one SaaS layout that could be relabeled as CRM, support, analytics, or security
+### #INC-2050 — Incident management dashboard
+The supplied incident-response reference is treated as a composition reference, not a skin.
 
-## Research direction
+What mattered:
+- incident identity is visible before analytics
+- one horizontal timeline carries the eye across the state change
+- the working area is dense, edge-to-edge, and operational
+- tiny metadata and large incident facts coexist
+- dark chrome recedes while the active investigation owns contrast
+- the interface makes "what happened / where are we / what now" legible without a wall of KPI cards
 
-The reset deliberately stopped looking at legal-tech UI as an aesthetic category.
+What RECALL does differently:
+- no security charts
+- no threat score
+- no synthetic confidence meter
+- no copied icons, branding, or proprietary copy
+- the signature object is dependency × filing evidence, not a generic incident dashboard
 
-References studied instead:
+## 2026 product references
 
-- Halo Design Studio — **Tetra: Bold Minimalist Crypto Dashboard Interface**
-  - massive typography as data
-  - Swiss grid discipline
-  - borderless composition
-  - extreme negative space
-  - monochrome surfaces with one restrained signal color
-  - palette studied: #E9E9E9 / #6E6E6E / #B6C9B1 / #071107 / #3F483F / #235F24 / #775B3D
+- Linear 2026 visual refresh
+  - supporting chrome should not compete for attention it has not earned
+  - preserve density while making the task surface dominant
+- Attio / Ramp / Vercel / Mercury / modern observability products
+  - quiet navigation
+  - strong table rhythm
+  - color reserved for state
+  - progressive disclosure for technical detail
+- data-heavy incident and operations interfaces
+  - timeline first
+  - status conveyed structurally before decorative labels
+  - action and evidence stay in the same working context
 
-- Halo Design Studio — **Tetra: Minimalist Crypto Dashboard, Swap & Trade Flow**
-  - transaction-like primary actions
-  - data treated like poster typography instead of cards
-  - progressive disclosure rather than persistent chrome
+## AI-generated patterns removed
 
-- current Dribbble brutalist / Swiss product work
-  - strong type and ruled structure instead of component-library decoration
-  - full-bleed working surfaces
-  - dense data made calm through hierarchy, not boxes
+- centered marketing hero + feature cards
+- generic sidebar + card grid
+- identical rounded rectangles
+- KPI rows
+- large decorative empty space
+- blue/purple "AI" glow
+- glassmorphism
+- pill status soup
+- legal-paper / law-firm styling
+- graph spaghetti
+- generic right inspector as the entire evidence model
+- identical spacing and radius on every surface
 
-## Typography
-
-The product now uses:
-
-- **Clash Display** — high-impact display / numeric hierarchy
-- **Satoshi** — product UI, body text, metadata
-
-Both are loaded from Fontshare.
-
-Why this pairing:
-- the display face gives the incident and blast-radius numbers a recognizable voice;
-- the UI face stays readable at dense product sizes;
-- citations no longer inherit a fake-law serif aesthetic;
-- the combination avoids the default Inter / Geist look.
-
-## Current product language
+## Current visual system
 
 ### Palette
+- mineral black: #090b0a
+- working black: #0f1210
+- exact-evidence paper: #eeeee7
+- incident signal: #ff684f
+- confirmed/action signal: #d9ff63
+- technical secondary: #9fb8ff
 
-Primary:
-- deep green-black — #071107
-- mineral gray — #E9E9E9
-- sage — #B6C9B1
-- forest signal — #235F24
+Color has a job. Incident red means disputed/flagged state. Lime means active/confirmed/action. The evidence column deliberately flips to a light working surface so exact text feels materially different from navigation chrome.
 
-Secondary:
-- moss — #3F483F
-- umber — #775B3D
-
-The previous vermilion / purple AI-dashboard palette has been removed from the new flagship surfaces.
+### Typography
+- Clash Display: incident identity, counts, high-level state
+- Satoshi: product UI, dense data, prose
+- system monospace: citations, docket metadata, hashes
 
 ### Flagship composition
 
-The recorded incident is no longer:
-sidebar → middle panel → inspector.
+The recorded incident is now:
 
-It is now:
+1. incident identity + source facts
+2. horizontal investigation timeline
+3. court finding band
+4. disputed dependency rail
+5. dependency × filing blast-radius matrix
+6. paired exact evidence on a contrasting evidence surface
+7. affected filings
+8. provenance on demand
 
-1. incident identity
-2. **05 → 02** as the primary visual fact
-3. horizontal dependency rail
-4. dependency × filing blast-radius ledger
-5. source evidence and affected-work evidence shown as one paired spread
-6. affected filing strip
-7. provenance only on request
+The visual object is still the relationship itself.
 
-The relationship itself is the visual object.
+## Mobile rule
 
-### Quick Trace
+Mobile does not shrink the desktop command center. It becomes a vertical investigation:
 
-No metric-card dashboard.
+incident → court finding → dependencies → trace → affected work → exact evidence.
 
-It is:
-- one large citation input
-- one confirmed / checked ratio
-- one evidence ledger
-- one source-evidence sheet
+The matrix remains horizontally inspectable rather than being crushed into unreadable cells.
 
-### Corpus
+## Product-specific kill test
 
-No dashed upload card floating in whitespace.
+Hide the RECALL wordmark.
 
-It is:
-- one full-height local-work intake surface
-- document → authority count transition
-- one authority ledger
+A viewer should still see:
+court finding → disputed dependency → filed motion → exact evidence.
 
-## Product-specific rule
-
-A screenshot with the RECALL wordmark hidden should still communicate:
-
-incident source → disputed dependency → affected filing → exact evidence
-
-If the composition can be relabeled as CRM, support, analytics, or project management without structural change, it fails this audit.
+If the structure can be relabeled as CRM, analytics, project management, or a generic security dashboard without changing the composition, it fails.

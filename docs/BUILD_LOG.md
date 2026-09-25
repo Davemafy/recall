@@ -112,25 +112,28 @@ New direction:
 The UI is intentionally not styled as “legal tech.” Product truth remains legal; visual language is drawn from contemporary fintech/workspace/data-product references.
 
 
-## M8 — anti-slop visual reset
+## M9 — incident command reset / deployment-conserving batch
 
-The previous incident UI still read as generated product chrome, so the visual system was rebuilt again around a stricter type-led composition.
+Rebuilt the visual hierarchy around the supplied #INC-2050 incident-response reference without copying its brand, charts, or security semantics.
 
-Changes:
-- replaced the flagship three-panel workspace with a borderless incident canvas
-- made the core fact — 5 disputed dependencies → 2 filed motions — the primary visual object
-- moved dependencies into a horizontal rail rather than a conventional sidebar
-- rebuilt the blast radius as a ruled dependency × filing ledger
-- paired incident-source evidence and affected-work evidence in one split spread
-- removed generic metric cards, rounded shells, badge soup, decorative graph UI, and inspector-sidebars from the flagship
-- switched typography to Clash Display + Satoshi from Fontshare
-- replaced the previous AI-dashboard accent palette with mineral gray / green-black / sage / forest green
-- rebuilt Quick Trace as a single evidence ledger with a confirmed/checked ratio
-- rebuilt Corpus import and imported-corpus incidents around ledgers instead of drag-card / graph-dashboard patterns
-- documented the explicit anti-slop audit in docs/UI_AUDIT.md
+Material changes:
+- incident identity and court-source facts now lead the flagship experience
+- added a horizontal investigation timeline: court finding → dependencies → trace → affected work → exact evidence
+- kept the five disputed dependencies visible as an operational rail
+- rebuilt the dependency × filing matrix as the central blast-radius surface
+- moved exact evidence into a contrasting paper surface so source proof is materially distinct from navigation chrome
+- preserved direct side-by-side incident-source / affected-work evidence
+- rebuilt landing, incident creation, Quick Trace, Corpus, and imported-corpus incident surfaces into the same command-surface system
+- retained deterministic recorded mode and all existing CourtListener / RECAP / Firecrawl semantics
+- added intentional mobile ordering instead of shrinking the desktop workspace
 
-Reference direction:
-- Halo Design Studio — Tetra (Swiss grid, massive typography, borderless composition, restrained palette)
-- Fontshare — Clash Display + Satoshi pairing
+Visual references:
+- #INC-2050 incident-management dashboard: incident identity, horizontal event rail, dense operational geometry
+- Linear 2026 visual refresh: supporting chrome recedes; the task surface owns attention
+- Attio / Ramp / Vercel / Mercury / observability tools: quiet chrome, table density, color reserved for state
 
-No legal-tech visual conventions were used as the design reference.
+Workflow change:
+- this work is prepared as one coherent batch on a non-production branch
+- production remains on the last READY deployment during validation
+- GitHub CI / build / Playwright are the validation loop
+- Vercel receives one final production deployment only after the branch is green and the deployment cap resets

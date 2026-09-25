@@ -2,36 +2,41 @@
 
 ## Confirmed citation
 
-A citation dependency requires reporter + volume + first page canonical identity. Pin pages do not create new authorities.
+A relationship is confirmed only when deterministic evidence ties the target document to the incident dependency.
 
-A short citation such as `Warhol, 598 U.S. at 526` is only confirmable when case-name context anchors it to the incident authority. Reporter + volume alone is not enough.
+Supported confirmation paths include:
+- reporter / volume / first-page canonical identity;
+- conservative short-form authority matching;
+- normalized exact incident-dependency text for non-standard identifiers such as a Westlaw citation.
 
-## Confirmed quotation
+## Confirmed quote
 
-Quotation confirmation requires conservative normalized textual overlap. Unicode punctuation, whitespace, and ellipsis variation may normalize away; substantive words do not.
+A quotation relationship requires deterministic normalized phrase / quote overlap above the conservative threshold.
+
+Paraphrase is not quote reuse.
 
 ## Possible proposition
 
-Proposition similarity is always review-only and cannot create a confirmed edge or enter a confirmed blast-radius count.
+Lexical / semantic similarity can only produce `POSSIBLE_RELATED_PROPOSITION`.
 
-## Candidate
+Possible relationships are excluded from confirmed impact counts.
 
-A CourtListener search result with no independently checkable deterministic occurrence remains `CANDIDATE_UNCONFIRMED`.
+## Exclusions
 
-## Metadata
+The engine must not create confirmed dependency merely from:
+- same case name;
+- same surname;
+- same topic;
+- chronological order;
+- provider ranking;
+- a search result;
+- critical discussion saying an authority is invalid.
 
-Public filing date, court, docket number, and case name come from public-source metadata when present. Imported status/matter/version fields come only from explicit user metadata. Unknown values remain unknown.
+## Unknowns
 
-## Critical discussion
+Unavailable source text → candidate unconfirmed.
+API error → source state.
+Unresolved authority → unresolved.
+Missing docket metadata → disclosed unknown.
 
-A local/imported document that cites an incident authority solely to say it is invalid, fabricated, unverifiable, or should not be relied upon is not automatically treated as dependent work.
-
-## Language
-
-Use:
-- appears in
-- confirmed occurrence
-- also found in
-- contains a confirmed dependency
-
-Avoid claims of copying, spread, propagation, or causation unless explicit provenance supports them.
+None becomes a factual conclusion.

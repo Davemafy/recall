@@ -11,7 +11,8 @@
     "test": "node --test test/*.test.mjs",
     "bench": "node bench/run.mjs",
     "e2e": "playwright test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "bench:live": "node bench/live-run.mjs"
   },
   "dependencies": {
     "next": "^15.5.3",

@@ -1,20 +1,29 @@
 import Link from 'next/link';
 
 export default function Home(){
-  return <main className="landing liveLanding">
-    <header className="mast"><div className="wordmark">RECALL</div><div className="mastNote">LEGAL INCIDENT RESPONSE</div></header>
-    <section className="hero traceLandingHero">
-      <div className="heroIndex">PUBLIC FILING DEPENDENCY TRACE</div>
-      <h1>One hallucination.<br/><em>Find every filing it touched.</em></h1>
-      <p className="heroCopy">Trace a bad legal authority or quotation through public federal filing data available through CourtListener / RECAP, then verify each dependency against source text.</p>
-      <form className="landingTraceForm" action="/trace" method="get">
-        <label htmlFor="q">Enter a citation, case, or quotation</label>
-        <div><input id="q" name="q" defaultValue="598 U.S. 508" placeholder="410 U.S. 113"/><button type="submit">TRACE REAL FILINGS <span>→</span></button></div>
-        <small>Examples: 410 U.S. 113 · 123 F.4th 456 · paste a disputed quotation</small>
-      </form>
-      <div className="heroActions"><Link className="button ghost" href="/corpus">Import my corpus</Link><Link className="button ghost" href="/demo">Run recorded public demo</Link></div>
-      <p className="micro">Search result ≠ confirmed dependency. RECALL independently checks available filing text before counting it.</p>
+  return <main className="founderLanding">
+    <header className="productBar">
+      <div className="productWordmark">RECALL</div>
+      <div className="productContext">Legal incident response</div>
+      <Link href="/trace" className="quietTopLink">Quick trace</Link>
+    </header>
+
+    <section className="founderHero">
+      <div className="entryEyebrow">LEGAL INCIDENT RESPONSE</div>
+      <h1>One hallucination.<br/><span>Find every filing it touched.</span></h1>
+      <p>Turn a bad legal citation into an incident. Trace every confirmed occurrence across public filings and your own legal work.</p>
+      <div className="founderActions">
+        <Link className="founderPrimary" href="/incident">Open incident <span>→</span></Link>
+        <Link href="/trace">Trace authority</Link>
+        <Link href="/corpus">Import corpus</Link>
+      </div>
+      <Link className="recordedDemoLink" href="/incident/demo"><span>RECORDED PUBLIC INCIDENT</span> Johnson v. Dunn — five problematic citations across two motions <b>→</b></Link>
     </section>
-    <section className="landingRule"><div className="ruleNumber">02</div><div><div className="heroIndex">THE OPERATIONAL QUESTION</div><h2>Finding the hallucination was only the beginning.</h2></div><p>Confirmed citation and quotation evidence stays separate from possible proposition matches. Similarity never becomes provenance.</p></section>
+
+    <section className="productPremise">
+      <div><span>01</span><strong>Incident</strong><p>A court, reviewer or lawyer identifies a dependency that deserves review.</p></div>
+      <div><span>02</span><strong>Trace</strong><p>RECALL searches public filings and independently confirms exact occurrences.</p></div>
+      <div><span>03</span><strong>Evidence</strong><p>Every confirmed relationship opens directly to the source language that supports it.</p></div>
+    </section>
   </main>
 }

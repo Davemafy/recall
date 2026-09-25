@@ -33,7 +33,7 @@ function RecordedResult():TraceResult{
        }:edge.evidence
      };
    });
-   const primary=relationships.find((r:any)=>r.classification==='CONFIRMED_CITATION_DEPENDENCY')||relationships.find((r:any)=>r.classification==='CONFIRMED_QUOTE_REUSE')||relationships.find((r:any)=>r.classification==='POSSIBLE_DERIVED_CLAIM');
+   const primary=relationships.find((r:any)=>r.classification==='CONFIRMED_CITATION_DEPENDENCY')||relationships.find((r:any)=>r.classification==='CONFIRMED_QUOTE_REUSE')||relationships.find((r:any)=>r.classification==='POSSIBLE_RELATED_PROPOSITION');
    return {...d,snippet:d.sourceCapture?.segments?.[0]?.text||'',relationships,classification:primary?.classification||'CANDIDATE_UNCONFIRMED',evidence:primary?.evidence||null};
  });
  return {...raw,ok:true,sourceState:'RECORDED',documents};
@@ -75,7 +75,7 @@ export default function PublicTrace({recorded=false,initialInput=''}:{recorded?:
  const summary=result?.summary;
  const confirmed=docs.filter(isConfirmed);
  const candidates=docs.filter(d=>d.classification==='CANDIDATE_UNCONFIRMED');
- const possible=docs.filter(d=>d.classification==='POSSIBLE_RELATED_PROPOSITION'||d.classification==='POSSIBLE_DERIVED_CLAIM');
+ const possible=docs.filter(d=>d.classification==='POSSIBLE_RELATED_PROPOSITION'||d.classification==='POSSIBLE_RELATED_PROPOSITION');
  const label=recorded?'RECORDED PUBLIC TRACE':result?.sourceState==='CACHED'?`CACHED PUBLIC SOURCE — checked ${dateLabel(result.checkedAt||result.retrievedAt)}`:'LIVE PUBLIC SOURCE';
  return <main className="publicTracePage">
    <header className="workMast"><Link href="/" className="wordmark">RECALL</Link><div className="incidentCrumb">{recorded?'Recorded evidence replay':'Trace real filings'}</div><div className={`sourceMode ${recorded?'recorded':'live'}`}>{label}</div></header>

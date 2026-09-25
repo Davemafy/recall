@@ -185,3 +185,6 @@ After first full-viewport visual review, the authored Figma cockpit was adapted 
 - compressed lower-panel rhythm so more of the working surface enters the first viewport
 
 This commit exists only to refresh the branch preview after Vercel skipped automatic deployment of the validated UI commit. It will be squashed before merge.
+
+
+Preview refresh: precision pass for the live laptop review (shorter timeline, readable filing matrix, contained evidence stream, quieter dependency actions and theme control).

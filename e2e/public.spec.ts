@@ -33,8 +33,14 @@ test('live trace renders mocked CourtListener result without fixture fallback',a
   await expect(page.getByText('Public filing').first()).toBeVisible();
 });
 
-test('corpus mode accepts local files',async({page})=>{
+test('corpus mode ingests local text and opens an incident with the shared engine',async({page})=>{
   await page.goto('/corpus');
   await expect(page.getByText('Bring the work.')).toBeVisible();
-  await expect(page.locator('input[type=file]')).toBeAttached();
+  const input=page.locator('input[type=file]');
+  await input.setInputFiles({name:'brief.txt',mimeType:'text/plain',buffer:Buffer.from('The filing relies on Brown v. Board, 347 U.S. 483, 495. The same authority governs this issue.')});
+  await expect(page.getByText(/1 documents/i)).toBeVisible();
+  await expect(page.getByText(/1 authorities found/i)).toBeVisible();
+  await page.getByRole('button',{name:/347 U\.S\. 483/i}).click();
+  await expect(page.getByText(/CONFIRMED DOCS/i)).toBeVisible();
+  await expect(page.getByText('347 U.S. 483').first()).toBeVisible();
 });

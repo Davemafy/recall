@@ -1,12 +1,12 @@
-import type { Metadata } from 'next';
+import type {Metadata} from 'next';
 import './globals.css';
-import './recall-command.css';
+import './figma-cockpit.css';
 
-export const metadata: Metadata = {
-  title: 'RECALL — Legal incident response',
-  description: 'Trace the blast radius after a bad legal authority enters a body of legal work.'
+export const metadata:Metadata={
+  title:'RECALL — Legal incident response',
+  description:'Trace where a disputed legal dependency appears and inspect the exact evidence.'
 };
 
-export default function RootLayout({children}:{children:React.ReactNode}) {
+export default function RootLayout({children}:{children:React.ReactNode}){
   return <html lang="en"><body>{children}</body></html>
 }

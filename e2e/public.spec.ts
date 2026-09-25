@@ -1,24 +1,19 @@
 import {test,expect} from '@playwright/test';
 
-test('landing makes incident response primary and keeps quick trace and corpus secondary',async({page})=>{
+test('landing is the incident cockpit from the Figma design',async({page})=>{
   await page.goto('/');
-  await expect(page.getByText('One hallucination.')).toBeVisible();
-  await expect(page.getByRole('link',{name:/Open incident/i})).toBeVisible();
-  await expect(page.getByRole('link',{name:/Trace authority/i})).toBeVisible();
-  await expect(page.getByRole('link',{name:/Import corpus/i})).toBeVisible();
   await expect(page.getByText('Johnson v. Dunn',{exact:true}).first()).toBeVisible();
+  await expect(page.getByRole('button',{name:/Trace impact/i})).toBeVisible();
+  await expect(page.getByText('Disputed Dependencies',{exact:true}).first()).toBeVisible();
+  await expect(page.getByText('Incident Timeline',{exact:true})).toBeVisible();
 });
 
-test('recorded incident flows from court source to dependency matrix to exact evidence',async({page})=>{
+test('recorded incident flows from source to affected filing evidence',async({page})=>{
   await page.goto('/incident/demo');
-  await expect(page.getByText('RECORDED PUBLIC INCIDENT',{exact:false}).first()).toBeVisible();
-  await expect(page.getByRole('heading',{name:'Johnson v. Dunn'})).toBeVisible();
-  await expect(page.getByText(/five problematic citations across two motions/i)).toBeVisible();
-  await expect(page.getByText('Wilson v. Jackson',{exact:true}).first()).toBeVisible();
-  await expect(page.getByText('2006 WL 8438651',{exact:true}).first()).toBeVisible();
-
+  await expect(page.getByText('Johnson v. Dunn',{exact:true}).first()).toBeVisible();
+  await expect(page.getByText(/Disputed Dependencies/i).first()).toBeVisible();
   await page.getByRole('button',{name:/Trace impact/i}).click();
-  await expect(page.getByText(/5 confirmed relationships/i)).toBeVisible();
+  await expect(page.getByRole('status')).toHaveText('5 confirmed relationships');
   await expect(page.getByRole('region',{name:/Dependency by filing matrix/i})).toBeVisible();
 
   const cell=page.getByRole('button',{name:/Wilson v\. Jackson.*Confirmed citation.*Document 174/i});
@@ -33,9 +28,9 @@ test('recorded incident flows from court source to dependency matrix to exact ev
   await expect(page.getByText(/Incident evidence SHA-256/i)).toBeVisible();
 });
 
-test('legacy /demo points at the recorded incident experience',async({page})=>{
+test('legacy /demo points at the recorded incident cockpit',async({page})=>{
   await page.goto('/demo');
-  await expect(page.getByRole('heading',{name:'Johnson v. Dunn'})).toBeVisible();
+  await expect(page.getByText('Johnson v. Dunn',{exact:true}).first()).toBeVisible();
   await expect(page.getByRole('button',{name:/Trace impact/i})).toBeVisible();
 });
 
@@ -63,6 +58,6 @@ test('corpus mode ingests local text and opens an incident with the shared engin
   await expect(page.locator('.importSummary')).toContainText('1documents');
   await expect(page.locator('.importSummary')).toContainText('1authorities found');
   await page.getByRole('button',{name:/347 U\.S\. 483/i}).click();
-  await expect(page.getByText(/CONFIRMED DOCS/i)).toBeVisible();
+  await expect(page.locator('.fc-state-chip')).toContainText('CONFIRMED DOCS 1');
   await expect(page.getByText('347 U.S. 483').first()).toBeVisible();
 });

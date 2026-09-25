@@ -3,6 +3,7 @@
 
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
+import {useEffect,useState} from 'react';
 import type {ReactNode} from 'react';
 
 const nav=[
@@ -12,6 +13,9 @@ const nav=[
   {href:'/corpus',label:'Corpus',icon:'/recall-figma/cursor.png'},
   {href:'/incident/demo',label:'Recorded incident',icon:'/recall-figma/user.png'}
 ];
+
+type Menu='status'|'settings'|'profile'|null;
+type Theme='dark'|'light';
 
 export function SummaryCards({items}:{items:Array<{label:string;value:string;icon?:'horizontal'|'vertical'}>}){
   return <section className="fc-summary" aria-label="Incident summary">
@@ -41,30 +45,63 @@ export default function CockpitShell({
   children:ReactNode;
 }){
   const pathname=usePathname();
-  return <main className="fc-scene">
-    <div className="fc-rim-top" aria-hidden/>
-    <div className="fc-rim-side" aria-hidden/>
+  const [menu,setMenu]=useState<Menu>(null);
+  const [theme,setTheme]=useState<Theme>('dark');
+
+  useEffect(()=>{
+    const stored=window.localStorage.getItem('recall-theme');
+    if(stored==='light'||stored==='dark') setTheme(stored);
+  },[]);
+
+  const setAppearance=(next:Theme)=>{
+    setTheme(next);
+    window.localStorage.setItem('recall-theme',next);
+  };
+
+  const isActive=(href:string)=>{
+    if(href==='/') return pathname==='/';
+    if(href==='/incident') return pathname==='/incident';
+    if(href==='/incident/demo') return pathname==='/incident/demo'||pathname==='/demo';
+    return pathname===href||pathname.startsWith(href+'/');
+  };
+
+  const toggle=(next:Exclude<Menu,null>)=>setMenu(current=>current===next?null:next);
+
+  return <main className="fc-scene" data-theme={theme}>
     <section className="fc-dashboard">
       <aside className="fc-sidebar">
         <div className="fc-side-main">
           <Link href="/" className="fc-brand" aria-label="RECALL home">R</Link>
           <nav className="fc-primary-nav" aria-label="Primary">
-            {nav.map(item=>{
-              const active=item.href==='/'?pathname===item.href:pathname.startsWith(item.href);
-              return <Link key={item.href} href={item.href} className={'fc-nav-item '+(active?'is-active':'')} aria-label={item.label} title={item.label}>
-                <img src={item.icon} alt=""/>
-              </Link>
-            })}
+            {nav.map(item=><Link
+              key={item.href}
+              href={item.href}
+              className={'fc-nav-item '+(isActive(item.href)?'is-active':'')}
+              aria-label={item.label}
+              aria-current={isActive(item.href)?'page':undefined}
+              title={item.label}
+            >
+              <img src={item.icon} alt=""/>
+            </Link>)}
           </nav>
         </div>
+
         <div className="fc-utility-nav">
-          <button className="fc-nav-item" aria-label="Settings" title="Settings"><img src="/recall-figma/settings.png" alt=""/></button>
+          <button className={'fc-nav-item '+(menu==='settings'?'is-active':'')} aria-label="Settings" title="Settings" aria-expanded={menu==='settings'} onClick={()=>toggle('settings')}><img src="/recall-figma/settings.png" alt=""/></button>
           <Link className="fc-nav-item" href="/" aria-label="Return to dashboard" title="Return to dashboard"><img src="/recall-figma/logout.png" alt=""/></Link>
-          <div className="fc-theme-switch" aria-label="Dark theme selected">
-            <span><img src="/recall-figma/sun.png" alt=""/></span>
-            <span className="is-selected"><img src="/recall-figma/moon.png" alt=""/></span>
+          <div className="fc-theme-switch" role="group" aria-label="Appearance">
+            <button className={theme==='light'?'is-selected':''} aria-label="Use light theme" aria-pressed={theme==='light'} onClick={()=>setAppearance('light')}><img src="/recall-figma/sun.png" alt=""/></button>
+            <button className={theme==='dark'?'is-selected':''} aria-label="Use dark theme" aria-pressed={theme==='dark'} onClick={()=>setAppearance('dark')}><img src="/recall-figma/moon.png" alt=""/></button>
           </div>
         </div>
+
+        {menu==='settings'&&<div className="fc-popover fc-settings-popover" role="dialog" aria-label="Interface settings">
+          <div className="fc-popover-kicker">INTERFACE</div>
+          <strong>Settings</strong>
+          <p>Appearance is stored only in this browser.</p>
+          <div className="fc-setting-row"><span>Theme</span><div><button className={theme==='light'?'is-selected':''} onClick={()=>setAppearance('light')}>Light</button><button className={theme==='dark'?'is-selected':''} onClick={()=>setAppearance('dark')}>Dark</button></div></div>
+          <Link href="/corpus" onClick={()=>setMenu(null)}>Open local corpus settings ↗</Link>
+        </div>}
       </aside>
 
       <div className="fc-main">
@@ -73,16 +110,31 @@ export default function CockpitShell({
             <p className="fc-page-title">{pageTitle}</p>
             <div className="fc-account-controls">
               <div className="fc-quick-actions">
-                <Link href="/trace" className="fc-header-action" aria-label="Search public filings"><img src="/recall-figma/search.png" alt=""/></Link>
-                <button className="fc-header-action" aria-label="Incident status"><img src="/recall-figma/bell.png" alt=""/><i/></button>
+                <Link href="/trace" className="fc-header-action" aria-label="Search public filings" title="Quick trace"><img src="/recall-figma/search.png" alt=""/></Link>
+                <button className={'fc-header-action '+(menu==='status'?'is-active':'')} aria-label="Incident status" aria-expanded={menu==='status'} title="Incident status" onClick={()=>toggle('status')}><img src="/recall-figma/bell.png" alt=""/><i/></button>
               </div>
-              <div className="fc-profile">
+              <button className={'fc-profile '+(menu==='profile'?'is-active':'')} aria-label="Open RECALL workspace menu" aria-expanded={menu==='profile'} onClick={()=>toggle('profile')}>
                 <span className="fc-profile-mark">R</span>
                 <span className="fc-profile-copy"><strong>RECALL</strong><small>{status}</small></span>
                 <img className="fc-chevron" src="/recall-figma/chevron.png" alt=""/>
-              </div>
+              </button>
             </div>
           </div>
+
+          {menu==='status'&&<div className="fc-popover fc-status-popover" role="dialog" aria-label="Workspace status">
+            <div className="fc-popover-kicker">WORKSPACE STATUS</div>
+            <strong>{status}</strong>
+            <p>Confirmed relationships require source evidence. Search results and semantic similarity remain unconfirmed.</p>
+            <Link href="/trace" onClick={()=>setMenu(null)}>Open Quick Trace ↗</Link>
+          </div>}
+
+          {menu==='profile'&&<div className="fc-popover fc-profile-popover" role="menu" aria-label="RECALL workspace menu">
+            <div className="fc-popover-kicker">RECALL</div>
+            <Link href="/incident/demo" role="menuitem" onClick={()=>setMenu(null)}>Recorded incident</Link>
+            <Link href="/trace" role="menuitem" onClick={()=>setMenu(null)}>Quick trace</Link>
+            <Link href="/corpus" role="menuitem" onClick={()=>setMenu(null)}>Local corpus</Link>
+          </div>}
+
           <div className="fc-incident-heading">
             <h1>{heading}, <span>{code}</span></h1>
             {action}

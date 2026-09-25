@@ -61,3 +61,27 @@ test('corpus mode ingests local text and opens an incident with the shared engin
   await expect(page.locator('.fc-state-chip')).toContainText('CONFIRMED DOCS 1');
   await expect(page.getByText('347 U.S. 483').first()).toBeVisible();
 });
+
+
+test('shared shell navigation and visible controls are functional',async({page})=>{
+  await page.goto('/incident/demo');
+
+  await expect(page.locator('.fc-nav-item.is-active')).toHaveCount(1);
+  await expect(page.getByRole('link',{name:'Recorded incident'}).first()).toHaveAttribute('aria-current','page');
+
+  await page.getByRole('button',{name:'Incident status'}).click();
+  await expect(page.getByRole('dialog',{name:'Workspace status'})).toBeVisible();
+  await expect(page.getByText(/Confirmed relationships require source evidence/)).toBeVisible();
+
+  await page.getByRole('button',{name:'Open RECALL workspace menu'}).click();
+  await expect(page.getByRole('menu',{name:'RECALL workspace menu'})).toBeVisible();
+  await expect(page.getByRole('menuitem',{name:'Quick trace'})).toHaveAttribute('href','/trace');
+
+  await page.getByRole('button',{name:'Settings'}).click();
+  await expect(page.getByRole('dialog',{name:'Interface settings'})).toBeVisible();
+
+  await page.getByRole('button',{name:'Use light theme'}).click();
+  await expect(page.locator('.fc-scene')).toHaveAttribute('data-theme','light');
+  await page.getByRole('button',{name:'Use dark theme'}).click();
+  await expect(page.locator('.fc-scene')).toHaveAttribute('data-theme','dark');
+});

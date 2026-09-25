@@ -163,7 +163,7 @@ test('recorded provenance hashes exact stored source spans',()=>{
 test('simple exact trace stays inside the CourtListener request budget and hydration concurrency is at most two',async()=>{
   const original=global.fetch;
   let active=0,maxActive=0;
-  global.fetch=async(url,options={})=>{
+  global.fetch=async(url)=>{
     active++;maxActive=Math.max(maxActive,active);
     try{
       const value=String(url);

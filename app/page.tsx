@@ -53,7 +53,7 @@ export default function Home(){
         </div>
         <Link href="/incident/demo" className="recallHomePreviewFooter">
           <span>Every confirmed edge opens to exact source evidence.</span>
-          <b>Open incident ↗</b>
+          <b>Inspect recorded incident ↗</b>
         </Link>
       </div>
     </section>

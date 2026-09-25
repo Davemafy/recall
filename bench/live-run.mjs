@@ -18,7 +18,8 @@ for(const authority of authorities){
     candidates:trace.summary?.candidateUnconfirmedCount??0,
     sourceUrls:(trace.documents||[]).map(d=>d.documentUrl||d.sourceUrl).filter(Boolean),
     coverage:trace.coverage||null,
-    retrievedAt:trace.retrievedAt||null
+    retrievedAt:trace.retrievedAt||null,
+    requestBudget:trace.diagnostics?{courtlistenerRequests:trace.diagnostics.courtlistenerRequests,firecrawlRequests:trace.diagnostics.firecrawlRequests,cacheHits:trace.diagnostics.cacheHits,documentsHydrated:trace.diagnostics.documentsHydrated,searchPassesUsed:trace.diagnostics.searchPassesUsed}:null
   });
 }
 const successes=results.filter(r=>r.ok).length;

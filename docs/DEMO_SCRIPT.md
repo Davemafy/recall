@@ -17,7 +17,7 @@ Open the stable `/demo` replay.
 Point to:
 **RECORDED PUBLIC TRACE — captured Sep 25, 2026**
 
-“These are real public RECAP source documents captured for a deterministic recording.”
+“These are exact source excerpts captured from real public RECAP filings. Each stored excerpt and each displayed evidence span has its own SHA-256. RECALL only shows an original-file hash if that PDF was actually downloaded during capture.”
 
 **0:40–0:58**
 
@@ -32,10 +32,13 @@ Open the Thomson Reuters / Ross filing.
 
 Show:
 - D. Del. docket metadata;
-- exact `598 U.S. 508` occurrence;
-- deterministic citation rule;
-- content hash;
+- exact `598 U.S. 508` evidence span;
+- PDF page and capture-time extracted-text line provenance;
+- evidence-span SHA-256;
+- captured-excerpt SHA-256;
 - **Open public source**.
+
+Do not describe either excerpt hash as a hash of the entire PDF.
 
 **1:18–1:38**
 
@@ -43,7 +46,7 @@ Show the quotation relationship:
 
 > “further purpose or different character”
 
-The same short Warhol quotation is present in the Thomson/Ross and Kadrey public filings. RECALL treats it as confirmed quotation reuse because the words can be compared deterministically.
+The same verbatim phrase appears in the stored public-source excerpts for Thomson/Ross and Kadrey. RECALL treats the phrase occurrence as deterministic quotation evidence.
 
 **1:38–1:53**
 

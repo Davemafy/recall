@@ -13,6 +13,7 @@ test('recorded public demo exposes real source evidence',async({page})=>{
   await expect(page.getByText('RECORDED PUBLIC TRACE').first()).toBeVisible();
   await expect(page.getByText(/Andy Warhol Foundation/).first()).toBeVisible();
   await expect(page.getByText('3',{exact:true}).first()).toBeVisible();
+  await expect(page.getByText('2',{exact:true}).first()).toBeVisible();
   await page.getByRole('button',{name:/Memorandum Opinion/i}).first().click();
   await expect(page.getByText('PUBLIC FILING EVIDENCE')).toBeVisible();
   await expect(page.getByRole('link',{name:/Open public source/i})).toHaveAttribute('href',/storage\.courtlistener\.com/);
@@ -38,8 +39,8 @@ test('corpus mode ingests local text and opens an incident with the shared engin
   await expect(page.getByText('Bring the work.')).toBeVisible();
   const input=page.locator('input[type=file]');
   await input.setInputFiles({name:'brief.txt',mimeType:'text/plain',buffer:Buffer.from('The filing relies on Brown v. Board, 347 U.S. 483, 495. The same authority governs this issue.')});
-  await expect(page.getByText(/1 documents/i)).toBeVisible();
-  await expect(page.getByText(/1 authorities found/i)).toBeVisible();
+  await expect(page.locator('.importSummary')).toContainText('1documents');
+  await expect(page.locator('.importSummary')).toContainText('1authorities found');
   await page.getByRole('button',{name:/347 U\.S\. 483/i}).click();
   await expect(page.getByText(/CONFIRMED DOCS/i)).toBeVisible();
   await expect(page.getByText('347 U.S. 483').first()).toBeVisible();

@@ -4,7 +4,7 @@ import Link from 'next/link';
 // @ts-ignore shared recorded source fixture
 import {getRecordedPublicTrace,recordedEvidenceFor} from '../lib/recorded-public-trace.mjs';
 // @ts-ignore Shared domain constants are intentionally consumed by browser and Node code.
-import {RELATIONSHIP_STATE,relationshipLabel} from '../lib/domain.mjs';
+import {RELATIONSHIP_STATE} from '../lib/domain.mjs';
 
 type TraceDoc={
  id:string; title?:string|null; docketId?:string|null; docketNumber?:string|null; caseName?:string|null; court?:string|null; filingDate?:string|null;
@@ -36,7 +36,7 @@ function RecordedResult():TraceResult{
      };
    });
    const primary=relationships.find((r:any)=>r.classification===RELATIONSHIP_STATE.CONFIRMED_CITATION)||relationships.find((r:any)=>r.classification===RELATIONSHIP_STATE.CONFIRMED_QUOTE)||relationships.find((r:any)=>r.classification===RELATIONSHIP_STATE.POSSIBLE);
-   return {...d,snippet:d.sourceCapture?.segments?.[0]?.text||'',relationships,classification:primary?.classification||'CANDIDATE_UNCONFIRMED',evidence:primary?.evidence||null};
+   return {...d,snippet:d.sourceCapture?.segments?.[0]?.text||'',relationships,classification:primary?.classification||RELATIONSHIP_STATE.UNCONFIRMED,evidence:primary?.evidence||null};
  });
  return {...raw,ok:true,sourceState:'RECORDED',documents};
 }
@@ -77,7 +77,7 @@ export default function PublicTrace({recorded=false,initialInput=''}:{recorded?:
  const summary=result?.summary;
  const confirmed=docs.filter(isConfirmed);
  const candidates=docs.filter(d=>d.classification===RELATIONSHIP_STATE.UNCONFIRMED);
- const possible=docs.filter(d=>d.classification===RELATIONSHIP_STATE.POSSIBLE||d.classification===RELATIONSHIP_STATE.POSSIBLE);
+ const possible=docs.filter(d=>d.classification===RELATIONSHIP_STATE.POSSIBLE);
  const label=recorded?'RECORDED PUBLIC TRACE':result?.sourceState==='CACHED'?`CACHED PUBLIC SOURCE — checked ${dateLabel(result.checkedAt||result.retrievedAt)}`:'LIVE PUBLIC SOURCE';
  return <main className="publicTracePage">
    <header className="workMast"><Link href="/" className="wordmark">RECALL</Link><div className="incidentCrumb">{recorded?'Recorded evidence replay':'Trace real filings'}</div><div className={`sourceMode ${recorded?'recorded':'live'}`}>{label}</div></header>

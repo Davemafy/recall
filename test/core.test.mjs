@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {extractCitations,canonicalId,quoteSimilarity,classifySnippet,analyzeCorpus,remediationFor,INCIDENT_QUOTE} from '../lib/recall-core.mjs';
+import {extractCitations,canonicalId,quoteSimilarity,classifySnippet,analyzeCorpus,remediationFor,deriveIncidentContext,INCIDENT_QUOTE} from '../lib/recall-core.mjs';
 import {createDemoCorpus} from '../lib/demo-corpus.mjs';
 
 test('parses reporter citations and pin cites into one authority',()=>{
@@ -33,4 +33,10 @@ test('remediation prioritizes filed confirmed work',()=>{
 test('possible edges stay out of confirmed counts',()=>{
  const a=analyzeCorpus(createDemoCorpus());
  assert.equal(a.summary.confirmedAffectedDocuments,a.confirmedDocs.length);
+});
+
+test('real corpus derives incident quote/proposition without inventing lineage',()=>{
+ const docs=createDemoCorpus();
+ const ctx=deriveIncidentContext(docs,{canonicalId:canonicalId(999,'F.4th',123)});
+ assert.ok(ctx.quote.length>20 || ctx.proposition.length>20);
 });

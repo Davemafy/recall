@@ -27,6 +27,8 @@ export default function Home(){
         <p>Turn a bad legal dependency into an incident. RECALL traces exact occurrences across public filings and your own work — with evidence for every confirmed relationship.</p>
         <div className="recallHomeActions">
           <Link className="recallHomePrimary" href="/incident">Open incident <span>↗</span></Link>
+          <Link href="/trace">Trace authority</Link>
+          <Link href="/corpus">Import corpus</Link>
           <Link href="/incident/demo">Run recorded incident</Link>
         </div>
       </div>

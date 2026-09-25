@@ -1,41 +1,78 @@
-# Demo script — 2:25 target
+# Demo script — 2:30 target
 
 **0:00–0:12**
 
-“Finding a hallucinated case is only the beginning. The operational question is what happened after an authority entered the work.”
+“Finding a hallucinated case is only the beginning. The operational question is what happens after an authority enters the work.”
 
-**0:12–0:24**
+**0:12–0:25**
 
-Show RECALL landing. Enter a citation. Explain that live mode searches public federal filing data available through CourtListener / RECAP.
+Show the RECALL landing and the **TRACE REAL FILINGS** input.
 
-**0:24–0:38**
+“RECALL searches public federal filing data available through CourtListener / RECAP. Search is only retrieval — not proof.”
 
-Open the recorded public trace for recording stability. Point to **RECORDED PUBLIC TRACE** and the capture date.
+**0:25–0:40**
 
-**0:38–0:58**
+Open the stable `/demo` replay.
 
-Show `598 U.S. 508` and the three confirmed real public filing occurrences grouped into their actual dockets.
+Point to:
+**RECORDED PUBLIC TRACE — captured Sep 25, 2026**
+
+“These are real public RECAP source documents captured for a deterministic recording.”
+
+**0:40–0:58**
+
+Show `598 U.S. 508` and the three confirmed real filing occurrences grouped into their actual dockets.
+
+Do not say the authority is hallucinated. Say:
+“I’m using a real authority here so every source link can be checked.”
 
 **0:58–1:18**
 
-Open the Thomson Reuters / Ross filing. Show the exact citation evidence, docket metadata, content hash, and **Open public source** link.
+Open the Thomson Reuters / Ross filing.
+
+Show:
+- D. Del. docket metadata;
+- exact `598 U.S. 508` occurrence;
+- deterministic citation rule;
+- content hash;
+- **Open public source**.
 
 **1:18–1:38**
 
-Explain the rule: a CourtListener search hit is only a candidate. RECALL's own parser must find deterministic citation evidence before the filing enters confirmed totals.
+Show the quotation relationship:
 
-**1:38–1:52**
+> “further purpose or different character”
 
-Show the product law: quotation reuse can be confirmed textually; semantic proposition matches stay “Possible related proposition — human review required.”
+The same short Warhol quotation is present in the Thomson/Ross and Kadrey public filings. RECALL treats it as confirmed quotation reuse because the words can be compared deterministically.
 
-**1:52–2:10**
+**1:38–1:53**
 
-Show the factual date range and docket grouping. Say “appears in” and “confirmed occurrence,” not “copied” or “spread.”
+Explain the boundary:
 
-**2:10–2:25**
+“A proposition that only sounds similar never becomes confirmed. It stays: Possible related proposition — human review required.”
+
+**1:53–2:12**
+
+Show docket grouping and earliest/latest confirmed occurrence dates.
+
+Use:
+- “appears in”
+- “confirmed occurrence”
+- “also found in”
+
+Do not use:
+- “copied”
+- “spread”
+- “propagated”
+
+unless provenance actually establishes it.
+
+**2:12–2:30**
+
+Return to the landing or source map.
 
 “Citation checkers find the error. RECALL finds everywhere the error now matters.”
 
-End: **One hallucination. Find every filing it touched.**
+Final frame:
 
-Note for the video: the recorded authority is a real valid authority used solely to demonstrate the dependency-tracing mechanism. Do not imply it is hallucinated or invalid.
+**One hallucination. Find every filing it touched.**

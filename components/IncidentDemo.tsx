@@ -8,7 +8,7 @@ import {getRecordedIncident,JOHNSON_DUNN_ORDER_URL} from '../lib/recorded-incide
 import {RELATIONSHIP_STATE,relationshipLabel} from '../lib/domain.mjs';
 
 type Dependency={
-  id:string; rawText:string; canonicalCitation?:string; incidentFinding?:string;
+  id:string; rawText:string; canonicalCitation?:string; caseName?:string; incidentFinding?:string;
   incidentEvidence:{exactText:string;pdfPageNumber?:number;sha256:string;sourceUrl:string};
 };
 type Filing={

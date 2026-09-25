@@ -1,50 +1,70 @@
 # Submission notes
 
-**PROJECT:** RECALL
+**Project:** RECALL  
+**Category:** Legal incident response
 
-**ONE-SENTENCE PITCH:** RECALL traces a bad legal authority or quotation through real filings and shows every downstream document that now deserves review.
+**One sentence:** RECALL turns a source-backed bad legal dependency into an incident and traces every supported occurrence across public filings and imported legal work.
 
-**CORE LINE:** One hallucination. Find every filing it touched.
+**Core line:** One hallucination. Find every filing it touched.
 
-**CATEGORY:** Legal incident response.
+## Problem
 
-**NOT:** a citation checker, fake-case detector, seeded graph demo, semantic-search toy, or legal chatbot.
+Citation verification stops at discovery:
 
-## Differentiator
+> This citation is wrong.
 
-Citation checkers answer:
-> Is this citation valid?
+Legal teams still need to know what to inspect next:
 
-RECALL starts after an incident is opened and answers:
-> Where else does this legal dependency appear, and which relationships can actually be proven?
+> Where else does this dependency appear?
 
-CourtListener search is retrieval only. RECALL independently parses the available filing text before creating confirmed citation or quotation relationships. Semantic/lexical similarity remains a separate review category.
+RECALL is the incident-response layer between those two questions.
 
-## Real-world proof
+## Flagship demo
 
-The flagship product path searches public federal filing data available through CourtListener / RECAP.
+The recorded demo uses **Johnson v. Dunn**, No. 2:21-cv-01701-AMM (N.D. Ala.).
 
-The deterministic `/demo` uses source-backed excerpts from three real RECAP filings, preserving:
-- real public source URLs;
-- capture date;
-- source docket/court/date metadata;
-- content hashes.
+The public sanctions order identifies five problematic citations across two filed motions. RECALL preserves the exact sanctions-order language for each disputed dependency and renders the incident as a dependency × filing matrix:
 
-The recorded authority is valid `598 U.S. 508`; the replay exists to prove the dependency-tracing mechanism, not to call that authority erroneous.
+- four dependencies documented in Document 174;
+- one dependency documented in Document 182.
 
-## Safety / truth boundary
+The recorded fixture does **not** pretend that RECALL independently downloaded the original two motions. Those relationships are explicitly sourced to the sanctions order, which records the citation and filing/page where it appeared.
 
-- Search hit ≠ confirmed dependency.
-- Semantic resemblance ≠ lineage.
-- “Not found” ≠ fabricated.
-- API error ≠ fabricated.
-- Critical discussion of an authority is not automatically dependency.
-- Confirmed public relationships require deterministic text evidence.
-- Coverage is bounded and reported as candidates actually checked.
+## Technical execution
 
-## Coverage claim
+- deterministic citation canonicalization;
+- conservative quotation matching;
+- semantic / lexical similarity held to review-only;
+- live CourtListener / RECAP federal filing search;
+- RECAP extracted-text confirmation;
+- optional allowlisted Firecrawl content extraction fallback;
+- exact-first request strategy;
+- bounded CourtListener concurrency of 2;
+- Retry-After preservation and bounded retry;
+- authority/search/document/docket/extraction caches;
+- multi-dependency incident trace aggregation;
+- exact recorded-source hashes and provenance;
+- local imported-corpus mode;
+- request-budget regression tests.
 
-**Searches public federal filing data available through CourtListener / RECAP.**
+## Product moment
 
-Never claim:
-**Searches every U.S. court filing.**
+Open a real incident → see exactly what the court flagged → **Trace impact** → see which dependencies affect which filed motions → click a matrix cell → inspect the incident-source evidence and downstream occurrence together.
+
+## Truth boundary
+
+- search hit ≠ confirmed dependency;
+- semantic similarity ≠ confirmed lineage;
+- source failure ≠ factual conclusion;
+- unresolved authority ≠ fabricated authority;
+- public filing status is never invented;
+- docket totals count only known docket identifiers;
+- recorded evidence never claims direct-file provenance that was not captured.
+
+## Coverage
+
+Live mode searches public federal filing data available through CourtListener / RECAP. It is not a representation of every U.S. court filing.
+
+## AI / external services disclosure
+
+CourtListener / RECAP is used for public legal discovery and source metadata. Firecrawl, when configured, is used only as a content-extraction fallback for an already known allowlisted public filing URL. RECALL's confirmed dependency decision is deterministic and does not depend on an LLM verdict.

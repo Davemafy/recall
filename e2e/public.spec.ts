@@ -26,7 +26,7 @@ test('recorded incident flows from court source to dependency matrix to exact ev
   await cell.click();
 
   await expect(page.getByText('INCIDENT SOURCE')).toBeVisible();
-  await expect(page.locator('.recallVXFindingText')).toContainText(/no such case/i);
+  await expect(page.locator('.recallXFindingText')).toContainText(/no such case/i);
   await expect(page.getByText(/Dkt\. 174 at 2/)).toBeVisible();
   await expect(page.getByRole('link',{name:/Court order/i})).toHaveAttribute('href',/storage\.courtlistener\.com/);
   await page.getByRole('button',{name:/Provenance/i}).click();

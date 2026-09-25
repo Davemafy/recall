@@ -1,81 +1,60 @@
-# Demo script — 2:30 target
+# Demo script — target 2:25
 
 **0:00–0:12**
 
-“Finding a hallucinated case is only the beginning. The operational question is what happens after an authority enters the work.”
+“Finding a bad citation is incident detection. The harder question is what happens after it enters legal work.”
 
-**0:12–0:25**
+**0:12–0:27**
 
-Show the RECALL landing and the **TRACE REAL FILINGS** input.
+Open the recorded Johnson v. Dunn incident.
 
-“RECALL searches public federal filing data available through CourtListener / RECAP. Search is only retrieval — not proof.”
+“A federal sanctions order identified five problematic citations across two motions.”
 
-**0:25–0:40**
+Point to the court, docket, date, source-order link, and exact source language.
 
-Open the stable `/demo` replay.
+**0:27–0:43**
 
-Point to:
-**RECORDED PUBLIC TRACE — captured Sep 25, 2026**
+Scan the five disputed dependencies.
 
-“These are exact source excerpts captured from real public RECAP filings. Each stored excerpt and each displayed evidence span has its own SHA-256. RECALL only shows an original-file hash if that PDF was actually downloaded during capture.”
+“The incident already exists. RECALL’s job starts here.”
 
-**0:40–0:58**
+Click **Trace impact**.
 
-Show `598 U.S. 508` and the three confirmed real filing occurrences grouped into their actual dockets.
+**0:43–1:03**
 
-Do not say the authority is hallucinated. Say:
-“I’m using a real authority here so every source link can be checked.”
+Reveal the dependency × filing matrix.
 
-**0:58–1:18**
+“Five source-backed dependencies resolve into five confirmed relationships across two filed motions.”
 
-Open the Thomson Reuters / Ross filing.
+Do not say RECALL independently downloaded the original motions in the recorded fixture. Say:
+“The sanctions order records each citation and the filing/page where it appeared.”
+
+**1:03–1:30**
+
+Open Wilson v. Jackson × Document 174.
 
 Show:
-- D. Del. docket metadata;
-- exact `598 U.S. 508` evidence span;
-- PDF page and capture-time extracted-text line provenance;
-- evidence-span SHA-256;
-- captured-excerpt SHA-256;
-- **Open public source**.
+- exact incident-source language;
+- court finding that no such case exists;
+- downstream occurrence: Document 174 at page 2;
+- public sanctions-order source.
 
-Do not describe either excerpt hash as a hash of the entire PDF.
+**1:30–1:48**
 
-**1:18–1:38**
+Open another dependency to show the matrix is not hardcoded to one case.
 
-Show the quotation relationship:
+**1:48–2:05**
 
-> “further purpose or different character”
+Show dependency concentration:
+four dependencies in Document 174; one in Document 182.
 
-The same verbatim phrase appears in the stored public-source excerpts for Thomson/Ross and Kadrey. RECALL treats the phrase occurrence as deterministic quotation evidence.
+“RECALL does not turn chronology or similarity into lineage.”
 
-**1:38–1:53**
+**2:05–2:25**
 
-Explain the boundary:
-
-“A proposition that only sounds similar never becomes confirmed. It stays: Possible related proposition — human review required.”
-
-**1:53–2:12**
-
-Show docket grouping and earliest/latest confirmed occurrence dates.
-
-Use:
-- “appears in”
-- “confirmed occurrence”
-- “also found in”
-
-Do not use:
-- “copied”
-- “spread”
-- “propagated”
-
-unless provenance actually establishes it.
-
-**2:12–2:30**
-
-Return to the landing or source map.
+Close evidence pane and end on the matrix.
 
 “Citation checkers find the error. RECALL finds everywhere the error now matters.”
 
-Final frame:
-
+End:
 **One hallucination. Find every filing it touched.**

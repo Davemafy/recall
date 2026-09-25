@@ -11,7 +11,7 @@ type Props={mode:'demo'|'real';documents?:any[];incident?:any};
 const edgeLabel=(t:string)=>t==='CONFIRMED_CITATION_DEPENDENCY'?'Confirmed citation':t==='CONFIRMED_QUOTE_REUSE'?'Confirmed quote reuse':'Possible related claim';
 const edgeShort=(t:string)=>t==='CONFIRMED_CITATION_DEPENDENCY'?'CITATION':t==='CONFIRMED_QUOTE_REUSE'?'QUOTE':'POSSIBLE';
 
-function EvidenceGraph({graph,stage,onSelect}:{graph:any;stage:number;onSelect:(id:string)=>void}){
+function EvidenceGraph({graph,stage,onSelect,onSelectEdge}:{graph:any;stage:number;onSelect:(id:string)=>void;onSelectEdge:(edge:any)=>void}){
   const docs=graph.nodes.filter((n:any)=>n.type==='DOCUMENT');
   const mids=graph.nodes.filter((n:any)=>n.type==='QUOTE'||n.type==='PROPOSITION');
   const matters=graph.nodes.filter((n:any)=>n.type==='MATTER');
@@ -27,7 +27,7 @@ function EvidenceGraph({graph,stage,onSelect}:{graph:any;stage:number;onSelect:(
   ));
   return <div className="graphShell">
     <svg className="graphSvg" viewBox="0 0 1000 500" role="img" aria-label="Dependency graph">
-      {visibleEdges.map((e:any)=>{const a=positions.get(e.source)!,b=positions.get(e.target)!;return <path key={e.id} className={`graphEdge ${e.type}`} d={`M ${a.x} ${a.y} C ${(a.x+b.x)/2} ${a.y}, ${(a.x+b.x)/2} ${b.y}, ${b.x} ${b.y}`}/>})}
+      {visibleEdges.map((e:any)=>{const a=positions.get(e.source)!,b=positions.get(e.target)!;return <path key={e.id} className={`graphEdge ${e.type}`} d={`M ${a.x} ${a.y} C ${(a.x+b.x)/2} ${a.y}, ${(a.x+b.x)/2} ${b.y}, ${b.x} ${b.y}`} onClick={()=>onSelectEdge(e)} role="button" tabIndex={0}><title>{edgeLabel(e.type)}</title></path>})}
       {all.map((n:any)=>{const p=positions.get(n.id);if(!p)return null; const w=n.type==='AUTHORITY'?190:n.type==='DOCUMENT'?170:135; const h=n.type==='AUTHORITY'?72:48;return <g key={n.id} className={`graphNode ${n.type}`} onClick={()=>onSelect(n.id)} tabIndex={0} role="button">
         <rect x={p.x-w/2} y={p.y-h/2} width={w} height={h} rx={n.type==='AUTHORITY'?4:2}/>
         <text x={p.x} y={p.y-(n.type==='AUTHORITY'?8:2)} textAnchor="middle">{String(n.label).split('\n')[0].slice(0,30)}</text>
@@ -45,11 +45,11 @@ export default function RecallWorkspace({mode,documents,incident}:Props){
   const analysis=useMemo(()=>analyzeCorpus(corpus,activeIncident),[corpus,activeIncident]);
   const graph=useMemo(()=>graphFor(corpus,analysis,activeIncident),[corpus,analysis,activeIncident]);
   const remediation=useMemo(()=>remediationFor(corpus,analysis),[corpus,analysis]);
-  const [stage,setStage]=useState(mode==='demo'?0:5); const [running,setRunning]=useState(false); const [selectedDoc,setSelectedDoc]=useState<any>(null); const [tab,setTab]=useState<'graph'|'queue'>('graph');
+  const [stage,setStage]=useState(mode==='demo'?0:5); const [running,setRunning]=useState(false); const [selectedDoc,setSelectedDoc]=useState<any>(null); const [selectedEdge,setSelectedEdge]=useState<any>(null); const [tab,setTab]=useState<'graph'|'queue'>('graph');
   const [queueState,setQueueState]=useState<Record<string,string>>({});
   useEffect(()=>{try{setQueueState(JSON.parse(localStorage.getItem('recall-remediation')||'{}'))}catch{}},[]);
-  const run=async()=>{setRunning(true);setSelectedDoc(null);setTab('graph');setStage(1);for(const s of [2,3,4,5]){await new Promise(r=>setTimeout(r,650));setStage(s)}setRunning(false)};
-  const replay=()=>{setStage(0);setRunning(false);setSelectedDoc(null)};
+  const run=async()=>{setRunning(true);setSelectedDoc(null);setSelectedEdge(null);setTab('graph');setStage(1);for(const s of [2,3,4,5]){await new Promise(r=>setTimeout(r,650));setStage(s)}setRunning(false)};
+  const replay=()=>{setStage(0);setRunning(false);setSelectedDoc(null);setSelectedEdge(null)};
   const selectNode=(id:string)=>{if(id.startsWith('doc:')) setSelectedDoc(corpus.find((d:any)=>d.id===id.slice(4)))};
   const updateQueue=(id:string,status:string)=>{const next={...queueState,[id]:status};setQueueState(next);localStorage.setItem('recall-remediation',JSON.stringify(next))};
   const s=analysis.summary;
@@ -71,7 +71,7 @@ export default function RecallWorkspace({mode,documents,incident}:Props){
       </aside>
       <section className="graphStage">
         <div className="graphTitle"><div><span>DEPENDENCY MAP</span><h2>{stage===0?'Ready to trace.':stage<5?'Tracing dependencies…':'Blast radius established.'}</h2></div>{stage>=5&&<div className="graphCount">{s.confirmedAffectedDocuments}<small>confirmed docs</small></div>}</div>
-        <EvidenceGraph graph={graph} stage={stage} onSelect={selectNode}/>
+        <EvidenceGraph graph={graph} stage={stage} onSelect={selectNode} onSelectEdge={setSelectedEdge}/>
         {stage>=5&&<div className="proofStrip"><strong>Confirmed is intentionally narrow.</strong><span>{s.possibleDerivedClaims} semantic candidate{s.possibleDerivedClaims===1?'':'s'} kept outside confirmed counts.</span></div>}
       </section>
       <aside className="summaryRail">
@@ -82,6 +82,7 @@ export default function RecallWorkspace({mode,documents,incident}:Props){
       </aside>
     </section>:<section className="queueView"><div className="queueIntro"><div className="heroIndex">REMEDIATION</div><h2>What needs attention now.</h2><p>Priority comes from explicit document status and dependency type — not an AI risk score.</p></div><div className="queueList">{remediation.map((item:any)=><article key={item.id}><div className={`priority ${item.priority}`}>{item.priority}</div><div><h3>{item.documentTitle}</h3><p>{edgeLabel(item.dependencyType)}</p><small>{item.recommendedAction}</small></div><select value={queueState[item.id]||'OPEN'} onChange={e=>updateQueue(item.id,e.target.value)}><option>OPEN</option><option>REVIEWED</option><option>NEEDS_CORRECTION</option><option>RESOLVED</option><option>NOT_RELATED</option></select></article>)}</div></section>}
 
+    {selectedEdge&&<div className="drawerBackdrop" onClick={()=>setSelectedEdge(null)}><aside className="drawer" onClick={e=>e.stopPropagation()}><button className="drawerClose" onClick={()=>setSelectedEdge(null)}>×</button><div className="heroIndex">EDGE PROVENANCE</div><h2>{edgeLabel(selectedEdge.type)}</h2><div className="drawerMeta"><span>{selectedEdge.type}</span><span>{selectedEdge.type==='POSSIBLE_DERIVED_CLAIM'?'HEURISTIC · REVIEW ONLY':'DETERMINISTIC'}</span></div><div className={`evidenceBlock ${selectedEdge.type}`}><div className="edgeKind">WHY THIS EDGE EXISTS</div><blockquote>{selectedEdge.evidence?.raw||'Explicit metadata relationship'}</blockquote><p>{selectedEdge.evidence?.rule||'Explicit relation metadata'}</p>{typeof selectedEdge.evidence?.score==='number'&&<p>Measured overlap / similarity: {selectedEdge.evidence.score.toFixed(3)}</p>}{selectedEdge.type==='POSSIBLE_DERIVED_CLAIM'&&<strong>Human review required. Similarity does not prove lineage.</strong>}</div></aside></div>}
     {selectedDoc&&<div className="drawerBackdrop" onClick={()=>setSelectedDoc(null)}><aside className="drawer" onClick={e=>e.stopPropagation()}><button className="drawerClose" onClick={()=>setSelectedDoc(null)}>×</button><div className="heroIndex">DOCUMENT EVIDENCE</div><h2>{selectedDoc.title}</h2><div className="drawerMeta"><span>{selectedDoc.status}</span><span>{selectedDoc.matterName||'Matter unknown'}</span><span>{selectedDoc.versionLabel||'Version unknown'}</span></div>{(analysis.byDoc.get(selectedDoc.id)||[]).map((e:any)=><div className={`evidenceBlock ${e.type}`} key={e.id}><div className="edgeKind">{edgeShort(e.type)}</div><blockquote>{e.evidence.raw}</blockquote><p>{e.evidence.rule}</p>{e.type==='POSSIBLE_DERIVED_CLAIM'&&<strong>Human review required.</strong>}</div>)}<div className="documentText">{selectedDoc.text}</div></aside></div>}
   </main>
 }

@@ -113,3 +113,10 @@ test('summary does not mix unconfirmed candidates into confirmed count',()=>{
   const s=summarizePublicTrace(docs,2,10);
   assert.equal(s.confirmedFilingCount,1);assert.equal(s.candidateUnconfirmedCount,1);assert.equal(s.uniqueDockets,1);
 });
+
+
+test('critical discussion in public source is excluded from confirmed dependency',()=>{
+  const incident={...buildAuthorityFromInput('598 U.S. 508'),caseName:'Andy Warhol Foundation v. Goldsmith'};
+  const result=confirmPublicCandidate({fullText:'Do not rely on Andy Warhol Foundation v. Goldsmith, 598 U.S. 508. The citation is invalid for this proposition.'},incident);
+  assert.equal(result.classification,'NOT_RELATED');
+});

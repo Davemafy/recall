@@ -196,7 +196,9 @@ test('simple exact trace stays inside the CourtListener request budget and hydra
     const result=await traceCourtListener({input:'410 U.S. 113',maxCandidates:3},'token',{firecrawlKey:''});
     assert.equal(result.ok,true);
     assert.equal(result.summary.confirmedFilingCount,3);
-    assert.ok(result.diagnostics.courtlistenerRequests<=8,`request count was ${result.diagnostics.courtlistenerRequests}`);
+    assert.equal(result.diagnostics.courtlistenerRequests,6);
+    assert.equal(result.diagnostics.firecrawlRequests,0);
+    assert.equal(result.diagnostics.cacheHits,0);
     assert.ok(maxActive<=2,`max concurrent requests was ${maxActive}`);
     assert.equal(result.diagnostics.searchPassesUsed,1);
   }finally{global.fetch=original}

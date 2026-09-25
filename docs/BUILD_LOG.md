@@ -80,3 +80,33 @@ Reference study:
 - Sulaimon Adedamola — “Research Library > Case Detail Screen > Citations & References” (Dribbble), used for neutral legal-product palette discipline
 
 No Dribbble branding, product copy, or assets were copied into RECALL; only interaction/layout discipline was translated to RECALL’s own incident model.
+
+
+## M8 — Anti-slop visual reset
+
+Researched recurring 2026 AI-generated UI tells before touching the product surface, then removed the matching defaults from RECALL.
+
+Audit targets removed:
+- rounded application shell floating on gray
+- Inter/Geist-first default typography
+- three-equal-panel dashboard geometry
+- centered hero + generic feature-card rhythm
+- serif-as-legal shorthand
+- muted legal-paper palette
+- badge / pill overuse
+- generic evidence inspector sidebar
+- duplicated CTA language
+- metric-card composition
+
+New direction:
+- full-bleed mineral-black product shell
+- warm porcelain investigation canvas
+- signal vermilion (#ff5a36)
+- ice-lilac (#aeb8ff) used only for secondary technical/source state
+- asymmetric incident rail + working stage
+- dependency matrix as the primary product artifact
+- incident-source vs downstream-evidence comparison shown as one dark/light spread
+- affected filings integrated into the investigation stage instead of another dashboard panel
+- same visual system carried through landing, incident creation, Quick Trace, and Corpus surfaces
+
+The UI is intentionally not styled as “legal tech.” Product truth remains legal; visual language is drawn from contemporary fintech/workspace/data-product references.

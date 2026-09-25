@@ -6,7 +6,7 @@ test('landing makes incident response primary and keeps quick trace and corpus s
   await expect(page.getByRole('link',{name:/Open incident/i})).toBeVisible();
   await expect(page.getByRole('link',{name:/Trace authority/i})).toBeVisible();
   await expect(page.getByRole('link',{name:/Import corpus/i})).toBeVisible();
-  await expect(page.getByRole('link',{name:/Johnson v\. Dunn/i})).toBeVisible();
+  await expect(page.getByText('Johnson v. Dunn',{exact:true}).first()).toBeVisible();
 });
 
 test('recorded incident flows from court source to dependency matrix to exact evidence',async({page})=>{

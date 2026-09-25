@@ -1,29 +1,65 @@
 import Link from 'next/link';
 
+const deps=[
+  ['United States v. Baker',"539 F.App'x 937",'174'],
+  ['Kelley v. Birmingham','2021 WL 1118031','174'],
+  ['Greer v. Warden','2020 WL 3060362','174'],
+  ['Wilson v. Jackson','2006 WL 8438651','174'],
+  ['Williams v. Asplundh','2006 WL 3343787','182']
+];
+
 export default function Home(){
-  return <main className="founderLanding">
-    <header className="productBar">
-      <div className="productWordmark">RECALL</div>
-      <div className="productContext">Legal incident response</div>
-      <Link href="/trace" className="quietTopLink">Quick trace</Link>
+  return <main className="recallHomePage">
+    <header className="recallHomeTopbar">
+      <div className="recallHomeBrand">RECALL</div>
+      <nav aria-label="Primary">
+        <Link href="/incident">Incidents</Link>
+        <Link href="/trace">Quick trace</Link>
+        <Link href="/corpus">Corpus</Link>
+      </nav>
+      <span>Legal incident response</span>
     </header>
 
-    <section className="founderHero">
-      <div className="entryEyebrow">LEGAL INCIDENT RESPONSE</div>
-      <h1>One hallucination.<br/><span>Find every filing it touched.</span></h1>
-      <p>Turn a bad legal citation into an incident. Trace every confirmed occurrence across public filings and your own legal work.</p>
-      <div className="founderActions">
-        <Link className="founderPrimary" href="/incident">Open incident <span>→</span></Link>
-        <Link href="/trace">Trace authority</Link>
-        <Link href="/corpus">Import corpus</Link>
+    <section className="recallHomeHero">
+      <div className="recallHomeCopy">
+        <div className="recallHomeEyebrow"><span>01</span> INCIDENT RESPONSE AFTER DISCOVERY</div>
+        <h1>One hallucination.<br/><em>Find every filing it touched.</em></h1>
+        <p>Turn a bad legal dependency into an incident. RECALL traces exact occurrences across public filings and your own work — with evidence for every confirmed relationship.</p>
+        <div className="recallHomeActions">
+          <Link className="recallHomePrimary" href="/incident">Open incident <span>↗</span></Link>
+          <Link href="/incident/demo">Run recorded incident</Link>
+        </div>
       </div>
-      <Link className="recordedDemoLink" href="/incident/demo"><span>RECORDED PUBLIC INCIDENT</span> Johnson v. Dunn — five problematic citations across two motions <b>→</b></Link>
+
+      <div className="recallHomePreview" aria-label="Johnson v. Dunn incident preview">
+        <div className="recallHomePreviewHead">
+          <div><span>RECORDED PUBLIC INCIDENT</span><strong>Johnson v. Dunn</strong></div>
+          <b>05</b>
+        </div>
+        <div className="recallHomePreviewMeta">
+          <span>5 disputed dependencies</span>
+          <span>2 filed motions</span>
+          <span>1 docket</span>
+        </div>
+        <div className="recallHomeMiniMatrix">
+          <div className="recallHomeMiniHead"><span>DEPENDENCY</span><span>DOC. 174</span><span>DOC. 182</span></div>
+          {deps.map(([name,cite,doc])=><div className="recallHomeMiniRow" key={cite}>
+            <div><strong>{name}</strong><small>{cite}</small></div>
+            <span className={doc==='174'?'is-hit':''}>{doc==='174'?'●':'—'}</span>
+            <span className={doc==='182'?'is-hit':''}>{doc==='182'?'●':'—'}</span>
+          </div>)}
+        </div>
+        <Link href="/incident/demo" className="recallHomePreviewFooter">
+          <span>Every confirmed edge opens to exact source evidence.</span>
+          <b>Open incident ↗</b>
+        </Link>
+      </div>
     </section>
 
-    <section className="productPremise">
-      <div><span>01</span><strong>Incident</strong><p>A court, reviewer or lawyer identifies a dependency that deserves review.</p></div>
-      <div><span>02</span><strong>Trace</strong><p>RECALL searches public filings and independently confirms exact occurrences.</p></div>
-      <div><span>03</span><strong>Evidence</strong><p>Every confirmed relationship opens directly to the source language that supports it.</p></div>
+    <section className="recallHomeFooter">
+      <div><span>INCIDENT</span><strong>Start with what was flagged.</strong></div>
+      <div><span>TRACE</span><strong>Find deterministic occurrences.</strong></div>
+      <div><span>EVIDENCE</span><strong>Inspect the exact source.</strong></div>
     </section>
   </main>
 }

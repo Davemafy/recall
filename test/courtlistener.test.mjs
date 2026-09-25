@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -5,7 +6,7 @@ import {
   extractDocumentsFromSearchPayload,extractDocketMetadata,confirmPublicCandidate,summarizePublicTrace,
   searchCourtListenerPages,hydratePublicDocument
 } from '../lib/courtlistener.mjs';
-import {getRecordedPublicTrace} from '../lib/recorded-public-trace.mjs';
+import {RECORDED_PUBLIC_FILINGS,getRecordedPublicTrace,recordedAnalysisText,recordedEvidenceFor} from '../lib/recorded-public-trace.mjs';
 
 test('authority input canonicalizes pin cite to first page',()=>{
   const a=buildAuthorityFromInput('Andy Warhol Found. v. Goldsmith, 598 U.S. 508, 526 (2023)');
@@ -102,7 +103,10 @@ test('recorded public trace is source backed and independently confirmed',()=>{
   assert.equal(trace.summary.confirmedQuoteReuseCount,2);
   for(const d of trace.documents){
     assert.match(d.sourceUrl,/^https:\/\/storage\.courtlistener\.com\/recap\//);
-    assert.match(d.contentHash,/^[a-f0-9]{64}$/);
+    assert.equal(d.sourceCapture.originalFileDownloaded,false);
+    assert.equal(d.sourceCapture.documentSha256,null);
+    assert.ok(d.sourceCapture.segments.length>=1);
+    assert.ok(recordedAnalysisText(d).includes(d.sourceCapture.segments[0].text));
   }
 });
 
@@ -128,4 +132,29 @@ test('candidate can preserve citation and quote relationships together',()=>{
   const result=confirmPublicCandidate({fullText:'Andy Warhol Foundation v. Goldsmith, 598 U.S. 508, 528 (2023), describes a “further purpose or different character.”'},incident);
   assert.equal(result.classification,'CONFIRMED_CITATION_DEPENDENCY');
   assert.ok(result.relationships.some(r=>r.classification==='CONFIRMED_QUOTE_REUSE'));
+});
+
+
+test('recorded provenance hashes exact stored source spans',()=>{
+  const sha=value=>createHash('sha256').update(value,'utf8').digest('hex');
+  for(const document of RECORDED_PUBLIC_FILINGS){
+    for(const segment of document.sourceCapture.segments){
+      assert.equal(sha(segment.text),segment.sha256,`${document.id} segment hash must cover exact stored excerpt`);
+      assert.ok(Number.isInteger(segment.pdfPageNumber)&&segment.pdfPageNumber>0);
+      assert.ok(Number.isInteger(segment.extractedTextLineStart));
+      assert.ok(Number.isInteger(segment.extractedTextLineEnd));
+    }
+    for(const span of document.sourceCapture.evidenceSpans){
+      const segment=document.sourceCapture.segments.find(item=>item.id===span.segmentId);
+      assert.ok(segment,`${document.id} evidence segment must exist`);
+      assert.equal(segment.text.slice(span.startOffset,span.endOffset),span.text,`${document.id} evidence must be an exact substring of captured source text`);
+      assert.equal(sha(span.text),span.sha256,`${document.id} evidence hash must recompute from exact evidence text`);
+      const resolved=recordedEvidenceFor(document,span.relationshipType);
+      assert.equal(resolved.text,span.text);
+      assert.equal(resolved.provenance.evidenceSha256,span.sha256);
+      assert.equal(resolved.provenance.segmentSha256,segment.sha256);
+    }
+    assert.ok(!recordedAnalysisText(document).includes('The filing also quotes'));
+    assert.ok(!recordedAnalysisText(document).includes('The filing quotes'));
+  }
 });

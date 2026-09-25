@@ -99,6 +99,7 @@ test('recorded public trace is source backed and independently confirmed',()=>{
   assert.equal(trace.documents.length,3);
   assert.equal(trace.summary.confirmedFilingCount,3);
   assert.equal(trace.summary.uniqueDockets,3);
+  assert.equal(trace.summary.confirmedQuoteReuseCount,2);
   for(const d of trace.documents){
     assert.match(d.sourceUrl,/^https:\/\/storage\.courtlistener\.com\/recap\//);
     assert.match(d.contentHash,/^[a-f0-9]{64}$/);
@@ -119,4 +120,12 @@ test('critical discussion in public source is excluded from confirmed dependency
   const incident={...buildAuthorityFromInput('598 U.S. 508'),caseName:'Andy Warhol Foundation v. Goldsmith'};
   const result=confirmPublicCandidate({fullText:'Do not rely on Andy Warhol Foundation v. Goldsmith, 598 U.S. 508. The citation is invalid for this proposition.'},incident);
   assert.equal(result.classification,'NOT_RELATED');
+});
+
+
+test('candidate can preserve citation and quote relationships together',()=>{
+  const incident={...buildAuthorityFromInput('598 U.S. 508'),caseName:'Andy Warhol Foundation v. Goldsmith',quote:'further purpose or different character'};
+  const result=confirmPublicCandidate({fullText:'Andy Warhol Foundation v. Goldsmith, 598 U.S. 508, 528 (2023), describes a “further purpose or different character.”'},incident);
+  assert.equal(result.classification,'CONFIRMED_CITATION_DEPENDENCY');
+  assert.ok(result.relationships.some(r=>r.classification==='CONFIRMED_QUOTE_REUSE'));
 });

@@ -152,6 +152,7 @@ export default function IncidentDemo(){
             <span>INCIDENT SOURCE</span>
             <strong>Sanctions Order · page {selected.dependency.incidentEvidence.pdfPageNumber}</strong>
             <blockquote>“{selected.dependency.incidentEvidence.exactText}”</blockquote>
+            {selected.dependency.incidentFinding&&<p className="incidentFinding">{selected.dependency.incidentFinding}</p>}
             <a href={selected.dependency.incidentEvidence.sourceUrl} target="_blank" rel="noreferrer">Open court order ↗</a>
           </section>
           {selected.relationship&&selected.filing&&<section>

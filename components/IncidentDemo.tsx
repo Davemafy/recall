@@ -5,7 +5,7 @@ import Link from 'next/link';
 // @ts-ignore Recorded incident fixture is shared with Node benchmark tests.
 import {getRecordedIncident,JOHNSON_DUNN_ORDER_URL} from '../lib/recorded-incident.mjs';
 // @ts-ignore Centralized domain labels.
-import {RELATIONSHIP_STATE,relationshipLabel} from '../lib/domain.mjs';
+import {relationshipLabel} from '../lib/domain.mjs';
 
 type Dependency={
   id:string; rawText:string; canonicalCitation?:string; caseName?:string; incidentFinding?:string;

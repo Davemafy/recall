@@ -1,21 +1,41 @@
-# 2:30 demo script
+# Demo script — 2:25 target
 
-**0:00–0:12** — “Finding one hallucinated citation is easy. The harder question is what happened after it entered your work.”
+**0:00–0:12**
 
-**0:12–0:25** — Show the open Martinez authority incident. “One authority was flagged after it could not be verified.”
+“Finding a hallucinated case is only the beginning. The operational question is what happened after an authority entered the work.”
 
-**0:25–0:35** — Click **Trace blast radius**.
+**0:12–0:24**
 
-**0:35–0:58** — Let the graph expand: confirmed citations, quotation reuse, documents, matters, then possible propositions last.
+Show RECALL landing. Enter a citation. Explain that live mode searches public federal filing data available through CourtListener / RECAP.
 
-**0:58–1:15** — Read the computed blast-radius summary. Emphasize filed work.
+**0:24–0:38**
 
-**1:15–1:35** — Open a filed brief. Show the exact normalized citation evidence.
+Open the recorded public trace for recording stability. Point to **RECORDED PUBLIC TRACE** and the capture date.
 
-**1:35–1:52** — Open quotation reuse. Then show the possible proposition separately: “RECALL does not pretend similarity proves lineage. Human review required.”
+**0:38–0:58**
 
-**1:52–2:15** — Open Remediation. Filed confirmed work is urgent; possible claims stay review-only.
+Show `598 U.S. 508` and the three confirmed real public filing occurrences grouped into their actual dockets.
 
-**2:15–2:30** — “Citation checkers find the error. RECALL finds everywhere the error now matters.”
+**0:58–1:18**
 
-Final frame: **One hallucination. Find every filing it touched.**
+Open the Thomson Reuters / Ross filing. Show the exact citation evidence, docket metadata, content hash, and **Open public source** link.
+
+**1:18–1:38**
+
+Explain the rule: a CourtListener search hit is only a candidate. RECALL's own parser must find deterministic citation evidence before the filing enters confirmed totals.
+
+**1:38–1:52**
+
+Show the product law: quotation reuse can be confirmed textually; semantic proposition matches stay “Possible related proposition — human review required.”
+
+**1:52–2:10**
+
+Show the factual date range and docket grouping. Say “appears in” and “confirmed occurrence,” not “copied” or “spread.”
+
+**2:10–2:25**
+
+“Citation checkers find the error. RECALL finds everywhere the error now matters.”
+
+End: **One hallucination. Find every filing it touched.**
+
+Note for the video: the recorded authority is a real valid authority used solely to demonstrate the dependency-tracing mechanism. Do not imply it is hallucinated or invalid.

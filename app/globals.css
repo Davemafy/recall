@@ -1055,3 +1055,393 @@
   .recallHomeFooter{grid-template-columns:1fr}
   .recallHomeFooter>div{border-right:0;border-bottom:1px solid #262931}
 }
+
+
+/* Incident entry — same visual language as the flagship, without reusing generic form-card patterns. */
+.recallCreatePage{
+  min-height:100vh;
+  background:#090a0d;
+  color:#f5f4ef;
+  font-family:"Segoe UI Variable","Aptos","Helvetica Neue",Arial,sans-serif;
+}
+.recallCreateLayout{
+  min-height:calc(100vh - 62px);
+  display:grid;
+  grid-template-columns:minmax(340px,.7fr) minmax(580px,1.3fr);
+}
+.recallCreateIntro{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+  padding:64px clamp(28px,4vw,58px);
+  border-right:1px solid #262931;
+  overflow:hidden;
+}
+.recallCreateIntro:after{
+  content:"RECALL";
+  position:absolute;
+  left:-12px;
+  bottom:-24px;
+  color:#101217;
+  font-size:118px;
+  line-height:.8;
+  font-weight:800;
+  letter-spacing:-.08em;
+  pointer-events:none;
+}
+.recallCreateEyebrow{
+  color:#70747e;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.15em;
+}
+.recallCreateIntro h1{
+  margin:18px 0 22px;
+  font-size:clamp(48px,5vw,78px);
+  line-height:.92;
+  letter-spacing:-.065em;
+  font-weight:680;
+}
+.recallCreateIntro h1 em{
+  color:#ff5a36;
+  font-style:normal;
+}
+.recallCreateIntro>p{
+  max-width:470px;
+  margin:0;
+  color:#8f929c;
+  font-size:12px;
+  line-height:1.7;
+}
+.recallCreateFeatured{
+  position:relative;
+  z-index:1;
+  margin-top:54px;
+  min-height:118px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 74px;
+  align-items:center;
+  gap:16px;
+  padding:20px 0;
+  border-top:1px solid #2b2e36;
+  border-bottom:1px solid #2b2e36;
+  color:inherit;
+  text-decoration:none;
+}
+.recallCreateFeatured:hover{background:#101217}
+.recallCreateFeatured>div>span{
+  display:block;
+  color:#aeb8ff;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.12em;
+}
+.recallCreateFeatured strong{
+  display:block;
+  margin-top:7px;
+  font-size:19px;
+  letter-spacing:-.025em;
+}
+.recallCreateFeatured small{
+  display:block;
+  margin-top:6px;
+  color:#737781;
+  font-size:9px;
+}
+.recallCreateFeatured>b{
+  color:#24272e;
+  font-size:64px;
+  line-height:1;
+  letter-spacing:-.08em;
+}
+.recallCreateFeatured>em{
+  position:absolute;
+  right:0;
+  bottom:10px;
+  color:#ff5a36;
+  font-style:normal;
+  font-size:9px;
+}
+.recallCreateBuilder{
+  min-width:0;
+  padding:48px clamp(28px,4vw,58px) 64px;
+  background:#f3f2ee;
+  color:#111217;
+}
+.recallCreateBuilderHead{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:24px;
+  padding-bottom:22px;
+  border-bottom:1px solid #d7d4cb;
+}
+.recallCreateBuilderHead>div>span{
+  display:block;
+  color:#ff5a36;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.14em;
+}
+.recallCreateBuilderHead h2{
+  margin:7px 0 0;
+  font-size:31px;
+  letter-spacing:-.045em;
+  font-weight:680;
+}
+.recallCreateBuilderHead>small{
+  color:#777980;
+  font-size:9px;
+}
+.recallCreateSource{
+  display:block;
+  padding:24px 0;
+  border-bottom:1px solid #d7d4cb;
+}
+.recallCreateSource>span{
+  display:block;
+  margin-bottom:8px;
+  color:#686a70;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.1em;
+}
+.recallCreateSource em{
+  font-style:normal;
+  font-weight:500;
+  letter-spacing:0;
+  text-transform:none;
+}
+.recallCreateSource input{
+  width:100%;
+  border:0;
+  background:transparent;
+  color:#111217;
+  outline:none;
+  padding:3px 0;
+  font:520 13px/1.45 "Segoe UI Variable","Aptos",sans-serif;
+}
+.recallCreateSource input::placeholder{color:#a1a29f}
+.recallCreateTable{
+  border-bottom:1px solid #d7d4cb;
+}
+.recallCreateTableHead,.recallCreateRow{
+  display:grid;
+  grid-template-columns:38px 108px minmax(0,1fr) 32px;
+  gap:12px;
+  align-items:center;
+}
+.recallCreateTableHead{
+  height:40px;
+  color:#8a8b8e;
+  font-size:7px;
+  font-weight:800;
+  letter-spacing:.12em;
+}
+.recallCreateRow{
+  min-height:58px;
+  border-top:1px solid #dfddd6;
+}
+.recallCreateNumber{
+  color:#9b9c9a;
+  font:650 9px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+.recallCreateRow select,.recallCreateRow input{
+  min-width:0;
+  border:0;
+  background:transparent;
+  color:#111217;
+  outline:none;
+}
+.recallCreateRow select{
+  padding:8px 0;
+  font:700 9px/1 "Segoe UI Variable","Aptos",sans-serif;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.recallCreateRow input{
+  padding:8px 0;
+  font:520 12px/1.45 "Segoe UI Variable","Aptos",sans-serif;
+}
+.recallCreateRow input::placeholder{color:#a6a6a2}
+.recallCreateRow button{
+  width:28px;height:28px;
+  border:0;
+  background:transparent;
+  color:#969793;
+  cursor:pointer;
+  font-size:18px;
+}
+.recallCreateRow button:hover{color:#111217}
+.recallCreateActionBar{
+  min-height:88px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+.recallCreateAdd{
+  border:0;
+  background:transparent;
+  color:#6c6e74;
+  padding:8px 0;
+  cursor:pointer;
+  font:650 10px/1 "Segoe UI Variable","Aptos",sans-serif;
+}
+.recallCreateAdd:disabled{opacity:.35}
+.recallCreateActionBar>div{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.recallCreateActionBar>div>span{
+  color:#85878c;
+  font-size:9px;
+}
+.recallCreateTrace{
+  min-width:146px;
+  height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  padding:0 14px 0 16px;
+  border:0;
+  border-radius:2px;
+  background:#111217;
+  color:#fff;
+  cursor:pointer;
+  font:750 10px/1 "Segoe UI Variable","Aptos",sans-serif;
+}
+.recallCreateTrace b{
+  color:#ff5a36;
+  font-size:13px;
+}
+.recallCreateTrace:disabled{opacity:.35;cursor:not-allowed}
+.recallCreateNote{
+  margin:0 0 10px;
+  color:#7a7c81;
+  font-size:9px;
+}
+.recallCreateError{
+  margin:14px 0 0;
+  padding:12px 14px;
+  background:#201413;
+  color:#ffb29d;
+  font-size:10px;
+}
+.recallCreateResult{
+  margin-top:52px;
+  border-top:1px solid #111217;
+}
+.recallCreateResultHead{
+  min-height:98px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  border-bottom:1px solid #d7d4cb;
+}
+.recallCreateResultHead>div>span{
+  display:block;
+  margin-bottom:5px;
+  color:#ff5a36;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.13em;
+}
+.recallCreateResultHead h2{
+  margin:0;
+  font-size:26px;
+  letter-spacing:-.04em;
+}
+.recallCreateResultHead>p{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  color:#777980;
+  font-size:9px;
+}
+.recallCreateResultHead>p strong{
+  color:#111217;
+  font-size:14px;
+}
+.recallCreateResultHead>p i{
+  width:3px;height:3px;border-radius:50%;background:#aaa8a1
+}
+.recallCreateResultRows article{
+  display:grid;
+  grid-template-columns:82px minmax(140px,.8fr) minmax(160px,.85fr) minmax(220px,1.35fr);
+  gap:16px;
+  align-items:start;
+  padding:18px 0;
+  border-bottom:1px solid #d7d4cb;
+}
+.recallCreateResultState{
+  color:#ff5a36;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.09em;
+}
+.recallCreateResultDependency strong,
+.recallCreateResultDocument strong{
+  font-size:10px;
+  line-height:1.4;
+}
+.recallCreateResultDocument small{
+  display:block;
+  margin-top:4px;
+  color:#7a7c81;
+  font-size:8px;
+}
+.recallCreateResultEvidence blockquote{
+  margin:0;
+  color:#5f6166;
+  font-size:9px;
+  line-height:1.55;
+}
+.recallCreateResultEvidence a{
+  display:inline-block;
+  margin-top:7px;
+  color:#5e63a8;
+  text-decoration:none;
+  font-size:8px;
+}
+.recallCreateEmpty{
+  padding:20px 0;
+  color:#777980;
+  font-size:10px;
+}
+.recallCreateDiagnostics{
+  margin-top:14px;
+  color:#7b7d82;
+  font-size:9px;
+}
+.recallCreateDiagnostics summary{cursor:pointer}
+.recallCreateDiagnostics>div{
+  display:flex;
+  gap:22px;
+  margin-top:8px;
+}
+.recallCreateDiagnostics b{color:#111217}
+.recallCreatePage input:focus-visible,
+.recallCreatePage select:focus-visible,
+.recallCreatePage button:focus-visible,
+.recallCreatePage a:focus-visible{
+  outline:2px solid #aeb8ff;
+  outline-offset:3px;
+}
+@media(max-width:960px){
+  .recallCreateLayout{grid-template-columns:1fr}
+  .recallCreateIntro{min-height:520px;border-right:0;border-bottom:1px solid #262931}
+}
+@media(max-width:700px){
+  .recallCreateIntro,.recallCreateBuilder{padding-inline:18px}
+  .recallCreateBuilderHead{display:block}
+  .recallCreateBuilderHead>small{display:block;margin-top:9px}
+  .recallCreateTableHead,.recallCreateRow{grid-template-columns:28px 90px minmax(0,1fr) 28px;gap:8px}
+  .recallCreateActionBar{align-items:stretch;flex-direction:column;padding:18px 0}
+  .recallCreateActionBar>div{justify-content:space-between}
+  .recallCreateResultRows article{grid-template-columns:1fr;gap:7px}
+}

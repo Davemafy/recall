@@ -1,54 +1,35 @@
 # Live trace
 
-`/trace` is RECALL's first-class workflow.
+`/trace` is Quick Trace, not the flagship product.
 
-## Flow
+It remains useful for validating the source-confirmation engine and manually opened incidents.
 
-1. Parse a citation or accept a quotation/text query.
-2. Resolve authority metadata when CourtListener can do so without ambiguity.
-3. Search `type=rd` for filing-document candidates.
-4. Search `type=r` for docket/nested-document metadata context.
-5. Follow documented pagination up to the candidate bound.
-6. Hydrate each RECAP candidate with extracted `plain_text` where available.
-7. Re-run RECALL's shared dependency engine over the hydrated text.
-8. Preserve all supported relationships per filing: citation and quotation reuse can coexist.
-9. Keep proposition similarity review-only.
-10. Group confirmed occurrences by actual docket metadata.
-11. Report bounded coverage and source mode.
+## Exact-citation flow
 
-## Relationship classes
+1. Parse / normalize citation.
+2. Optionally resolve authority.
+3. Search exact citation in CourtListener federal filing documents.
+4. Confirm candidates locally from snippets.
+5. Hydrate only promising unconfirmed candidates.
+6. Use RECAP extracted text where available.
+7. Use Firecrawl only as an allowlisted extraction fallback.
+8. Use one broader pass only when the exact pass is insufficient.
+9. Return confirmed / possible / unconfirmed separately.
 
-`CONFIRMED_CITATION_DEPENDENCY`
-: deterministic canonical reporter / volume / first-page occurrence in available filing text.
+## Cancellation
 
-`CONFIRMED_QUOTE_REUSE`
-: conservative normalized quotation overlap.
+Starting another client trace aborts the obsolete request. Server adapters also receive the request abort signal where supported.
 
-`POSSIBLE_DERIVED_CLAIM`
-: review-only lexical/semantic match.
+## Diagnostics
 
-`CANDIDATE_UNCONFIRMED`
-: search surfaced the filing, but available text did not independently establish the incident dependency.
+Each live result records request count, cache hits, hydration count, search passes, duration, and relationship totals without logging legal-document contents.
 
-`NOT_RELATED`
-: evidence actively supports exclusion, such as a citation appearing only in explicit invalidity/critical discussion.
+## Failure states
 
-## Quote-only traces
+- authentication/configuration error
+- rate limited + retry window
+- source unavailable
+- unresolved authority
+- zero confirmed results
 
-If the primary input is not a supported canonical citation but contains substantial quotation text, RECALL treats it as a quotation trace and searches the public filing corpus without inventing an authority identity.
-
-## Honest zero
-
-A valid live trace may return zero confirmed dependencies:
-
-> RECALL found no confirmed filing dependencies in the checked public-source candidates.
-
-No fixture fallback is inserted into a live result.
-
-## Live vs cached vs recorded
-
-- **LIVE PUBLIC SOURCE** — fetched during this trace.
-- **CACHED PUBLIC SOURCE — checked <date>** — recent cached result; original retrieval timestamp retained.
-- **RECORDED PUBLIC TRACE** — source-backed development capture replayed without network access.
-
-These states are intentionally visually distinct.
+Recorded demo data is never silently substituted into a live trace.

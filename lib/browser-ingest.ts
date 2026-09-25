@@ -3,7 +3,7 @@ export type ImportedDocument = {id:string;title:string;filename:string;mimeType:
 async function readPdf(file: File): Promise<string> {
   const pdfjs = await import('pdfjs-dist');
   // @ts-ignore worker URL supported by pdfjs-dist in browser builds
-  pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
+  pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
   const bytes = new Uint8Array(await file.arrayBuffer());
   const pdf = await pdfjs.getDocument({data:bytes}).promise;
   let out='';
@@ -15,7 +15,7 @@ async function readPdf(file: File): Promise<string> {
 }
 
 async function readDocx(file: File): Promise<string> {
-  const mammoth = await import('mammoth/mammoth.browser');
+  // @ts-ignore mammoth ships browser support without complete TS declarations\n  const mammoth = await import('mammoth');
   const result = await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});
   return result.value;
 }

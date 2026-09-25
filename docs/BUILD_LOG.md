@@ -23,3 +23,19 @@ Verification checkpoint:
 - lint: passed
 - production build: passed
 - Playwright: 5/5 passed
+
+
+## M6 — Benchmark, API-contract and hardening pass
+Verified CourtListener v4 search / RECAP document hydration against current official API documentation, added a five-authority public-source benchmark set and credential-gated live benchmark, tightened citation lookup status handling, added quote-only/unresolved trace behavior, and expanded benchmark reporting.
+
+Verification checkpoint:
+- unit/API/security tests: 23/23 passed
+- citation parser precision / recall: 100.0% / 100.0% on labeled parser set
+- confirmed citation / quote precision: 100.0% / 100.0%
+- false confirmed dependencies: 0
+- recorded public sample: 3/3 independently confirmed
+- live benchmark: correctly SKIPPED because COURTLISTENER_TOKEN is absent in CI
+- typecheck: passed
+- lint: passed
+- production build: passed
+- Playwright: 5/5 passed

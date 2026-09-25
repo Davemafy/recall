@@ -32,9 +32,9 @@ function EvidenceMap({docs,onOpen}:{docs:TraceDoc[];onOpen:(d:TraceDoc)=>void}){
  </div>
 }
 
-export default function PublicTrace({recorded=false}:{recorded?:boolean}){
+export default function PublicTrace({recorded=false,initialInput=''}:{recorded?:boolean;initialInput?:string}){
  const recordedData=useMemo(()=>recorded?RecordedResult():null,[recorded]);
- const [input,setInput]=useState(recordedData?.authority?.citation||'598 U.S. 508');
+ const [input,setInput]=useState(recordedData?.authority?.citation||initialInput||'598 U.S. 508');
  const [quote,setQuote]=useState('');
  const [result,setResult]=useState<TraceResult|null>(recordedData);
  const [busy,setBusy]=useState(false);

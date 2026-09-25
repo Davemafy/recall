@@ -57,7 +57,7 @@ test('live quick trace renders mocked CourtListener result without fixture fallb
 
 test('corpus mode ingests local text and opens an incident with the shared engine',async({page})=>{
   await page.goto('/corpus');
-  await expect(page.getByText('Bring the work.')).toBeVisible();
+  await expect(page.getByRole('heading',{name:/Bring the work/i})).toBeVisible();
   const input=page.locator('input[type=file]');
   await input.setInputFiles({name:'brief.txt',mimeType:'text/plain',buffer:Buffer.from('The filing relies on Brown v. Board, 347 U.S. 483, 495. The same authority governs this issue.')});
   await expect(page.locator('.importSummary')).toContainText('1documents');

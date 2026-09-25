@@ -22,7 +22,7 @@ export async function POST(req:NextRequest){
 
     const token=process.env.COURTLISTENER_TOKEN;
     if(!token)return NextResponse.json({ok:false,state:'AUTH_REQUIRED',message:'Live CourtListener search is not configured on this deployment.'},{status:503});
-    const result=await traceIncidentDependencies(safe,token,{maxCandidatesPerDependency:Math.max(1,Math.min(Number(body?.maxCandidatesPerDependency)||10,20)),signal:req.signal});
+    const result=await traceIncidentDependencies(safe,token,{maxCandidatesPerDependency:Math.max(1,Math.min(Number(body?.maxCandidatesPerDependency)||10,20))});
     const rateLimited=result.statuses.find((status:any)=>status.state==='rate_limited');
     const headers:Record<string,string>={};
     if(rateLimited?.retryAfterMs)headers['Retry-After']=String(Math.max(1,Math.ceil(rateLimited.retryAfterMs/1000)));

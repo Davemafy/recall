@@ -161,11 +161,15 @@ export default function FigmaDashboard(){
             <section className="figmaPanel dependencyPanel">
               <div className="figmaPanelHeading actionHeading">
                 <h2>Disputed Dependencies</h2>
-                <select value={filter} onChange={e=>setFilter(e.target.value as any)} aria-label="Filter disputed dependencies">
-                  <option value="ALL">All</option>
-                  <option value="174">Dkt. 174</option>
-                  <option value="182">Dkt. 182</option>
-                </select>
+                <label className="figmaFilterControl">
+                  <span className="srOnly">Filter disputed dependencies</span>
+                  <select value={filter} onChange={e=>setFilter(e.target.value as any)} aria-label="Filter disputed dependencies">
+                    <option value="ALL">All</option>
+                    <option value="174">Dkt. 174</option>
+                    <option value="182">Dkt. 182</option>
+                  </select>
+                  <img src={FIGMA_ASSETS_B.chevron} alt=""/>
+                </label>
               </div>
               <div className="figmaRecommendations">
                 {visible.map((dep)=>{

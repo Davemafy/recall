@@ -3392,3 +3392,350 @@ body{font-family:'Satoshi',Arial,sans-serif}
   .corpusXLedger>button>em{grid-column:2}
   .corpusXLedger>button>b{grid-column:3;grid-row:1/3}
 }
+
+
+/* Imported-corpus incident — evidence ledger, no graph/dashboard chrome. */
+.corpusIncidentPage{
+  min-height:100vh;
+  background:#e9e9e9;
+  color:#071107;
+  font-family:'Satoshi',Arial,sans-serif;
+}
+.corpusIncidentHero{
+  display:grid;
+  grid-template-columns:minmax(320px,1fr) minmax(220px,.55fr) minmax(260px,.65fr);
+  min-height:300px;
+  border-bottom:1px solid rgba(7,17,7,.16);
+}
+.corpusIncidentIdentity{
+  padding:42px clamp(28px,4vw,58px);
+  border-right:1px solid rgba(7,17,7,.16);
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+}
+.corpusIncidentIdentity>span,.corpusIncidentAction>span,.corpusIncidentRemediationHead>span{
+  color:#6d716d;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.14em;
+}
+.corpusIncidentIdentity h1{
+  margin:12px 0 8px;
+  font-family:'Clash Display','Satoshi',sans-serif;
+  font-size:clamp(44px,5vw,76px);
+  line-height:.9;
+  letter-spacing:-.055em;
+  font-weight:600;
+}
+.corpusIncidentIdentity>strong{
+  color:#235f24;
+  font-size:12px;
+}
+.corpusIncidentIdentity p{
+  max-width:600px;
+  margin:18px 0 0;
+  color:#696d69;
+  font-size:10px;
+  line-height:1.6;
+}
+.corpusIncidentCount{
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  padding:34px 28px;
+  border-right:1px solid rgba(7,17,7,.16);
+  background:#dfe4dc;
+}
+.corpusIncidentCount>strong{
+  font-family:'Clash Display','Satoshi',sans-serif;
+  font-size:clamp(92px,10vw,148px);
+  line-height:.72;
+  letter-spacing:-.08em;
+  font-weight:600;
+}
+.corpusIncidentCount>span{
+  margin-top:18px;
+  color:#5d655d;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.13em;
+}
+.corpusIncidentAction{
+  padding:34px 28px;
+  background:#b6c9b1;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+}
+.corpusIncidentAction>span{color:#4c594a}
+.corpusIncidentAction p{
+  margin:10px 0 22px;
+  color:#334033;
+  font-size:10px;
+  line-height:1.55;
+}
+.corpusIncidentAction button,.corpusIncidentDone{
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border:0;
+  border-top:1px solid #071107;
+  border-bottom:1px solid #071107;
+  background:transparent;
+  color:#071107;
+  padding:0;
+  font:750 9px/1 'Satoshi',sans-serif;
+}
+.corpusIncidentAction button{cursor:pointer}
+.corpusIncidentDone b{color:#235f24}
+.corpusIncidentSummary{
+  min-height:122px;
+  display:grid;
+  grid-template-columns:140px 30px 140px 30px 140px minmax(240px,1fr);
+  gap:8px;
+  align-items:center;
+  padding:22px clamp(28px,4vw,58px);
+  border-bottom:1px solid rgba(7,17,7,.16);
+}
+.corpusIncidentSummary>div strong{
+  display:block;
+  font-family:'Clash Display','Satoshi',sans-serif;
+  font-size:48px;
+  line-height:.8;
+  letter-spacing:-.05em;
+  font-weight:600;
+}
+.corpusIncidentSummary>div span{
+  display:block;
+  margin-top:10px;
+  color:#707470;
+  font-size:7px;
+  font-weight:800;
+  letter-spacing:.1em;
+}
+.corpusIncidentSummary>i{
+  color:#235f24;
+  font-style:normal;
+  font-size:20px;
+}
+.corpusIncidentSummary>p{
+  margin:0;
+  color:#6c706c;
+  font-size:9px;
+  line-height:1.6;
+}
+.corpusIncidentLedger{
+  border-top:1px solid #071107;
+  border-bottom:1px solid #071107;
+}
+.corpusIncidentLedger>header,.corpusIncidentLedger>button{
+  display:grid;
+  grid-template-columns:110px minmax(220px,1fr) minmax(220px,1fr) 42px;
+  align-items:center;
+}
+.corpusIncidentLedger>header{
+  min-height:42px;
+  background:#071107;
+  color:#788078;
+}
+.corpusIncidentLedger>header>span{
+  padding:0 16px;
+  font-size:7px;
+  font-weight:800;
+  letter-spacing:.12em;
+}
+.corpusIncidentLedger>button{
+  width:100%;
+  min-height:76px;
+  border:0;
+  border-bottom:1px solid rgba(7,17,7,.16);
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.corpusIncidentLedger>button:last-child{border-bottom:0}
+.corpusIncidentLedger>button:hover,.corpusIncidentLedger>button.is-active{background:#dfe4dc}
+.corpusIncidentLedger>button>span,.corpusIncidentLedger>button>div,.corpusIncidentLedger>button>b{
+  padding:0 16px;
+}
+.corpusIncidentLedger>button>span{
+  color:#235f24;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+.corpusIncidentLedger>button>div strong{
+  display:block;
+  font-size:10px;
+  font-weight:700;
+}
+.corpusIncidentLedger>button>div small{
+  display:block;
+  margin-top:4px;
+  color:#717571;
+  font-size:8px;
+}
+.corpusIncidentLedger>button>b{
+  justify-self:end;
+  font-size:14px;
+  font-weight:500;
+}
+.corpusIncidentEvidence{
+  display:grid;
+  grid-template-columns:minmax(280px,.65fr) minmax(0,1.35fr);
+  border-bottom:1px solid #071107;
+}
+.corpusIncidentEvidenceMeta{
+  min-height:300px;
+  padding:34px clamp(24px,3vw,46px);
+  background:#071107;
+  color:#efefeb;
+}
+.corpusIncidentEvidenceMeta>span{
+  color:#b6c9b1;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.12em;
+}
+.corpusIncidentEvidenceMeta h2{
+  margin:14px 0 10px;
+  font-family:'Clash Display','Satoshi',sans-serif;
+  font-size:38px;
+  line-height:.96;
+  letter-spacing:-.045em;
+  font-weight:600;
+}
+.corpusIncidentEvidenceMeta p{
+  color:#909790;
+  font-size:9px;
+}
+.corpusIncidentEvidenceBody{
+  padding:32px clamp(24px,4vw,52px);
+}
+.corpusIncidentEvidenceBody article{
+  padding-bottom:22px;
+  margin-bottom:22px;
+  border-bottom:1px solid rgba(7,17,7,.16);
+}
+.corpusIncidentEvidenceBody article>div{
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+}
+.corpusIncidentEvidenceBody article>div>span{
+  color:#235f24;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.09em;
+}
+.corpusIncidentEvidenceBody article>div>small{
+  color:#775b3d;
+  font-size:7px;
+  font-weight:800;
+}
+.corpusIncidentEvidenceBody blockquote{
+  margin:14px 0 10px;
+  font-size:12px;
+  line-height:1.65;
+}
+.corpusIncidentEvidenceBody p{
+  color:#6c706c;
+  font-size:9px;
+  line-height:1.5;
+}
+.corpusIncidentEvidenceBody strong{
+  color:#775b3d;
+  font-size:9px;
+}
+.corpusIncidentRemediation{
+  display:grid;
+  grid-template-columns:300px minmax(0,1fr);
+  border-bottom:1px solid #071107;
+}
+.corpusIncidentRemediationHead{
+  padding:34px 28px;
+  border-right:1px solid rgba(7,17,7,.16);
+}
+.corpusIncidentRemediationHead>span{color:#235f24}
+.corpusIncidentRemediationHead h2{
+  margin:9px 0 12px;
+  font-family:'Clash Display','Satoshi',sans-serif;
+  font-size:32px;
+  line-height:.95;
+  letter-spacing:-.04em;
+  font-weight:600;
+}
+.corpusIncidentRemediationHead p{
+  color:#6d716d;
+  font-size:9px;
+  line-height:1.55;
+}
+.corpusIncidentQueue article{
+  display:grid;
+  grid-template-columns:74px minmax(180px,.85fr) minmax(220px,1.2fr) 150px;
+  gap:16px;
+  align-items:center;
+  min-height:78px;
+  padding:0 20px;
+  border-bottom:1px solid rgba(7,17,7,.16);
+}
+.corpusIncidentQueue article:last-child{border-bottom:0}
+.corpusIncidentQueue article>span{
+  color:#775b3d;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+.corpusIncidentQueue article strong{
+  display:block;
+  font-size:10px;
+}
+.corpusIncidentQueue article small{
+  display:block;
+  margin-top:4px;
+  color:#717571;
+  font-size:8px;
+}
+.corpusIncidentQueue article p{
+  margin:0;
+  color:#6f736f;
+  font-size:9px;
+  line-height:1.45;
+}
+.corpusIncidentQueue select{
+  border:0;
+  border-bottom:1px solid #071107;
+  background:transparent;
+  color:#071107;
+  padding:8px 0;
+  outline:none;
+  font:700 8px/1 'Satoshi',sans-serif;
+}
+@media(max-width:900px){
+  .corpusIncidentHero{grid-template-columns:1fr 220px}
+  .corpusIncidentAction{grid-column:1/-1}
+  .corpusIncidentSummary{grid-template-columns:1fr 24px 1fr 24px 1fr}
+  .corpusIncidentSummary>p{grid-column:1/-1}
+  .corpusIncidentRemediation{grid-template-columns:1fr}
+  .corpusIncidentRemediationHead{border-right:0;border-bottom:1px solid rgba(7,17,7,.16)}
+}
+@media(max-width:650px){
+  .corpusIncidentHero{display:block}
+  .corpusIncidentIdentity,.corpusIncidentCount{border-right:0;border-bottom:1px solid rgba(7,17,7,.16)}
+  .corpusIncidentSummary{grid-template-columns:1fr 20px 1fr}
+  .corpusIncidentSummary>div:nth-of-type(3){grid-column:1}
+  .corpusIncidentSummary>p{grid-column:1/-1}
+  .corpusIncidentLedger>header{display:none}
+  .corpusIncidentLedger>button{
+    grid-template-columns:80px 1fr 34px;
+    gap:5px 0;
+    padding:14px 0;
+  }
+  .corpusIncidentLedger>button>div:nth-of-type(2){grid-column:2}
+  .corpusIncidentLedger>button>b{grid-column:3;grid-row:1/3}
+  .corpusIncidentEvidence{grid-template-columns:1fr}
+  .corpusIncidentQueue article{grid-template-columns:1fr;gap:7px;padding:16px 18px}
+}

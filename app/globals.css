@@ -2069,3 +2069,8 @@
 .recallCreateResultEvidence a{color:#1738c7}
 .recallCreateError{background:#26120e;color:#ffb5a2}
 .recallCreatePage input:focus-visible,.recallCreatePage select:focus-visible,.recallCreatePage button:focus-visible,.recallCreatePage a:focus-visible{outline-color:#e95f42}
+
+.recallHomeCaseLink{
+  display:block;margin-top:0;color:#0b0b0a;text-decoration:none;font-size:25px;letter-spacing:-.035em;font-weight:720
+}
+.recallHomeCaseLink:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}

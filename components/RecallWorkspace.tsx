@@ -5,11 +5,13 @@ import Link from 'next/link';
 import {analyzeCorpus,graphFor,remediationFor,INCIDENT_CASE,INCIDENT_CITATION} from '../lib/recall-core.mjs';
 // @ts-ignore
 import {createDemoCorpus,DEMO_INCIDENT} from '../lib/demo-corpus.mjs';
+// @ts-ignore Shared domain constants keep corpus truth states centralized.
+import {RELATIONSHIP_STATE} from '../lib/domain.mjs';
 
 type Props={mode:'demo'|'real';documents?:any[];incident?:any};
 
-const edgeLabel=(t:string)=>t==='CONFIRMED_CITATION_DEPENDENCY'?'Confirmed citation':t==='CONFIRMED_QUOTE_REUSE'?'Confirmed quote reuse':'Possible related claim';
-const edgeShort=(t:string)=>t==='CONFIRMED_CITATION_DEPENDENCY'?'CITATION':t==='CONFIRMED_QUOTE_REUSE'?'QUOTE':'POSSIBLE';
+const edgeLabel=(t:string)=>t===RELATIONSHIP_STATE.CONFIRMED_CITATION?'Confirmed citation':t===RELATIONSHIP_STATE.CONFIRMED_QUOTE?'Confirmed quote reuse':'Possible related claim';
+const edgeShort=(t:string)=>t===RELATIONSHIP_STATE.CONFIRMED_CITATION?'CITATION':t===RELATIONSHIP_STATE.CONFIRMED_QUOTE?'QUOTE':'POSSIBLE';
 
 function EvidenceGraph({graph,stage,onSelect,onSelectEdge}:{graph:any;stage:number;onSelect:(id:string)=>void;onSelectEdge:(edge:any)=>void}){
   const docs=graph.nodes.filter((n:any)=>n.type==='DOCUMENT');
@@ -23,7 +25,7 @@ function EvidenceGraph({graph,stage,onSelect,onSelectEdge}:{graph:any;stage:numb
   visibleDocs.forEach((n:any,i:number)=>positions.set(n.id,{x:620,y:48+i*(410/Math.max(1,visibleDocs.length-1))}));
   visibleMatters.forEach((n:any,i:number)=>positions.set(n.id,{x:875,y:90+i*(330/Math.max(1,visibleMatters.length-1))}));
   const visibleEdges=graph.edges.filter((e:any)=>positions.has(e.source)&&positions.has(e.target)&&(
-    e.type==='MATTER_LINK'?stage>=4:e.type==='POSSIBLE_RELATED_PROPOSITION'?stage>=5:true
+    e.type==='MATTER_LINK'?stage>=4:e.type===RELATIONSHIP_STATE.POSSIBLE?stage>=5:true
   ));
   return <div className="graphShell">
     <svg className="graphSvg" viewBox="0 0 1000 500" role="img" aria-label="Dependency graph">
@@ -82,7 +84,7 @@ export default function RecallWorkspace({mode,documents,incident}:Props){
       </aside>
     </section>:<section className="queueView"><div className="queueIntro"><div className="heroIndex">REMEDIATION</div><h2>What needs attention now.</h2><p>Priority comes from explicit document status and dependency type — not an AI risk score.</p></div><div className="queueList">{remediation.map((item:any)=><article key={item.id}><div className={`priority ${item.priority}`}>{item.priority}</div><div><h3>{item.documentTitle}</h3><p>{edgeLabel(item.dependencyType)}</p><small>{item.recommendedAction}</small></div><select value={queueState[item.id]||'OPEN'} onChange={e=>updateQueue(item.id,e.target.value)}><option>OPEN</option><option>REVIEWED</option><option>NEEDS_CORRECTION</option><option>RESOLVED</option><option>NOT_RELATED</option></select></article>)}</div></section>}
 
-    {selectedEdge&&<div className="drawerBackdrop" onClick={()=>setSelectedEdge(null)}><aside className="drawer" onClick={e=>e.stopPropagation()}><button className="drawerClose" onClick={()=>setSelectedEdge(null)}>×</button><div className="heroIndex">EDGE PROVENANCE</div><h2>{edgeLabel(selectedEdge.type)}</h2><div className="drawerMeta"><span>{selectedEdge.type}</span><span>{selectedEdge.type==='POSSIBLE_RELATED_PROPOSITION'?'HEURISTIC · REVIEW ONLY':'DETERMINISTIC'}</span></div><div className={`evidenceBlock ${selectedEdge.type}`}><div className="edgeKind">WHY THIS EDGE EXISTS</div><blockquote>{selectedEdge.evidence?.raw||'Explicit metadata relationship'}</blockquote><p>{selectedEdge.evidence?.rule||'Explicit relation metadata'}</p>{typeof selectedEdge.evidence?.score==='number'&&<p>Measured overlap / similarity: {selectedEdge.evidence.score.toFixed(3)}</p>}{selectedEdge.type==='POSSIBLE_RELATED_PROPOSITION'&&<strong>Human review required. Similarity does not prove lineage.</strong>}</div></aside></div>}
-    {selectedDoc&&<div className="drawerBackdrop" onClick={()=>setSelectedDoc(null)}><aside className="drawer" onClick={e=>e.stopPropagation()}><button className="drawerClose" onClick={()=>setSelectedDoc(null)}>×</button><div className="heroIndex">DOCUMENT EVIDENCE</div><h2>{selectedDoc.title}</h2><div className="drawerMeta"><span>{selectedDoc.status}</span><span>{selectedDoc.matterName||'Matter unknown'}</span><span>{selectedDoc.versionLabel||'Version unknown'}</span></div>{(analysis.byDoc.get(selectedDoc.id)||[]).map((e:any)=><div className={`evidenceBlock ${e.type}`} key={e.id}><div className="edgeKind">{edgeShort(e.type)}</div><blockquote>{e.evidence.raw}</blockquote><p>{e.evidence.rule}</p>{e.type==='POSSIBLE_RELATED_PROPOSITION'&&<strong>Human review required.</strong>}</div>)}<div className="documentText">{selectedDoc.text}</div></aside></div>}
+    {selectedEdge&&<div className="drawerBackdrop" onClick={()=>setSelectedEdge(null)}><aside className="drawer" onClick={e=>e.stopPropagation()}><button className="drawerClose" onClick={()=>setSelectedEdge(null)}>×</button><div className="heroIndex">EDGE PROVENANCE</div><h2>{edgeLabel(selectedEdge.type)}</h2><div className="drawerMeta"><span>{selectedEdge.type}</span><span>{selectedEdge.type===RELATIONSHIP_STATE.POSSIBLE?'HEURISTIC · REVIEW ONLY':'DETERMINISTIC'}</span></div><div className={`evidenceBlock ${selectedEdge.type}`}><div className="edgeKind">WHY THIS EDGE EXISTS</div><blockquote>{selectedEdge.evidence?.raw||'Explicit metadata relationship'}</blockquote><p>{selectedEdge.evidence?.rule||'Explicit relation metadata'}</p>{typeof selectedEdge.evidence?.score==='number'&&<p>Measured overlap / similarity: {selectedEdge.evidence.score.toFixed(3)}</p>}{selectedEdge.type===RELATIONSHIP_STATE.POSSIBLE&&<strong>Human review required. Similarity does not prove lineage.</strong>}</div></aside></div>}
+    {selectedDoc&&<div className="drawerBackdrop" onClick={()=>setSelectedDoc(null)}><aside className="drawer" onClick={e=>e.stopPropagation()}><button className="drawerClose" onClick={()=>setSelectedDoc(null)}>×</button><div className="heroIndex">DOCUMENT EVIDENCE</div><h2>{selectedDoc.title}</h2><div className="drawerMeta"><span>{selectedDoc.status}</span><span>{selectedDoc.matterName||'Matter unknown'}</span><span>{selectedDoc.versionLabel||'Version unknown'}</span></div>{(analysis.byDoc.get(selectedDoc.id)||[]).map((e:any)=><div className={`evidenceBlock ${e.type}`} key={e.id}><div className="edgeKind">{edgeShort(e.type)}</div><blockquote>{e.evidence.raw}</blockquote><p>{e.evidence.rule}</p>{e.type===RELATIONSHIP_STATE.POSSIBLE&&<strong>Human review required.</strong>}</div>)}<div className="documentText">{selectedDoc.text}</div></aside></div>}
   </main>
 }

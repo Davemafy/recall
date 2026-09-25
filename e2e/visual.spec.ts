@@ -23,6 +23,6 @@ test('capture visual QA states',async({page})=>{
   await page.getByRole('button',{name:'Trace impact'}).click();
   await page.screenshot({path:'test-results/visual/root-traced-1690x1096.png',fullPage:true});
 
-  await page.getByText('Wilson v. Jackson',{exact:true}).click();
-  await page.screenshot({path:'test-results/visual/root-selected-wilson-1690x1096.png',fullPage:true});
+  await page.getByText('Williams v. Asplundh Tree Expert Co.',{exact:true}).click();
+  await page.screenshot({path:'test-results/visual/root-selected-williams-1690x1096.png',fullPage:true});
 });

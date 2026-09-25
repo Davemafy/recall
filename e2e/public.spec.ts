@@ -95,3 +95,37 @@ test('major dashboard regions match authored Figma coordinates at design size',a
   const shellShadow=await page.locator('.figmaDashboard').evaluate(el=>getComputedStyle(el).boxShadow);
   expect(shellShadow).not.toContain('255, 61, 31');
 });
+
+
+test('selected dependency changes the evidence filing state without changing the composition',async({page})=>{
+  await page.setViewportSize({width:1690,height:1096});
+  await page.goto('/');
+  await page.getByRole('button',{name:'Trace impact'}).click();
+
+  await expect(page.locator('.figmaChange.c2')).toHaveText('D174');
+  await page.getByText('Williams v. Asplundh Tree Expert Co.',{exact:true}).click();
+  await expect(page.locator('.figmaChange.c2')).toHaveText('D182');
+  await expect(page.locator('.figmaBubble.hot.selected')).toHaveCount(1);
+
+  await page.getByText('United States v. Baker',{exact:true}).click();
+  await expect(page.locator('.figmaChange.c2')).toHaveText('D174');
+  await expect(page.locator('.figmaBubble.hot.selected')).toHaveCount(1);
+});
+
+test('authored control geometry matches Figma at design size',async({page})=>{
+  await page.setViewportSize({width:1690,height:1096});
+  await page.goto('/');
+
+  await expect(page.locator('.figmaBrand')).toHaveCSS('width','46px');
+  await expect(page.locator('.figmaBrand')).toHaveCSS('height','46px');
+  await expect(page.locator('.figmaNavItem').first()).toHaveCSS('width','46px');
+  await expect(page.locator('.figmaNavItem').first()).toHaveCSS('height','46px');
+  await expect(page.locator('.figmaQuickActions')).toHaveCSS('width','108px');
+  await expect(page.locator('.figmaQuickActions')).toHaveCSS('height','56px');
+  await expect(page.locator('.figmaProfile')).toHaveCSS('width','204px');
+  await expect(page.locator('.figmaProfile')).toHaveCSS('height','56px');
+  await expect(page.locator('.figmaDownload')).toHaveCSS('width','112px');
+  await expect(page.locator('.figmaDownload')).toHaveCSS('height','48px');
+  await expect(page.locator('.figmaTheme button.active img')).toHaveCSS('width','19px');
+  await expect(page.locator('.figmaTheme button.active img')).toHaveCSS('height','19px');
+});

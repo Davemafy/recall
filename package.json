@@ -1,0 +1,33 @@
+{
+  "name": "recall",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --ext .js,.mjs,.ts,.tsx --max-warnings=0",
+    "test": "node --test test/*.test.mjs",
+    "bench": "node bench/run.mjs",
+    "e2e": "playwright test",
+    "typecheck": "tsc --noEmit",
+    "bench:live": "node bench/live-run.mjs"
+  },
+  "dependencies": {
+    "next": "^15.5.3",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "pdfjs-dist": "^5.4.149",
+    "mammoth": "^1.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "typescript": "^5.9.2",
+    "@playwright/test": "^1.55.0",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^15.5.3"
+  }
+}

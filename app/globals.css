@@ -2686,3 +2686,31 @@
 .recallVXIncidentMeta h1,.recallVXStageIntro h2,.recallVXImpactBar h2,.recallVXEvidenceHalf h3{
   font-family:'Clash Display','Satoshi',sans-serif!important;
 }
+
+
+/* Palette correction — the new surfaces use Tetra's moss/sage/graphite family, not AI orange/purple. */
+body{font-family:'Satoshi',Arial,sans-serif}
+.recallHomePage,.recallCreatePage{
+  --brand-ink:#071107;
+  --brand-paper:#e9e9e9;
+  --brand-sage:#b6c9b1;
+  --brand-green:#235f24;
+  --brand-moss:#3f483f;
+  --brand-brown:#775b3d;
+}
+.recallHomePage{background:var(--brand-ink)}
+.recallHomeCopy h1 em{color:var(--brand-sage)}
+.recallHomeEyebrow span{color:var(--brand-sage)}
+.recallHomePrimary{background:var(--brand-sage);color:var(--brand-ink)!important}
+.recallHomePreviewHead>div>span{color:var(--brand-sage)}
+.recallHomeMiniRow>span.is-hit{color:var(--brand-sage)}
+.recallHomePreviewFooter b{color:var(--brand-sage)}
+.recallCreateIntro h1 em{color:var(--brand-sage)}
+.recallCreateFeatured>div>span{color:var(--brand-sage)}
+.recallCreateFeatured>em{color:var(--brand-sage)}
+.recallCreateBuilder{background:var(--brand-paper);color:var(--brand-ink)}
+.recallCreateBuilderHead>div>span{color:var(--brand-green)}
+.recallCreateTrace{background:var(--brand-ink)}
+.recallCreateTrace b{color:var(--brand-sage)}
+.recallCreateResultHead>div>span,.recallCreateResultState{color:var(--brand-green)}
+.recallCreateResultEvidence a{color:var(--brand-green)}

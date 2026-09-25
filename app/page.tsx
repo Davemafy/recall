@@ -35,7 +35,7 @@ export default function Home(){
 
       <div className="recallHomePreview" aria-label="Johnson v. Dunn incident preview">
         <div className="recallHomePreviewHead">
-          <div><span>RECORDED PUBLIC INCIDENT</span><strong>Johnson v. Dunn</strong></div>
+          <div><span>RECORDED PUBLIC INCIDENT</span><Link href="/incident/demo" className="recallHomeCaseLink">Johnson v. Dunn</Link></div>
           <b>05</b>
         </div>
         <div className="recallHomePreviewMeta">

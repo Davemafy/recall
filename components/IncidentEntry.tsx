@@ -3,6 +3,7 @@
 import {useMemo,useState} from 'react';
 import Link from 'next/link';
 import CockpitShell,{SummaryCards} from './CockpitShell';
+import {downloadJson,recordActivity} from '../lib/recall-client';
 
 type DependencyDraft={id:string;type:'AUTHORITY'|'QUOTATION';text:string};
 type TraceResponse={
@@ -33,13 +34,17 @@ export default function IncidentEntry(){
       const data=await response.json();
       if(!response.ok||!data.ok){setError(data.message||'Incident trace could not complete.');return}
       setResult(data);
+      recordActivity({kind:'INCIDENT',title:'Incident trace · '+usable.length+' dependencies',subtitle:(data.summary?.confirmedAffectedFilings??0)+' affected filings · '+(data.summary?.confirmedRelationships??0)+' confirmed relationships',confirmed:data.summary?.confirmedRelationships??0,checked:data.summary?.dependenciesTraced??usable.length,dockets:data.summary?.uniqueDockets??0,href:'/incident'});
     }catch{setError('Incident trace could not reach the public-source service.')}
     finally{setBusy(false)}
   };
 
   const documentById=new Map((result?.documents||[]).map(document=>[String(document.id),document]));
+  const reset=()=>{setSourceUrl('');setDependencies([newDraft(1)]);setResult(null);setError('')};
+  const exportResult=()=>result&&downloadJson('recall-incident-trace.json',{sourceUrl:sourceUrl||null,summary:result.summary,documents:result.documents,relationships:result.relationships,diagnostics:result.diagnostics});
+  const action=<div className="fc-action-row">{result&&<button className="fc-secondary-button" onClick={exportResult}>Export result</button>}<button className="fc-metal-button" onClick={trace} disabled={busy||!usable.length}>{busy?'Tracing…':'Trace impact'}</button></div>;
 
-  return <CockpitShell pageTitle="New incident" heading="Incident" code="#OPEN" status="Public federal filing search" action={<button className="fc-metal-button" onClick={trace} disabled={busy||!usable.length}>{busy?'Tracing…':'Trace impact'}</button>}>
+  return <CockpitShell pageTitle="New incident" heading="Incident" code="#OPEN" status="Public federal filing search" action={action}>
     <SummaryCards items={[
       {label:'Dependencies Ready',value:String(usable.length).padStart(2,'0')},
       {label:'Affected Filings',value:result?.summary?String(result.summary.confirmedAffectedFilings).padStart(2,'0'):'—'},
@@ -64,7 +69,7 @@ export default function IncidentEntry(){
           <input value={dependency.text} onChange={e=>update(dependency.id,{text:e.target.value})} placeholder={dependency.type==='AUTHORITY'?'550 U.S. 544 or 2006 WL 8438651':'Paste disputed quotation'} aria-label={'Dependency '+(index+1)}/>
           <button onClick={()=>remove(dependency.id)} aria-label={'Remove dependency '+(index+1)}>×</button>
         </div>)}
-        <div className="fc-builder-actions"><button onClick={add} disabled={dependencies.length>=10}>+ Add dependency</button><span>{usable.length} ready</span></div>
+        <div className="fc-builder-actions"><div><button onClick={add} disabled={dependencies.length>=10}>+ Add dependency</button>{(usable.length>0||result)&&<button className="fc-inline-reset" onClick={reset}>Reset</button>}</div><span>{usable.length} ready</span></div>
         {sourceUrl&&<p className="fc-inline-note">Source URL is incident context only. The URL itself is never treated as proof.</p>}
         {error&&<div className="fc-error" role="alert">{error}</div>}
       </div>

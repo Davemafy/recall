@@ -8,6 +8,7 @@ import {getRecordedIncident,JOHNSON_DUNN_ORDER_URL} from '../lib/recorded-incide
 // @ts-ignore shared domain labels
 import {relationshipLabel} from '../lib/domain.mjs';
 import {FIGMA_ASSETS_B} from '../lib/figma-assets-b';
+import {downloadJson} from '../lib/recall-client';
 
 type Dependency={
   id:string; rawText:string; canonicalCitation?:string; caseName?:string; incidentFinding?:string;
@@ -38,6 +39,10 @@ export default function IncidentDemo(){
   }));
   const [drawerOpen,setDrawerOpen]=useState(false);
   const [showProvenance,setShowProvenance]=useState(false);
+  const [dependencyFilter,setDependencyFilter]=useState<'ALL'|'174'|'182'>('ALL');
+
+  const filteredDependencies=dependencies.filter(dependency=>{if(dependencyFilter==='ALL') return true; const relationship=relationships.find(r=>r.dependencyId===dependency.id); const filing=relationship?filings.find(f=>f.id===relationship.filingId):undefined; return filing?.documentNumber===dependencyFilter});
+  const exportIncident=()=>downloadJson('recall-johnson-dunn-incident.json',data);
 
   const openDependency=(dependency:Dependency)=>{
     const relationship=relationships.find(r=>r.dependencyId===dependency.id);
@@ -58,7 +63,7 @@ export default function IncidentDemo(){
     heading="Incident"
     code="#JD–01701"
     status="Recorded public incident"
-    action={<button className={'fc-metal-button '+(traced?'is-done':'')} onClick={()=>setTraced(true)}>{traced?'Impact traced':'Trace impact'}</button>}
+    action={<div className="fc-action-row"><button className="fc-secondary-button" onClick={exportIncident}>Export incident</button><button className={'fc-metal-button '+(traced?'is-done':'')} onClick={()=>setTraced(true)}>{traced?'Impact traced':'Trace impact'}</button></div>}
   >
     <SummaryCards items={[
       {label:'Disputed Dependencies',value:'05'},
@@ -87,9 +92,9 @@ export default function IncidentDemo(){
 
     <section className="fc-insights">
       <section className="fc-panel fc-dependency-panel">
-        <header className="fc-panel-heading compact"><div><h2>Disputed Dependencies</h2><small>05 from court source</small></div><span className="fc-filter">All <img src={FIGMA_ASSETS_B.chevron} alt=""/></span></header>
+        <header className="fc-panel-heading compact"><div><h2>Disputed Dependencies</h2><small>{String(filteredDependencies.length).padStart(2,'0')} shown · 05 from court source</small></div><select className="fc-filter-select" value={dependencyFilter} onChange={e=>setDependencyFilter(e.target.value as 'ALL'|'174'|'182')} aria-label="Filter dependencies by filing"><option value="ALL">All</option><option value="174">Dkt. 174</option><option value="182">Dkt. 182</option></select></header>
         <div className="fc-dependency-list">
-          {dependencies.map((dependency)=><button
+          {filteredDependencies.map((dependency)=><button
             key={dependency.id}
             className={'fc-dependency-row '+(selected.dependency.id===dependency.id?'is-selected':'')}
             onClick={()=>{openDependency(dependency);setDrawerOpen(true)}}

@@ -21,7 +21,7 @@ export default function RecallWorkspace({mode,documents,incident}:Props){
  const updateQueue=(id:string,status:string)=>{const next={...queueState,[id]:status};setQueueState(next);localStorage.setItem('recall-remediation',JSON.stringify(next))};
  const summary=analysis.summary; const selectedEdges=selectedDoc?(analysis.byDoc.get(selectedDoc.id)||[]):[];
 
- return <CockpitShell pageTitle={activeIncident.caseName||'Corpus incident'} heading="Corpus incident" code="#LOCAL" status={mode==='real'?'Local corpus':'Demo corpus'}>
+ return <CockpitShell pageTitle={activeIncident.caseName||'Corpus incident'} heading="Corpus incident" status={mode==='real'?'Local corpus':'Demo corpus'}>
    <SummaryCards items={[
      {label:'Confirmed Docs',value:String(summary.confirmedAffectedDocuments).padStart(2,'0')},
      {label:'Citation Relations',value:String(summary.confirmedCitationDependencies).padStart(2,'0')},

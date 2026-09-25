@@ -10,9 +10,9 @@ import {FIGMA_ASSETS_B} from '../lib/figma-assets-b';
 
 const nav=[
   {href:'/',label:'Dashboard',icon:FIGMA_ASSETS_A.grid},
-  {href:'/incident',label:'Incidents',icon:FIGMA_ASSETS_A.bars},
+  {href:'/incident',label:'New incident',icon:FIGMA_ASSETS_A.bars},
   {href:'/trace',label:'Quick trace',icon:FIGMA_ASSETS_A.calendar},
-  {href:'/corpus',label:'Corpus',icon:FIGMA_ASSETS_A.cursor},
+  {href:'/corpus',label:'Local corpus',icon:FIGMA_ASSETS_A.cursor},
   {href:'/incident/demo',label:'Recorded incident',icon:FIGMA_ASSETS_A.user}
 ];
 
@@ -41,7 +41,7 @@ export default function CockpitShell({
 }:{
   pageTitle:string;
   heading:string;
-  code:string;
+  code?:string;
   action?:ReactNode;
   status?:string;
   children:ReactNode;
@@ -89,7 +89,7 @@ export default function CockpitShell({
         </div>
 
         <div className="fc-utility-nav">
-          <button className={'fc-nav-item '+(menu==='settings'?'is-active':'')} aria-label="Settings" title="Settings" aria-expanded={menu==='settings'} onClick={()=>toggle('settings')}><img src={FIGMA_ASSETS_A.settings} alt=""/></button>
+          <button className={'fc-nav-item '+(menu==='settings'?'is-active':'')} aria-label="Interface settings" title="Interface settings" aria-expanded={menu==='settings'} onClick={()=>toggle('settings')}><img src={FIGMA_ASSETS_A.settings} alt=""/></button>
           <Link className="fc-nav-item" href="/" aria-label="Return to dashboard" title="Return to dashboard"><img src={FIGMA_ASSETS_A.logout} alt=""/></Link>
           <div className="fc-theme-switch" role="group" aria-label="Appearance">
             <button className={theme==='light'?'is-selected':''} aria-label="Use light theme" aria-pressed={theme==='light'} onClick={()=>setAppearance('light')}><img src={FIGMA_ASSETS_A.sun} alt=""/></button>
@@ -99,10 +99,9 @@ export default function CockpitShell({
 
         {menu==='settings'&&<div className="fc-popover fc-settings-popover" role="dialog" aria-label="Interface settings">
           <div className="fc-popover-kicker">INTERFACE</div>
-          <strong>Settings</strong>
-          <p>Appearance is stored only in this browser.</p>
+          <strong>Appearance</strong>
+          <p>Dark is the authored RECALL surface. Light keeps the same hierarchy with corrected contrast.</p>
           <div className="fc-setting-row"><span>Theme</span><div><button className={theme==='light'?'is-selected':''} onClick={()=>setAppearance('light')}>Light</button><button className={theme==='dark'?'is-selected':''} onClick={()=>setAppearance('dark')}>Dark</button></div></div>
-          <Link href="/corpus" onClick={()=>setMenu(null)}>Open local corpus settings ↗</Link>
         </div>}
       </aside>
 
@@ -133,12 +132,13 @@ export default function CockpitShell({
           {menu==='profile'&&<div className="fc-popover fc-profile-popover" role="menu" aria-label="RECALL workspace menu">
             <div className="fc-popover-kicker">RECALL</div>
             <Link href="/incident/demo" role="menuitem" onClick={()=>setMenu(null)}>Recorded incident</Link>
+            <Link href="/incident" role="menuitem" onClick={()=>setMenu(null)}>New incident</Link>
             <Link href="/trace" role="menuitem" onClick={()=>setMenu(null)}>Quick trace</Link>
             <Link href="/corpus" role="menuitem" onClick={()=>setMenu(null)}>Local corpus</Link>
           </div>}
 
           <div className="fc-incident-heading">
-            <h1>{heading}, <span>{code}</span></h1>
+            <h1>{heading}{code&&<>, <span>{code}</span></>}</h1>
             {action}
           </div>
         </header>

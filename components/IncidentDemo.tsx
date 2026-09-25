@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import {useMemo,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import CockpitShell,{SummaryCards} from './CockpitShell';
 // @ts-ignore shared recorded incident fixture
 import {getRecordedIncident,JOHNSON_DUNN_ORDER_URL} from '../lib/recorded-incident.mjs';
@@ -21,8 +21,19 @@ type Relationship={
   id:string; dependencyId:string; filingId:string; state:string;
   evidence:{exactText:string;sourceUrl:string;sourceType:string;location:string;explanation:string};
 };
+type FilingFilter='ALL'|'174'|'182';
 
 const dateLabel=(value:string)=>new Intl.DateTimeFormat('en',{year:'numeric',month:'short',day:'2-digit'}).format(new Date(value));
+
+function downloadJson(filename:string,value:unknown){
+  const blob=new Blob([JSON.stringify(value,null,2)],{type:'application/json;charset=utf-8'});
+  const href=URL.createObjectURL(blob);
+  const anchor=document.createElement('a');
+  anchor.href=href;
+  anchor.download=filename;
+  anchor.click();
+  URL.revokeObjectURL(href);
+}
 
 export default function IncidentDemo(){
   const data=useMemo(()=>getRecordedIncident(),[]);
@@ -38,6 +49,31 @@ export default function IncidentDemo(){
   }));
   const [drawerOpen,setDrawerOpen]=useState(false);
   const [showProvenance,setShowProvenance]=useState(false);
+  const [filter,setFilter]=useState<FilingFilter>('ALL');
+  const [filterOpen,setFilterOpen]=useState(false);
+  const [moreOpen,setMoreOpen]=useState(false);
+
+  useEffect(()=>{
+    const onKey=(event:KeyboardEvent)=>{
+      if(event.key==='Escape'){
+        setDrawerOpen(false);
+        setFilterOpen(false);
+        setMoreOpen(false);
+      }
+    };
+    window.addEventListener('keydown',onKey);
+    return()=>window.removeEventListener('keydown',onKey);
+  },[]);
+
+  const filingFor=(dependency:Dependency)=>{
+    const relationship=relationships.find(r=>r.dependencyId===dependency.id);
+    return relationship?filings.find(f=>f.id===relationship.filingId):undefined;
+  };
+
+  const visibleDependencies=dependencies.filter(dependency=>{
+    if(filter==='ALL')return true;
+    return filingFor(dependency)?.documentNumber===filter;
+  });
 
   const openDependency=(dependency:Dependency)=>{
     const relationship=relationships.find(r=>r.dependencyId===dependency.id);
@@ -45,6 +81,7 @@ export default function IncidentDemo(){
     setSelected({dependency,filing,relationship});
     setShowProvenance(false);
   };
+
   const openRelationship=(relationship:Relationship)=>{
     const dependency=dependencies.find(d=>d.id===relationship.dependencyId)!;
     const filing=filings.find(f=>f.id===relationship.filingId);
@@ -53,12 +90,18 @@ export default function IncidentDemo(){
     setDrawerOpen(true);
   };
 
+  const traceImpact=()=>{
+    setMoreOpen(false);
+    setFilterOpen(false);
+    setTraced(true);
+  };
+
   return <CockpitShell
     pageTitle="Johnson v. Dunn"
     heading="Incident"
     code="#JD–01701"
     status="Recorded public incident"
-    action={<button className={'fc-metal-button '+(traced?'is-done':'')} onClick={()=>setTraced(true)}>{traced?'Impact traced':'Trace impact'}</button>}
+    action={<button className={'fc-metal-button '+(traced?'is-done':'')} onClick={traceImpact}>{traced?'Impact traced':'Trace impact'}</button>}
   >
     <SummaryCards items={[
       {label:'Disputed Dependencies',value:'05'},
@@ -70,7 +113,14 @@ export default function IncidentDemo(){
     <section className="fc-timeline">
       <header className="fc-panel-heading">
         <div><h2>Incident Timeline</h2><small>Recorded public source · {data.incident.court}</small></div>
-        <button className="fc-more" aria-label="Open source order" onClick={()=>window.open(JOHNSON_DUNN_ORDER_URL,'_blank')}><img src={FIGMA_ASSETS_B.ellipsis} alt=""/></button>
+        <div className="fc-context-anchor">
+          <button className={'fc-more '+(moreOpen?'is-active':'')} aria-label="Incident options" aria-expanded={moreOpen} onClick={()=>setMoreOpen(value=>!value)}><img src={FIGMA_ASSETS_B.ellipsis} alt=""/></button>
+          {moreOpen&&<div className="fc-context-menu" role="menu">
+            <a href={JOHNSON_DUNN_ORDER_URL} target="_blank" rel="noreferrer" role="menuitem">Open source order <span>↗</span></a>
+            <button role="menuitem" onClick={()=>{downloadJson('recall-johnson-dunn.json',data);setMoreOpen(false)}}>Export incident <span>↓</span></button>
+            {traced&&<button role="menuitem" onClick={()=>{setTraced(false);setDrawerOpen(false);setMoreOpen(false)}}>Reset trace <span>↺</span></button>}
+          </div>}
+        </div>
       </header>
       <div className="fc-timeline-plot">
         <div className="fc-time-labels" aria-hidden>
@@ -87,29 +137,38 @@ export default function IncidentDemo(){
 
     <section className="fc-insights">
       <section className="fc-panel fc-dependency-panel">
-        <header className="fc-panel-heading compact"><div><h2>Disputed Dependencies</h2><small>05 from court source</small></div><span className="fc-filter">All <img src={FIGMA_ASSETS_B.chevron} alt=""/></span></header>
+        <header className="fc-panel-heading compact">
+          <div><h2>Disputed Dependencies</h2><small>{String(visibleDependencies.length).padStart(2,'0')} shown · 05 from court source</small></div>
+          <div className="fc-context-anchor">
+            <button className="fc-filter" aria-label="Filter disputed dependencies" aria-expanded={filterOpen} onClick={()=>setFilterOpen(value=>!value)}>
+              {filter==='ALL'?'All':'Dkt. '+filter}<img src={FIGMA_ASSETS_B.chevron} alt=""/>
+            </button>
+            {filterOpen&&<div className="fc-context-menu fc-filter-menu" role="menu">
+              {([['ALL','All dependencies'],['174','Dkt. 174'],['182','Dkt. 182']] as const).map(([value,label])=><button key={value} role="menuitem" className={filter===value?'is-selected':''} onClick={()=>{setFilter(value);setFilterOpen(false)}}>{label}{filter===value&&<span>✓</span>}</button>)}
+            </div>}
+          </div>
+        </header>
         <div className="fc-dependency-list">
-          {dependencies.map((dependency)=><button
+          {visibleDependencies.map((dependency)=><button
             key={dependency.id}
             className={'fc-dependency-row '+(selected.dependency.id===dependency.id?'is-selected':'')}
-            onClick={()=>{openDependency(dependency);setDrawerOpen(true)}}
-            aria-label={'Inspect '+(dependency.caseName||dependency.rawText)}
+            onClick={()=>openDependency(dependency)}
+            aria-pressed={selected.dependency.id===dependency.id}
+            aria-label={'Select '+(dependency.caseName||dependency.rawText)}
           >
             <div><strong>{dependency.caseName||dependency.rawText}</strong><small>{dependency.canonicalCitation||dependency.rawText}</small></div>
-            <span className="fc-flag">Flagged</span>
+            <span className="fc-flag">{filingFor(dependency)?.documentNumber?'D'+filingFor(dependency)?.documentNumber:'Flagged'}</span>
           </button>)}
         </div>
       </section>
 
       <section className="fc-panel fc-dot-panel">
         <header className="fc-panel-heading compact">
-          <div><h2>Affected Filings</h2><small role="status">{traced?'5 confirmed relationships':'Trace not run'}</small></div>
-          <strong className="fc-panel-total">{traced?'05':'—'}</strong>
+          <div><h2>Affected Filings</h2><small>{traced?selected.dependency.caseName:'Trace not run'}</small></div>
+          <strong className="fc-panel-total" role="status">{traced?'05':'—'}</strong>
         </header>
         <div className="fc-dot-map" role="region" aria-label="Dependency by filing matrix">
-          <div className="fc-dot-row-labels" aria-hidden>
-            {dependencies.map((_,index)=><span key={index}>{String(index+1).padStart(2,'0')}</span>)}
-          </div>
+          <div className="fc-dot-row-labels" aria-hidden>{dependencies.map((_,index)=><span key={index}>{String(index+1).padStart(2,'0')}</span>)}</div>
           <div className="fc-dot-guides" aria-hidden>{Array.from({length:4}).map((_,i)=><i key={i}/>)}</div>
           <div className="fc-dots">
             {Array.from({length:60}).map((_,index)=>{
@@ -120,6 +179,7 @@ export default function IncidentDemo(){
               const filing=relationship?filings.find(item=>item.id===relationship.filingId):undefined;
               const hitColumn=filing?.documentNumber==='174'?6:filing?.documentNumber==='182'?9:-1;
               const isHit=Boolean(traced&&relationship&&column===hitColumn);
+              const isSelectedRow=dependency?.id===selected.dependency.id;
               return isHit&&relationship
                 ?<button
                     key={index}
@@ -127,7 +187,7 @@ export default function IncidentDemo(){
                     aria-label={(dependency?.caseName||'Dependency')+' — Confirmed citation — Document '+(filing?.documentNumber||'')}
                     onClick={()=>openRelationship(relationship)}
                   />
-                :<i key={index} className="fc-dot"/>;
+                :<i key={index} className={'fc-dot '+(isSelectedRow?'is-row-context':'')}/>;
             })}
           </div>
           <div className="fc-dot-axis"><span>Source</span><span>Doc 174</span><span>Doc 182</span><span>Evidence</span></div>
@@ -139,7 +199,12 @@ export default function IncidentDemo(){
           <div><h2>Evidence Trace</h2><small>{selected.dependency.caseName}</small></div>
           <strong className="fc-panel-total">{traced?'5/5':'—'}</strong>
         </header>
-        <button className="fc-stream-chart" onClick={()=>traced&&setDrawerOpen(true)} aria-label="Open selected exact evidence" disabled={!traced}>
+        <button
+          className="fc-stream-chart"
+          onClick={()=>traced&&setDrawerOpen(true)}
+          aria-label={traced?'Open selected exact evidence':'Exact evidence unavailable until trace completes'}
+          disabled={!traced}
+        >
           <span className="fc-stream-atmosphere"/>
           <span className="fc-stream-guides">{Array.from({length:5}).map((_,i)=><i key={i}/>)}</span>
           <img className="fc-stream outer" src={FIGMA_ASSETS_B.streamOuter} alt=""/>
@@ -154,8 +219,8 @@ export default function IncidentDemo(){
     </section>
 
     {drawerOpen&&<div className="fc-drawer-backdrop" onClick={()=>setDrawerOpen(false)}>
-      <aside className="fc-drawer" onClick={event=>event.stopPropagation()}>
-        <button className="fc-drawer-close" onClick={()=>setDrawerOpen(false)}>×</button>
+      <aside className="fc-drawer" onClick={event=>event.stopPropagation()} aria-label="Selected exact evidence">
+        <button className="fc-drawer-close" onClick={()=>setDrawerOpen(false)} aria-label="Close exact evidence">×</button>
         <div className="fc-drawer-kicker">EXACT EVIDENCE / SELECTED</div>
         <h2>{selected.dependency.caseName||selected.dependency.rawText}</h2>
         <p className="fc-drawer-citation">{selected.dependency.canonicalCitation||selected.dependency.rawText}</p>

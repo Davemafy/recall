@@ -2,11 +2,11 @@
 import {useMemo,useState} from 'react';
 import Link from 'next/link';
 // @ts-ignore shared recorded source fixture
-import {getRecordedPublicTrace} from '../lib/recorded-public-trace.mjs';
+import {getRecordedPublicTrace,recordedEvidenceFor} from '../lib/recorded-public-trace.mjs';
 
 type TraceDoc={
  id:string; title?:string|null; docketId?:string|null; docketNumber?:string|null; caseName?:string|null; court?:string|null; filingDate?:string|null;
- sourceUrl?:string|null; documentUrl?:string|null; snippet?:string; text?:string; classification?:string; evidence?:any; relationships?:Array<{classification:string;evidence:any}>; searchQuery?:string|null; contentHash?:string; retrievedAt?:string;
+ sourceUrl?:string|null; documentUrl?:string|null; snippet?:string; text?:string; classification?:string; evidence?:any; relationships?:Array<{classification:string;evidence:any}>; searchQuery?:string|null; contentHash?:string; retrievedAt?:string; sourceCapture?:any;
 };
 type TraceResult={ok?:boolean;sourceState?:string;retrievedAt?:string;checkedAt?:string;capturedAt?:string;authority?:any;authorityResolution?:string;documents:TraceDoc[];summary:any;coverage:any;sourceQueries?:any[];mode?:string};
 
@@ -18,9 +18,21 @@ function RecordedResult():TraceResult{
  const byDoc=raw.analysis.byDoc;
  const documents=raw.documents.map((d:any)=>{
    const edges=byDoc.get(d.id)||[];
-   const relationships=edges.map((edge:any)=>({classification:edge.type,evidence:edge.evidence}));
+   const relationships=edges.map((edge:any)=>{
+     const captured=recordedEvidenceFor(d,edge.type);
+     return {
+       classification:edge.type,
+       evidence:captured?{
+         raw:captured.text,
+         rule:edge.evidence?.rule,
+         score:edge.evidence?.score,
+         confirmationSource:'RECORDED_EXACT_SOURCE_SPAN',
+         recordedProvenance:captured.provenance
+       }:edge.evidence
+     };
+   });
    const primary=relationships.find((r:any)=>r.classification==='CONFIRMED_CITATION_DEPENDENCY')||relationships.find((r:any)=>r.classification==='CONFIRMED_QUOTE_REUSE')||relationships.find((r:any)=>r.classification==='POSSIBLE_DERIVED_CLAIM');
-   return {...d,snippet:d.text,relationships,classification:primary?.classification||'CANDIDATE_UNCONFIRMED',evidence:primary?.evidence||null};
+   return {...d,snippet:d.sourceCapture?.segments?.[0]?.text||'',relationships,classification:primary?.classification||'CANDIDATE_UNCONFIRMED',evidence:primary?.evidence||null};
  });
  return {...raw,ok:true,sourceState:'RECORDED',documents};
 }
@@ -64,7 +76,7 @@ export default function PublicTrace({recorded=false,initialInput=''}:{recorded?:
    <section className="traceHero">
      <div className="traceInputSide"><div className="heroIndex">{recorded?'PUBLIC-SOURCE REPLAY':'LIVE FEDERAL FILING SEARCH'}</div><h1>{recorded?'A real trace, frozen for replay.':'Trace the authority through public filings.'}</h1><p>{recorded?'These records were captured from public CourtListener / RECAP sources during development. The replay does not make network calls.':'Searches public federal filing data available through CourtListener / RECAP. Coverage is not every U.S. court filing.'}</p>
        {!recorded&&<div className="traceForm"><label><span>CITATION OR CASE + CITATION</span><input value={input} onChange={e=>setInput(e.target.value)} placeholder="410 U.S. 113"/></label><label><span>OPTIONAL DISPUTED QUOTATION</span><textarea value={quote} onChange={e=>setQuote(e.target.value)} placeholder="Paste a quotation to trace exact / near-exact reuse"/></label><button className="button danger" onClick={()=>run(limit)} disabled={busy}>{busy?'Tracing public filings…':'Trace real filings →'}</button></div>}
-       {recorded&&<div className="recordedStamp"><span>CAPTURED</span><strong>{dateLabel(result?.capturedAt)}</strong><small>Source URLs and content hashes preserved below.</small></div>}
+       {recorded&&<div className="recordedStamp"><span>CAPTURED</span><strong>{dateLabel(result?.capturedAt)}</strong><small>Exact captured source excerpts and evidence spans are SHA-256 hashed. Original-file SHA-256 is shown only when the source file was downloaded during capture.</small></div>}
        {error&&<div className="errorBox"><strong>Live source unavailable</strong><p>{error}</p><Link href="/demo">Open recorded public trace →</Link></div>}
      </div>
      <aside className="traceLaw"><div className="railLabel">CONFIRMATION LAW</div><p>A search hit is only a candidate. RECALL counts a filing as confirmed only when its available text contains deterministic citation or quotation evidence.</p><p>Semantic resemblance is always review-only.</p></aside>
@@ -82,6 +94,6 @@ export default function PublicTrace({recorded=false,initialInput=''}:{recorded?:
      </section>
      {summary?.earliestConfirmedFilingDate&&<section className="traceTimeline"><div><span>EARLIEST CONFIRMED OCCURRENCE CHECKED</span><strong>{dateLabel(summary.earliestConfirmedFilingDate)}</strong></div><div><span>LATEST CONFIRMED OCCURRENCE CHECKED</span><strong>{dateLabel(summary.latestConfirmedFilingDate)}</strong></div></section>}
    </>}
-   {selected&&<div className="drawerBackdrop" onClick={()=>setSelected(null)}><aside className="drawer publicDrawer" onClick={e=>e.stopPropagation()}><button className="drawerClose" onClick={()=>setSelected(null)}>×</button><div className="heroIndex">PUBLIC FILING EVIDENCE</div><h2>{selected.title||'Public filing'}</h2><div className="drawerMeta"><span>{selected.court||'Court unavailable'}</span><span>{selected.docketNumber||'Docket unavailable'}</span><span>{dateLabel(selected.filingDate)}</span></div><div className="sourceFact"><span>CLASSIFICATION</span><strong>{selected.classification}</strong></div>{(selected.relationships?.length?selected.relationships:[selected.evidence?{classification:selected.classification||'',evidence:selected.evidence}:null].filter(Boolean) as any[]).map((relationship:any,index:number)=><div className="evidenceBlock" key={`${relationship.classification}-${index}`}><div className="edgeKind">{relationship.classification}</div><blockquote>{relationship.evidence?.raw}</blockquote><p>{relationship.evidence?.rule}</p>{relationship.evidence?.score!==undefined&&<p>Overlap: {Number(relationship.evidence.score).toFixed(3)}</p>}{relationship.evidence?.confirmationSource&&<p>Confirmed from: {relationship.evidence.confirmationSource==='RECAP_PLAIN_TEXT'?'RECAP extracted document text':'CourtListener search snippet'}</p>}</div>)}<div className="sourceFacts"><p><span>CASE</span>{selected.caseName||'Unavailable'}</p><p><span>SEARCH QUERY</span>{selected.searchQuery||'Recorded source capture; no live query in replay.'}</p><p><span>CONTENT HASH</span><code>{selected.contentHash||'Unavailable'}</code></p></div>{(selected.documentUrl||selected.sourceUrl)&&<a className="button primary" href={(selected.documentUrl||selected.sourceUrl)!} target="_blank" rel="noreferrer">Open public source ↗</a>}</aside></div>}
+   {selected&&<div className="drawerBackdrop" onClick={()=>setSelected(null)}><aside className="drawer publicDrawer" onClick={e=>e.stopPropagation()}><button className="drawerClose" onClick={()=>setSelected(null)}>×</button><div className="heroIndex">PUBLIC FILING EVIDENCE</div><h2>{selected.title||'Public filing'}</h2><div className="drawerMeta"><span>{selected.court||'Court unavailable'}</span><span>{selected.docketNumber||'Docket unavailable'}</span><span>{dateLabel(selected.filingDate)}</span></div><div className="sourceFact"><span>CLASSIFICATION</span><strong>{selected.classification}</strong></div>{(selected.relationships?.length?selected.relationships:[selected.evidence?{classification:selected.classification||'',evidence:selected.evidence}:null].filter(Boolean) as any[]).map((relationship:any,index:number)=><div className="evidenceBlock" key={`${relationship.classification}-${index}`}><div className="edgeKind">{relationship.classification}</div><blockquote>{relationship.evidence?.raw}</blockquote><p>{relationship.evidence?.rule}</p>{relationship.evidence?.score!==undefined&&<p>Overlap: {Number(relationship.evidence.score).toFixed(3)}</p>}{relationship.evidence?.confirmationSource&&<p>Confirmed from: {relationship.evidence.confirmationSource==='RECAP_PLAIN_TEXT'?'RECAP extracted document text':relationship.evidence.confirmationSource==='RECORDED_EXACT_SOURCE_SPAN'?'Recorded exact public-source span':'CourtListener search snippet'}</p>}{relationship.evidence?.recordedProvenance&&<><p>Source: PDF page {relationship.evidence.recordedProvenance.pdfPageNumber} · extracted text lines {relationship.evidence.recordedProvenance.extractedTextLineStart}{relationship.evidence.recordedProvenance.extractedTextLineEnd!==relationship.evidence.recordedProvenance.extractedTextLineStart?`–${relationship.evidence.recordedProvenance.extractedTextLineEnd}`:''}</p><p>Evidence span SHA-256: <code>{relationship.evidence.recordedProvenance.evidenceSha256}</code></p><p>Captured excerpt SHA-256: <code>{relationship.evidence.recordedProvenance.segmentSha256}</code></p></>}</div>)}<div className="sourceFacts"><p><span>CASE</span>{selected.caseName||'Unavailable'}</p><p><span>SEARCH QUERY</span>{selected.searchQuery||'Recorded source capture; no live query in replay.'}</p>{selected.sourceCapture?<p><span>ORIGINAL FILE SHA-256</span>{selected.sourceCapture.documentSha256?<code>{selected.sourceCapture.documentSha256}</code>:'Not captured — the original PDF was not downloaded during capture.'}</p>:<p><span>CONTENT HASH</span><code>{selected.contentHash||'Unavailable'}</code></p>}</div>{(selected.documentUrl||selected.sourceUrl)&&<a className="button primary" href={(selected.documentUrl||selected.sourceUrl)!} target="_blank" rel="noreferrer">Open public source ↗</a>}</aside></div>}
  </main>
 }

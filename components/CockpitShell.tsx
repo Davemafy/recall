@@ -5,13 +5,15 @@ import Link from 'next/link';
 import {usePathname} from 'next/navigation';
 import {useEffect,useState} from 'react';
 import type {ReactNode} from 'react';
+import {FIGMA_ASSETS_A} from '../lib/figma-assets-a';
+import {FIGMA_ASSETS_B} from '../lib/figma-assets-b';
 
 const nav=[
-  {href:'/',label:'Dashboard',icon:'/recall-figma/grid.png'},
-  {href:'/incident',label:'Incidents',icon:'/recall-figma/bars.png'},
-  {href:'/trace',label:'Quick trace',icon:'/recall-figma/calendar.png'},
-  {href:'/corpus',label:'Corpus',icon:'/recall-figma/cursor.png'},
-  {href:'/incident/demo',label:'Recorded incident',icon:'/recall-figma/user.png'}
+  {href:'/',label:'Dashboard',icon:FIGMA_ASSETS_A.grid},
+  {href:'/incident',label:'Incidents',icon:FIGMA_ASSETS_A.bars},
+  {href:'/trace',label:'Quick trace',icon:FIGMA_ASSETS_A.calendar},
+  {href:'/corpus',label:'Corpus',icon:FIGMA_ASSETS_A.cursor},
+  {href:'/incident/demo',label:'Recorded incident',icon:FIGMA_ASSETS_A.user}
 ];
 
 type Menu='status'|'settings'|'profile'|null;
@@ -21,7 +23,7 @@ export function SummaryCards({items}:{items:Array<{label:string;value:string;ico
   return <section className="fc-summary" aria-label="Incident summary">
     {items.map((item)=><article className="fc-summary-card" key={item.label}>
       <div className="fc-summary-label">
-        <span className="fc-metric-icon"><img src={item.icon==='vertical'?'/recall-figma/arrows-vertical.png':'/recall-figma/arrows-horizontal.png'} alt=""/></span>
+        <span className="fc-metric-icon"><img src={item.icon==='vertical'?FIGMA_ASSETS_B.arrowsVertical:FIGMA_ASSETS_B.arrowsHorizontal} alt=""/></span>
         <span>{item.label}</span>
       </div>
       <strong>{item.value}</strong>
@@ -87,11 +89,11 @@ export default function CockpitShell({
         </div>
 
         <div className="fc-utility-nav">
-          <button className={'fc-nav-item '+(menu==='settings'?'is-active':'')} aria-label="Settings" title="Settings" aria-expanded={menu==='settings'} onClick={()=>toggle('settings')}><img src="/recall-figma/settings.png" alt=""/></button>
-          <Link className="fc-nav-item" href="/" aria-label="Return to dashboard" title="Return to dashboard"><img src="/recall-figma/logout.png" alt=""/></Link>
+          <button className={'fc-nav-item '+(menu==='settings'?'is-active':'')} aria-label="Settings" title="Settings" aria-expanded={menu==='settings'} onClick={()=>toggle('settings')}><img src={FIGMA_ASSETS_A.settings} alt=""/></button>
+          <Link className="fc-nav-item" href="/" aria-label="Return to dashboard" title="Return to dashboard"><img src={FIGMA_ASSETS_A.logout} alt=""/></Link>
           <div className="fc-theme-switch" role="group" aria-label="Appearance">
-            <button className={theme==='light'?'is-selected':''} aria-label="Use light theme" aria-pressed={theme==='light'} onClick={()=>setAppearance('light')}><img src="/recall-figma/sun.png" alt=""/></button>
-            <button className={theme==='dark'?'is-selected':''} aria-label="Use dark theme" aria-pressed={theme==='dark'} onClick={()=>setAppearance('dark')}><img src="/recall-figma/moon.png" alt=""/></button>
+            <button className={theme==='light'?'is-selected':''} aria-label="Use light theme" aria-pressed={theme==='light'} onClick={()=>setAppearance('light')}><img src={FIGMA_ASSETS_A.sun} alt=""/></button>
+            <button className={theme==='dark'?'is-selected':''} aria-label="Use dark theme" aria-pressed={theme==='dark'} onClick={()=>setAppearance('dark')}><img src={FIGMA_ASSETS_A.moon} alt=""/></button>
           </div>
         </div>
 
@@ -110,13 +112,13 @@ export default function CockpitShell({
             <p className="fc-page-title">{pageTitle}</p>
             <div className="fc-account-controls">
               <div className="fc-quick-actions">
-                <Link href="/trace" className="fc-header-action" aria-label="Search public filings" title="Quick trace"><img src="/recall-figma/search.png" alt=""/></Link>
-                <button className={'fc-header-action '+(menu==='status'?'is-active':'')} aria-label="Incident status" aria-expanded={menu==='status'} title="Incident status" onClick={()=>toggle('status')}><img src="/recall-figma/bell.png" alt=""/><i/></button>
+                <Link href="/trace" className="fc-header-action" aria-label="Search public filings" title="Quick trace"><img src={FIGMA_ASSETS_B.search} alt=""/></Link>
+                <button className={'fc-header-action '+(menu==='status'?'is-active':'')} aria-label="Incident status" aria-expanded={menu==='status'} title="Incident status" onClick={()=>toggle('status')}><img src={FIGMA_ASSETS_B.bell} alt=""/><i/></button>
               </div>
               <button className={'fc-profile '+(menu==='profile'?'is-active':'')} aria-label="Open RECALL workspace menu" aria-expanded={menu==='profile'} onClick={()=>toggle('profile')}>
                 <span className="fc-profile-mark">R</span>
                 <span className="fc-profile-copy"><strong>RECALL</strong><small>{status}</small></span>
-                <img className="fc-chevron" src="/recall-figma/chevron.png" alt=""/>
+                <img className="fc-chevron" src={FIGMA_ASSETS_B.chevron} alt=""/>
               </button>
             </div>
           </div>

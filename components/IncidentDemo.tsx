@@ -7,6 +7,7 @@ import CockpitShell,{SummaryCards} from './CockpitShell';
 import {getRecordedIncident,JOHNSON_DUNN_ORDER_URL} from '../lib/recorded-incident.mjs';
 // @ts-ignore shared domain labels
 import {relationshipLabel} from '../lib/domain.mjs';
+import {FIGMA_ASSETS_B} from '../lib/figma-assets-b';
 
 type Dependency={
   id:string; rawText:string; canonicalCitation?:string; caseName?:string; incidentFinding?:string;
@@ -69,7 +70,7 @@ export default function IncidentDemo(){
     <section className="fc-timeline">
       <header className="fc-panel-heading">
         <div><h2>Incident Timeline</h2><small>Recorded public source · {data.incident.court}</small></div>
-        <button className="fc-more" aria-label="Open source order" onClick={()=>window.open(JOHNSON_DUNN_ORDER_URL,'_blank')}><img src="/recall-figma/ellipsis.png" alt=""/></button>
+        <button className="fc-more" aria-label="Open source order" onClick={()=>window.open(JOHNSON_DUNN_ORDER_URL,'_blank')}><img src={FIGMA_ASSETS_B.ellipsis} alt=""/></button>
       </header>
       <div className="fc-timeline-plot">
         <div className="fc-time-labels" aria-hidden>
@@ -86,7 +87,7 @@ export default function IncidentDemo(){
 
     <section className="fc-insights">
       <section className="fc-panel fc-dependency-panel">
-        <header className="fc-panel-heading compact"><div><h2>Disputed Dependencies</h2><small>05 from court source</small></div><span className="fc-filter">All <img src="/recall-figma/chevron.png" alt=""/></span></header>
+        <header className="fc-panel-heading compact"><div><h2>Disputed Dependencies</h2><small>05 from court source</small></div><span className="fc-filter">All <img src={FIGMA_ASSETS_B.chevron} alt=""/></span></header>
         <div className="fc-dependency-list">
           {dependencies.map((dependency)=><button
             key={dependency.id}
@@ -141,9 +142,9 @@ export default function IncidentDemo(){
         <button className="fc-stream-chart" onClick={()=>traced&&setDrawerOpen(true)} aria-label="Open selected exact evidence" disabled={!traced}>
           <span className="fc-stream-atmosphere"/>
           <span className="fc-stream-guides">{Array.from({length:5}).map((_,i)=><i key={i}/>)}</span>
-          <img className="fc-stream outer" src="/recall-figma/stream-outer.png" alt=""/>
-          <img className="fc-stream middle" src="/recall-figma/stream-middle.png" alt=""/>
-          <img className="fc-stream core" src="/recall-figma/stream-core.png" alt=""/>
+          <img className="fc-stream outer" src={FIGMA_ASSETS_B.streamOuter} alt=""/>
+          <img className="fc-stream middle" src={FIGMA_ASSETS_B.streamMiddle} alt=""/>
+          <img className="fc-stream core" src={FIGMA_ASSETS_B.streamCore} alt=""/>
           <span className="fc-stream-tag t1">INCIDENT</span>
           <span className="fc-stream-tag t2">{selected.filing?'DOC '+selected.filing.documentNumber:'FILING'}</span>
           <span className="fc-stream-tag t3">{traced?'EXACT':'READY'}</span>

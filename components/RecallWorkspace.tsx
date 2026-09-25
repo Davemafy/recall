@@ -7,7 +7,7 @@ import {analyzeCorpus,remediationFor,INCIDENT_CASE,INCIDENT_CITATION} from '../l
 // @ts-ignore demo fixture
 import {createDemoCorpus,DEMO_INCIDENT} from '../lib/demo-corpus.mjs';
 // @ts-ignore shared relationship constants
-import {RELATIONSHIP_STATE,relationshipLabel} from '../lib/domain.mjs';
+import {RELATIONSHIP_STATE} from '../lib/domain.mjs';
 
 type Props={mode:'demo'|'real';documents?:any[];incident?:any};
 

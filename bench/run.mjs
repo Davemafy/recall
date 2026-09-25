@@ -1,6 +1,7 @@
 import {writeFile, mkdir} from 'node:fs/promises';
 import {classifySnippet,analyzeCorpus,extractCitations} from '../lib/recall-core.mjs';
 import {getRecordedPublicTrace} from '../lib/recorded-public-trace.mjs';
+import {getRecordedIncident} from '../lib/recorded-incident.mjs';
 import {createDemoCorpus} from '../lib/demo-corpus.mjs';
 
 const q='“the procedural guarantee attaches before the agency imposes a material deprivation.”';
@@ -54,6 +55,7 @@ const confirmedQuotePrecision=confirmedQuoteTP/(confirmedQuotePredictions.length
 
 const corpus=createDemoCorpus(), analysis=analyzeCorpus(corpus);
 const recorded=getRecordedPublicTrace();
+const realIncident=getRecordedIncident();
 const expectedAffected=new Set(['d01','d02','d03','d04','d05','d06','d07','d08','d09','d10','d11','d12','d13','d14','d15','d16','d17']);
 const found=new Set(analysis.affectedDocuments.map(d=>d.id));
 let tp=0; for(const id of found) if(expectedAffected.has(id)) tp++;
@@ -81,6 +83,16 @@ const lines=[
  `- Recorded public filings checked: ${recorded.summary.checkedCount}`,
  `- Deterministically confirmed: ${recorded.summary.confirmedFilingCount}`,
  `- Curated sample confirmation rate: ${(recorded.summary.confirmedFilingCount/recorded.summary.checkedCount*100).toFixed(1)}%`,
+ '', '## Real incident benchmark','',
+ `- Incident: ${realIncident.incident.caseName}`,
+ `- Court-identified dependencies: ${realIncident.summary.sourceIdentifiedDependencies}`,
+ `- Dependencies normalized: ${realIncident.dependencies.filter(d=>d.canonicalCitation).length}`,
+ `- Dependencies traced in recorded incident: ${realIncident.summary.dependenciesTraced}`,
+ `- Confirmed affected filings: ${realIncident.summary.confirmedAffectedFilings}`,
+ `- Confirmed citation relationships: ${realIncident.summary.confirmedCitationRelationships}`,
+ `- Confirmed quote reuse: ${realIncident.summary.confirmedQuoteReuse}`,
+ `- Unconfirmed candidates: ${realIncident.summary.candidateUnconfirmed}`,
+ `- Unique dockets: ${realIncident.summary.uniqueDockets}`,
  '', 'Possible semantic relationships are never counted as confirmed lineage.'
 ];
 await mkdir(new URL('.',import.meta.url),{recursive:true});

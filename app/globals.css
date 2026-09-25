@@ -116,3 +116,686 @@
 .manualDiagnostics summary{cursor:pointer}
 .manualDiagnostics>div{display:flex;gap:24px;margin-top:9px}.manualDiagnostics b{color:var(--product-ink);font-variant-numeric:tabular-nums}
 @media(max-width:700px){.manualIncidentHeading{display:block}.manualIncidentHeading small{display:block;margin-top:8px}.manualDependencyRow{grid-template-columns:28px 90px 1fr 24px}.manualResultRows article{grid-template-columns:1fr;gap:9px}.manualIncidentActions{align-items:stretch;flex-direction:column}.manualIncidentActions .traceImpactButton{justify-content:space-between}.manualDiagnostics>div{flex-direction:column;gap:6px}}
+
+
+/* Dribbble study — flagship incident workspace
+   Geometry references: modern matter inbox / case-detail products.
+   RECALL keeps its own product copy, evidence model, and restrained incident-red accent. */
+.recallRefPage{
+  --rr-bg:#eef0f3;
+  --rr-shell:#ffffff;
+  --rr-panel:#fbfbfc;
+  --rr-subtle:#f5f5f6;
+  --rr-line:#e4e5e8;
+  --rr-line-strong:#d9dade;
+  --rr-ink:#111216;
+  --rr-muted:#777b84;
+  --rr-soft:#a0a4ab;
+  --rr-red:#7f2f2b;
+  --rr-red-soft:#f6eceb;
+  --rr-amber:#9b714c;
+  min-height:100vh;
+  padding:22px;
+  background:var(--rr-bg);
+  color:var(--rr-ink);
+  font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.recallRefShell{
+  width:min(1380px,calc(100vw - 44px));
+  min-height:calc(100vh - 44px);
+  margin:0 auto;
+  overflow:hidden;
+  border:1px solid var(--rr-line-strong);
+  border-radius:14px;
+  background:var(--rr-shell);
+  box-shadow:0 10px 35px rgba(16,18,24,.05);
+}
+.recallRefTopbar{
+  height:52px;
+  display:grid;
+  grid-template-columns:220px 1fr auto;
+  align-items:center;
+  gap:18px;
+  padding:0 22px;
+  border-bottom:1px solid var(--rr-line);
+  background:#fff;
+}
+.recallRefBrand{
+  color:var(--rr-ink);
+  text-decoration:none;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.14em;
+}
+.recallRefTopTitle{
+  font-size:12px;
+  font-weight:600;
+  color:#565a63;
+}
+.recallRefMode{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:10px;
+  color:var(--rr-muted);
+  white-space:nowrap;
+}
+.recallRefMode>span{
+  width:7px;height:7px;border-radius:50%;background:var(--rr-amber);
+}
+.recallRefIncidentHeader{
+  padding:22px 28px 20px;
+  background:#fff;
+}
+.recallRefBreadcrumb{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-bottom:16px;
+  font-size:10px;
+  color:var(--rr-muted);
+}
+.recallRefBreadcrumb span{color:#b0b3b8}
+.recallRefHeadingRow{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:28px;
+}
+.recallRefHeadingRow h1{
+  margin:0;
+  font-size:27px;
+  line-height:1.1;
+  font-weight:680;
+  letter-spacing:-.035em;
+}
+.recallRefHeadingRow p{
+  margin:7px 0 0;
+  font-size:11px;
+  color:var(--rr-muted);
+  line-height:1.5;
+}
+.recallRefHeadingRow>a{
+  flex:0 0 auto;
+  margin-top:2px;
+  color:#5e626a;
+  text-decoration:none;
+  font-size:10px;
+  border-bottom:1px solid #b9bbc0;
+  padding-bottom:2px;
+}
+.recallRefHeadingRow>a:hover{color:var(--rr-ink);border-color:var(--rr-ink)}
+.recallRefCourtFinding{
+  margin-top:19px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  min-height:42px;
+  padding:0 0 0 12px;
+  border-left:2px solid var(--rr-red);
+}
+.recallRefCourtFinding span{
+  flex:0 0 auto;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.12em;
+  color:var(--rr-red);
+}
+.recallRefCourtFinding strong{
+  font-size:12px;
+  line-height:1.45;
+  font-weight:580;
+}
+
+.recallRefWorkspace{
+  display:grid;
+  grid-template-columns:236px minmax(440px,1fr) 360px;
+  min-height:680px;
+  border-top:1px solid var(--rr-line);
+}
+.recallRefDependencies{
+  background:var(--rr-panel);
+  border-right:1px solid var(--rr-line);
+}
+.recallRefEvidence{
+  background:#fafafa;
+  border-left:1px solid var(--rr-line);
+  min-width:0;
+}
+.recallRefPanelHeader{
+  min-height:64px;
+  padding:15px 17px 13px;
+  display:flex;
+  align-items:flex-end;
+  border-bottom:1px solid var(--rr-line);
+  background:rgba(255,255,255,.7);
+}
+.recallRefPanelHeader span{
+  display:block;
+  margin-bottom:4px;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.13em;
+  color:var(--rr-muted);
+}
+.recallRefPanelHeader strong{
+  display:block;
+  font-size:11px;
+  font-weight:620;
+  color:#3d4148;
+}
+.recallRefDependencyList>button{
+  position:relative;
+  width:100%;
+  min-height:74px;
+  display:grid;
+  grid-template-columns:24px minmax(0,1fr);
+  gap:8px;
+  align-items:start;
+  padding:13px 15px 12px 13px;
+  border:0;
+  border-bottom:1px solid var(--rr-line);
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.recallRefDependencyList>button:hover{background:#f4f4f5}
+.recallRefDependencyList>button.is-active{background:#f0f0f1}
+.recallRefDependencyList>button.is-active:before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:2px;
+  background:var(--rr-red);
+}
+.recallRefDepNumber{
+  padding-top:2px;
+  color:#a1a4aa;
+  font-size:9px;
+  font-variant-numeric:tabular-nums;
+}
+.recallRefDepText{
+  min-width:0;
+}
+.recallRefDepText strong{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:11px;
+  font-weight:650;
+  letter-spacing:-.01em;
+}
+.recallRefDepText small{
+  display:block;
+  margin-top:3px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:var(--rr-muted);
+  font-size:9px;
+}
+.recallRefDepText em{
+  display:block;
+  margin-top:7px;
+  color:var(--rr-soft);
+  font-size:8px;
+  font-style:normal;
+  letter-spacing:.04em;
+}
+
+.recallRefMain{
+  min-width:0;
+  background:#fff;
+}
+.recallRefPretrace{
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+}
+.recallRefSourceBlock{
+  padding:30px 31px 32px;
+  border-bottom:1px solid var(--rr-line);
+}
+.recallRefSectionLabel{
+  margin-bottom:15px;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.13em;
+  color:var(--rr-muted);
+}
+.recallRefSourceBlock blockquote{
+  max-width:760px;
+  margin:0;
+  font-size:15px;
+  line-height:1.68;
+  letter-spacing:-.012em;
+  color:#2d3036;
+}
+.recallRefSourceBlock>a{
+  display:inline-block;
+  margin-top:17px;
+  color:#70747d;
+  text-decoration:none;
+  font-size:9px;
+  border-bottom:1px solid #c7c9ce;
+  padding-bottom:2px;
+}
+.recallRefTraceMoment{
+  flex:1;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:34px;
+  padding:42px 31px;
+}
+.recallRefTraceMoment>div>span{
+  display:block;
+  margin-bottom:8px;
+  color:var(--rr-red);
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.12em;
+}
+.recallRefTraceMoment h2{
+  margin:0;
+  max-width:520px;
+  font-size:30px;
+  line-height:1.08;
+  letter-spacing:-.04em;
+  font-weight:650;
+}
+.recallRefTraceMoment p{
+  max-width:570px;
+  margin:11px 0 0;
+  color:var(--rr-muted);
+  font-size:11px;
+  line-height:1.62;
+}
+.recallRefPrimary{
+  min-width:132px;
+  height:38px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  padding:0 13px;
+  border:1px solid #111216;
+  border-radius:6px;
+  background:#111216;
+  color:#fff;
+  cursor:pointer;
+  font:600 10px/1 Inter,ui-sans-serif,sans-serif;
+}
+.recallRefPrimary:hover{background:#292b30}
+.recallRefPrimary span{font-size:13px;font-weight:400}
+
+.recallRefImpact{
+  min-height:100%;
+  animation:recallRefReveal .18s ease-out;
+}
+.recallRefImpactHeader{
+  min-height:96px;
+  display:flex;
+  justify-content:space-between;
+  gap:20px;
+  align-items:flex-start;
+  padding:20px 25px;
+  border-bottom:1px solid var(--rr-line);
+}
+.recallRefImpactHeader>div:first-child>span{
+  display:block;
+  margin-bottom:5px;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.13em;
+  color:var(--rr-muted);
+}
+.recallRefImpactHeader h2{
+  margin:0;
+  font-size:23px;
+  line-height:1.12;
+  letter-spacing:-.032em;
+  font-weight:650;
+}
+.recallRefImpactHeader p{
+  margin:5px 0 0;
+  color:var(--rr-muted);
+  font-size:10px;
+}
+.recallRefTraceDone{
+  padding-top:2px;
+  color:var(--rr-muted);
+  font-size:9px;
+  white-space:nowrap;
+}
+.recallRefTraceDone:before{
+  content:"";
+  display:inline-block;
+  width:6px;height:6px;
+  margin-right:6px;
+  border-radius:50%;
+  background:#202328;
+  vertical-align:1px;
+}
+
+.recallRefMatrixWrap{
+  overflow-x:auto;
+  border-bottom:1px solid var(--rr-line);
+}
+.recallRefMatrix{
+  width:100%;
+  min-width:620px;
+  table-layout:fixed;
+  border-collapse:collapse;
+}
+.recallRefMatrix th,.recallRefMatrix td{
+  height:58px;
+  padding:9px 13px;
+  border-bottom:1px solid var(--rr-line);
+  border-right:1px solid var(--rr-line);
+  text-align:left;
+  vertical-align:middle;
+}
+.recallRefMatrix tr:last-child th,.recallRefMatrix tr:last-child td{border-bottom:0}
+.recallRefMatrix th:last-child,.recallRefMatrix td:last-child{border-right:0}
+.recallRefMatrix thead th{
+  height:64px;
+  background:#fafafb;
+  color:var(--rr-muted);
+  font-size:9px;
+  font-weight:550;
+}
+.recallRefMatrix thead th:first-child{width:46%}
+.recallRefMatrix thead th>span{
+  display:block;
+  margin-bottom:4px;
+  color:var(--rr-red);
+  font-size:7px;
+  font-weight:800;
+  letter-spacing:.12em;
+}
+.recallRefMatrix thead th>strong{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#585c64;
+  font-size:9px;
+  font-weight:600;
+}
+.recallRefMatrix tbody th{
+  background:#fff;
+  font-weight:400;
+}
+.recallRefMatrix tbody th button{
+  width:100%;
+  border:0;
+  background:transparent;
+  padding:0;
+  color:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.recallRefMatrix tbody th button strong{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:10px;
+  font-weight:650;
+}
+.recallRefMatrix tbody th button small{
+  display:block;
+  margin-top:3px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:var(--rr-muted);
+  font-size:8px;
+}
+.recallRefMatrix td{text-align:center}
+.recallRefMatrixHit{
+  width:100%;
+  min-height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  border:0;
+  background:transparent;
+  color:var(--rr-ink);
+  cursor:pointer;
+}
+.recallRefMatrixHit:hover{background:#f3f3f4}
+.recallRefMatrixHit>span{font-size:12px}
+.recallRefMatrixHit small{
+  color:var(--rr-muted);
+  font-size:8px;
+  white-space:nowrap;
+}
+.recallRefMatrixNone{color:#c7c9ce;font-size:11px}
+
+.recallRefAffected{padding:23px 25px 34px}
+.recallRefSectionHeading{
+  min-height:42px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  padding-bottom:10px;
+  border-bottom:1px solid var(--rr-line-strong);
+}
+.recallRefSectionHeading>div>span{
+  display:block;
+  margin-bottom:4px;
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.12em;
+  color:var(--rr-muted);
+}
+.recallRefSectionHeading>div>strong{
+  display:block;
+  font-size:13px;
+  font-weight:650;
+}
+.recallRefSectionHeading>small{
+  color:var(--rr-soft);
+  font-size:8px;
+}
+.recallRefFilingRow{
+  width:100%;
+  min-height:62px;
+  display:grid;
+  grid-template-columns:64px minmax(0,1fr) auto;
+  gap:15px;
+  align-items:center;
+  border:0;
+  border-bottom:1px solid var(--rr-line);
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.recallRefFilingRow:hover{background:#fafafa}
+.recallRefFileBadge{
+  color:var(--rr-red);
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.08em;
+}
+.recallRefFileIdentity strong{
+  display:block;
+  font-size:10px;
+  font-weight:650;
+}
+.recallRefFileIdentity small{
+  display:block;
+  margin-top:4px;
+  color:var(--rr-muted);
+  font-size:8px;
+}
+.recallRefInspect{
+  color:#777b83;
+  font-size:8px;
+}
+
+.recallRefEvidenceBody{padding:0 18px 22px}
+.recallRefSelectedTitle{
+  padding:20px 0 17px;
+  border-bottom:1px solid var(--rr-line);
+}
+.recallRefSelectedTitle>span{
+  display:block;
+  margin-bottom:6px;
+  color:var(--rr-red);
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+.recallRefSelectedTitle h2{
+  margin:0;
+  font-size:18px;
+  line-height:1.15;
+  letter-spacing:-.027em;
+  font-weight:670;
+}
+.recallRefSelectedTitle p{
+  margin:7px 0 0;
+  color:var(--rr-muted);
+  font-size:9px;
+  line-height:1.45;
+}
+.recallRefEvidenceSection{
+  padding:18px 0;
+  border-bottom:1px solid var(--rr-line);
+}
+.recallRefEvidenceLabel{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:baseline;
+  margin-bottom:10px;
+}
+.recallRefEvidenceLabel>span{
+  color:var(--rr-muted);
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.11em;
+}
+.recallRefEvidenceLabel>small{
+  color:var(--rr-soft);
+  font-size:8px;
+}
+.recallRefEvidenceSection blockquote{
+  margin:0 0 11px;
+  font-size:11px;
+  line-height:1.62;
+  color:#3a3e45;
+}
+.recallRefEvidenceSection p,.recallRefFinding{
+  margin:8px 0 0;
+  color:var(--rr-muted);
+  font-size:9px;
+  line-height:1.55;
+}
+.recallRefFinding{
+  padding-left:9px;
+  border-left:2px solid #c9a788;
+  color:#5d5146!important;
+}
+.recallRefEvidenceSection>a{
+  display:inline-block;
+  margin-top:11px;
+  color:#61656c;
+  text-decoration:none;
+  font-size:8px;
+  border-bottom:1px solid #c7c9cd;
+  padding-bottom:2px;
+}
+.recallRefFilingTitle{
+  display:block;
+  margin:-1px 0 10px;
+  font-size:10px;
+  font-weight:650;
+}
+.recallRefProvenanceToggle{
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  height:42px;
+  padding:0;
+  border:0;
+  border-bottom:1px solid var(--rr-line);
+  background:transparent;
+  color:#50545c;
+  cursor:pointer;
+  font:600 9px Inter,ui-sans-serif,sans-serif;
+}
+.recallRefProvenance{
+  margin:0;
+}
+.recallRefProvenance>div{
+  display:grid;
+  grid-template-columns:105px minmax(0,1fr);
+  gap:12px;
+  padding:10px 0;
+  border-bottom:1px solid var(--rr-line);
+  font-size:8px;
+}
+.recallRefProvenance dt{color:var(--rr-muted)}
+.recallRefProvenance dd{margin:0;min-width:0;color:#4e525a}
+.recallRefProvenance code{word-break:break-all;font-size:7px}
+.recallRefEvidenceEmpty{
+  padding:24px 18px;
+  color:var(--rr-muted);
+  font-size:10px;
+  line-height:1.55;
+}
+
+.recallRefPage button:focus-visible,.recallRefPage a:focus-visible,.recallRefPage [tabindex]:focus-visible{
+  outline:2px solid #1e63b3;
+  outline-offset:2px;
+}
+@keyframes recallRefReveal{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+@media(max-width:1100px){
+  .recallRefPage{padding:12px}
+  .recallRefShell{width:calc(100vw - 24px);min-height:calc(100vh - 24px)}
+  .recallRefWorkspace{grid-template-columns:214px minmax(0,1fr)}
+  .recallRefEvidence{grid-column:1/-1;border-left:0;border-top:1px solid var(--rr-line)}
+  .recallRefEvidenceBody{display:grid;grid-template-columns:1fr 1fr;gap:0 28px}
+  .recallRefSelectedTitle{grid-column:1/-1}
+  .recallRefProvenanceToggle,.recallRefProvenance{grid-column:1/-1}
+}
+@media(max-width:720px){
+  .recallRefPage{padding:0;background:#fff}
+  .recallRefShell{width:100%;min-height:100vh;border:0;border-radius:0;box-shadow:none}
+  .recallRefTopbar{grid-template-columns:1fr auto;padding:0 15px}
+  .recallRefTopTitle{display:none}
+  .recallRefIncidentHeader{padding:19px 16px 16px}
+  .recallRefHeadingRow{display:block}
+  .recallRefHeadingRow>a{display:inline-block;margin-top:12px}
+  .recallRefCourtFinding{align-items:flex-start;flex-direction:column;gap:5px;padding:8px 0 8px 10px}
+  .recallRefWorkspace{display:block}
+  .recallRefDependencies{border-right:0;border-bottom:1px solid var(--rr-line)}
+  .recallRefDependencyList{display:flex;overflow-x:auto;scroll-snap-type:x mandatory}
+  .recallRefDependencyList>button{flex:0 0 210px;scroll-snap-align:start;border-right:1px solid var(--rr-line);border-bottom:0}
+  .recallRefDependencyList>button.is-active:before{inset:auto 0 0 0;width:auto;height:2px}
+  .recallRefSourceBlock{padding:24px 17px 25px}
+  .recallRefTraceMoment{display:block;padding:30px 17px 34px}
+  .recallRefTraceMoment h2{font-size:25px}
+  .recallRefPrimary{margin-top:22px}
+  .recallRefImpactHeader{padding:18px 16px}
+  .recallRefAffected{padding:20px 16px 28px}
+  .recallRefFilingRow{grid-template-columns:54px minmax(0,1fr)}
+  .recallRefInspect{grid-column:2}
+  .recallRefEvidence{border-top:1px solid var(--rr-line)}
+  .recallRefEvidenceBody{display:block;padding-inline:16px}
+}
+@media(prefers-reduced-motion:reduce){
+  .recallRefImpact{animation:none}
+}

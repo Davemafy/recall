@@ -9,7 +9,7 @@ const cases=[];
 const add=(name,expected,text)=>cases.push({name,expected,text});
 for(let i=0;i<8;i++) add(`exact-cite-${i}`,'CONFIRMED_CITATION_DEPENDENCY',`Argument ${i}. Martinez v. State, 999 F.4th 123${i%2?', 130':''}.`);
 for(let i=0;i<6;i++) add(`quote-${i}`,'CONFIRMED_QUOTE_REUSE',`${q} This proposition controls the timing question ${i}.`);
-for(let i=0;i<6;i++) add(`possible-${i}`,'POSSIBLE_DERIVED_CLAIM',`A procedural guarantee should apply before an agency imposes a material deprivation in this setting ${i}.`);
+for(let i=0;i<6;i++) add(`possible-${i}`,'POSSIBLE_RELATED_PROPOSITION',`A procedural guarantee should apply before an agency imposes a material deprivation in this setting ${i}.`);
 const negatives=[
  'Martinez family trust beneficiaries requested an accounting.',
  'Martinez v. State was mentioned at a meeting without any reporter citation.',

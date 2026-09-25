@@ -1,78 +1,83 @@
 # Architecture
 
-RECALL has one dependency engine and three source adapters.
-
-## 1. Live public source
-
-`/api/trace` uses CourtListener REST v4.
-
-The live path is:
+RECALL has one epistemic core and multiple source adapters.
 
 ```text
-citation / quotation
-  → authority normalization
-  → CourtListener search
-      rd = flat federal filing-document candidates
-      r  = docket + nested-document metadata context
-  → bounded pagination
-  → RECAP document detail hydration
-  → plain_text when available
-  → shared deterministic dependency engine
-  → docket grouping
-  → source-first evidence UI
+incident source
+   │
+   ├─ recorded public incident
+   ├─ manual incident
+   └─ imported corpus
+          │
+          ▼
+ incident dependencies
+          │
+          ▼
+     trace engine
+          │
+   ┌──────┴──────────┐
+   │                 │
+CourtListener      local corpus
+   │
+ RECAP text
+   │
+ Firecrawl fallback
+   │
+   ▼
+shared deterministic classifier
+   │
+   ▼
+confirmed / possible / unconfirmed
+   │
+   ▼
+incident matrix + affected work + evidence
 ```
 
-A search result is retrieval only. It becomes confirmed only after the shared dependency engine finds deterministic citation or quotation evidence in available filing text.
+## Boundaries
 
-## 2. Recorded public source
+### Domain
+`lib/domain.mjs` owns relationship, incident, dependency, source, and review states.
 
-`lib/recorded-public-trace.mjs` contains a small, source-backed development-time capture from real RECAP public documents.
+### Incident
+`lib/recorded-incident.mjs` contains the source-backed Johnson demo incident.
+`lib/incident-trace.mjs` aggregates multiple incident dependencies without mixing provider response formats into product components.
 
-Each record preserves:
-- public RECAP source URL;
-- capture date;
-- captured citation/quotation excerpt;
-- SHA-256 hash of that captured excerpt;
-- docket/court/date metadata visible in the source document.
+### Source adapters
+`lib/courtlistener.mjs` performs legal discovery / RECAP hydration.
+`lib/firecrawl.mjs` is an allowlisted extraction fallback only.
 
-The route is labeled **RECORDED PUBLIC TRACE**, never live.
+### Engine
+`lib/recall-core.mjs` owns citation parsing, canonicalization, quote matching, review-only proposition matching, and local blast-radius logic.
 
-## 3. Imported corpus
+React components consume typed-ish product outputs; they do not decide whether legal evidence is confirmed.
 
-The browser extractor converts PDF/TXT/MD/DOCX files into the shared document/text shape. Missing status, matter, version, and chronology remain unknown unless supplied.
+## Request architecture
 
-## Shared engine
+A common exact-citation trace is:
 
-`lib/recall-core.mjs` owns:
-- citation parsing;
-- reporter normalization;
-- authority canonicalization;
-- quotation extraction/normalization;
-- deterministic quotation comparison;
-- proposition extraction;
-- review-only lexical matching;
-- dependency construction;
-- blast-radius traversal;
-- remediation ordering for imported documents.
+1. optional authority resolution;
+2. one exact `rd` search;
+3. one docket-context query;
+4. local confirmation from snippets;
+5. at most three promising candidate hydrations;
+6. broader search only if exact retrieval is insufficient.
 
-`lib/courtlistener.mjs` is an external-source adapter. It does not maintain a second dependency law.
+Candidate hydration uses a bounded queue with concurrency 2.
 
-## Trust boundaries
+429 responses preserve `Retry-After`. Short retry windows are honored once; long retry windows return immediately to the user as a rate-limit state.
 
-- CourtListener token: server only.
-- Outbound API host: hardcoded CourtListener API.
-- Public source links: allowlisted CourtListener / storage.courtlistener.com only.
-- Arbitrary filing URLs: never fetched.
-- Imported corpus contents: parsed in browser, not sent to `/api/trace`.
+## Cache layers
 
-## Cache
+In-process TTL caches:
+- resolution
+- search
+- RECAP document detail
+- docket detail
+- extraction
+- trace result
 
-Current-source trace results are cached in-process for ten minutes. Cached responses retain original `retrievedAt`, queries, source URLs, and content hashes. The UI labels them **CACHED PUBLIC SOURCE — checked <date>**.
+A cached result retains its original retrieval time and is never labeled live.
 
-## Performance
+## Trust boundary
 
-The live trace is bounded. Default UI depth is 25 unique filing candidates, with an explicit continuation to 50. RECAP hydration runs in bounded batches instead of unbounded concurrency.
-
-## Coverage
-
-CourtListener / RECAP is a public federal filing corpus, not every U.S. filing. RECALL reports the count actually checked and never silently promotes approximate search totals into exhaustive blast-radius claims.
+Provider data is validated conservatively at the adapter boundary. Malformed responses fail closed. External URLs are allowlisted. Secrets remain server-side. Private corpus text is not logged.

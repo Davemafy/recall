@@ -1445,3 +1445,289 @@
   .recallCreateActionBar>div{justify-content:space-between}
   .recallCreateResultRows article{grid-template-columns:1fr;gap:7px}
 }
+
+
+/* Quick trace + corpus visual consistency. These screens keep their existing information
+   architecture but shed the archival-serif / legal-template treatment. */
+.publicTracePage,.importPage{
+  font-family:"Segoe UI Variable","Aptos","Helvetica Neue",Arial,sans-serif;
+  background:#f3f2ee;
+  color:#111217;
+}
+.publicTracePage .workMast,.importPage .workMast{
+  height:58px;
+  padding:0 28px;
+  border-bottom:1px solid #262931;
+  background:#090a0d;
+  color:#f5f4ef;
+  position:sticky;
+  top:0;
+  z-index:50;
+}
+.publicTracePage .wordmark,.importPage .wordmark{
+  font-family:inherit;
+  font-size:13px;
+  font-weight:820;
+  letter-spacing:.19em;
+  color:#fff;
+}
+.publicTracePage .incidentCrumb,.importPage .incidentCrumb{
+  color:#a0a3ac;
+  font-size:9px;
+  letter-spacing:.08em;
+}
+.publicTracePage .demoPill,.importPage .demoPill{
+  border:0;
+  border-radius:0;
+  padding:0;
+  color:#aeb8ff;
+  font-size:8px;
+}
+.publicTracePage .traceHero{
+  grid-template-columns:minmax(0,1.45fr) 330px;
+  gap:0;
+  padding:0;
+  border-bottom:1px solid #252831;
+  background:#111319;
+  color:#f4f3ef;
+}
+.publicTracePage .traceInputSide{
+  max-width:none;
+  padding:58px clamp(28px,6vw,82px) 54px;
+  border-right:1px solid #2a2d35;
+}
+.publicTracePage .traceInputSide h1{
+  max-width:900px;
+  margin:0 0 18px;
+  font:670 clamp(46px,5.8vw,82px)/.94 "Segoe UI Variable","Aptos","Helvetica Neue",Arial,sans-serif;
+  letter-spacing:-.06em;
+}
+.publicTracePage .traceInputSide h1::first-line{color:#f4f3ef}
+.publicTracePage .traceInputSide>p{
+  max-width:720px;
+  color:#9699a3;
+  font:400 13px/1.7 "Segoe UI Variable","Aptos","Helvetica Neue",Arial,sans-serif;
+}
+.publicTracePage .traceLaw{
+  align-self:stretch;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  border-top:0;
+  padding:32px 28px 54px;
+  background:#0d0f14;
+}
+.publicTracePage .traceLaw p{
+  color:#8e929c;
+  font-size:10px;
+  line-height:1.65;
+}
+.publicTracePage .traceForm{
+  margin-top:30px;
+  gap:17px;
+}
+.publicTracePage .traceForm label span{
+  color:#777b86;
+  font-size:8px;
+}
+.publicTracePage .traceForm input,
+.publicTracePage .traceForm textarea{
+  border-bottom:1px solid #3a3d46;
+  color:#f3f2ee;
+  font:520 14px/1.5 "Segoe UI Variable","Aptos","Helvetica Neue",Arial,sans-serif;
+}
+.publicTracePage .traceForm input::placeholder,
+.publicTracePage .traceForm textarea::placeholder{color:#626670}
+.publicTracePage .traceForm .button{
+  border:0;
+  border-radius:2px;
+  background:#ff5a36;
+  color:#150805;
+  padding:13px 17px;
+  font-size:10px;
+  font-weight:780;
+}
+.publicTracePage .recordedStamp{
+  border-top:1px solid #2d3038;
+}
+.publicTracePage .recordedStamp span{color:#777b85;font-size:8px}
+.publicTracePage .recordedStamp strong{
+  color:#f5f4ef;
+  font:650 14px/1.2 "Segoe UI Variable","Aptos",sans-serif;
+}
+.publicTracePage .recordedStamp small{color:#777b85}
+.publicTracePage .sourceMode{
+  border:0;
+  border-radius:0;
+  padding:0;
+  font-size:8px;
+  letter-spacing:.11em;
+}
+.publicTracePage .sourceMode.live{color:#aeb8ff}
+.publicTracePage .sourceMode.recorded{color:#ffb29d}
+.publicTracePage .traceProgress{
+  padding:13px clamp(24px,5vw,72px);
+  border-bottom:1px solid #d8d5cc;
+  background:#e9e6df;
+  color:#6f7177;
+}
+.publicTracePage .traceProgress span:before{color:#ff5a36}
+.publicTracePage .traceSummary{
+  grid-template-columns:minmax(280px,1.15fr) 1fr;
+  gap:50px;
+  padding:38px clamp(24px,5vw,72px);
+  border-bottom:1px solid #d8d5cc;
+  background:#f3f2ee;
+}
+.publicTracePage .summaryLead>span,
+.publicTracePage .sectionEyebrow{color:#777980;font-size:8px}
+.publicTracePage .summaryLead h2{
+  margin:7px 0 8px;
+  font:670 31px/1.08 "Segoe UI Variable","Aptos","Helvetica Neue",Arial,sans-serif;
+  letter-spacing:-.04em;
+}
+.publicTracePage .summaryLead p{color:#777980}
+.publicTracePage .traceMetrics{
+  border-left:1px solid #d8d5cc;
+}
+.publicTracePage .traceMetrics div{
+  border-left:0;
+  border-right:1px solid #d8d5cc;
+  padding:2px 16px;
+}
+.publicTracePage .traceMetrics b{
+  color:#111217;
+  font:700 31px/1 "Segoe UI Variable","Aptos",sans-serif;
+}
+.publicTracePage .traceMetrics span{color:#7c7e83;font-size:8px}
+.publicTracePage .coverageNote{border-top:1px solid #d8d5cc;color:#777980}
+.publicTracePage .traceEvidenceGrid{background:#f7f6f2}
+.publicTracePage .traceEvidenceMain{padding:34px clamp(22px,4vw,52px)}
+.publicTracePage .traceEvidenceMain>h2{
+  font:670 28px/1.08 "Segoe UI Variable","Aptos",sans-serif;
+  letter-spacing:-.035em;
+}
+.publicTracePage .traceRightRail{
+  border-left:1px solid #d8d5cc;
+  background:#ebe9e3;
+}
+.publicTracePage .sourceAuthority{
+  border:0;
+  border-left:3px solid #ff5a36;
+  background:#111319;
+  color:#f5f4ef;
+}
+.publicTracePage .sourceAuthority strong,
+.publicTracePage .docketHead strong,
+.publicTracePage .sourceResult strong,
+.publicTracePage .filingNode strong{
+  font-family:"Segoe UI Variable","Aptos","Helvetica Neue",Arial,sans-serif;
+  font-weight:650;
+}
+.publicTracePage .sourceAuthority span{color:#8f929c}
+.publicTracePage .sourceDockets{border-left-color:#c8c5bd}
+.publicTracePage .docketStem{border-top-color:#c8c5bd}
+.publicTracePage .filingNode:hover,
+.publicTracePage .sourceResult:hover{background:#e9e6df}
+.publicTracePage .traceTimeline{
+  border-top:1px solid #d8d5cc;
+  background:#e9e6df;
+}
+.publicTracePage .traceTimeline strong{
+  font:650 16px/1.2 "Segoe UI Variable","Aptos",sans-serif;
+}
+.publicTracePage .errorBox{
+  border:0;
+  border-left:3px solid #ff5a36;
+  background:#201413;
+  color:#ffb29d;
+}
+.importPage{
+  background:#090a0d;
+  color:#f4f3ef;
+}
+.importPage .importHero{
+  max-width:none;
+  padding:64px clamp(24px,7vw,102px) 70px;
+  background:#111319;
+}
+.importPage .heroIndex{
+  color:#7e828c;
+  font-size:8px;
+  letter-spacing:.14em;
+}
+.importPage .importHero h1{
+  max-width:980px;
+  color:#f4f3ef;
+  font:680 clamp(54px,7vw,92px)/.92 "Segoe UI Variable","Aptos","Helvetica Neue",Arial,sans-serif;
+  letter-spacing:-.065em;
+}
+.importPage .importHero h1 em{
+  color:#ff5a36;
+  font-style:normal;
+  font-weight:680;
+}
+.importPage .importHero>p{
+  max-width:720px;
+  color:#92959f;
+  font:400 13px/1.7 "Segoe UI Variable","Aptos","Helvetica Neue",Arial,sans-serif;
+}
+.importPage .dropzone{
+  position:relative;
+  margin-top:34px;
+  min-height:170px;
+  justify-content:center;
+  border:1px solid #343741;
+  background:#0d0f14;
+  color:#f3f2ee;
+  text-align:left;
+  align-items:flex-start;
+  padding:38px 42px;
+}
+.importPage .dropzone:after{
+  content:"↗";
+  position:absolute;
+  right:28px;
+  top:22px;
+  color:#ff5a36;
+  font-size:26px;
+}
+.importPage .dropzone:hover{
+  border-color:#5b5f6a;
+  background:#15171d;
+}
+.importPage .dropzone strong{
+  font:650 22px/1.2 "Segoe UI Variable","Aptos",sans-serif;
+}
+.importPage .dropzone span{color:#777b86;font-size:9px}
+.importPage .importSummary{
+  border-bottom:1px solid #2a2d35;
+}
+.importPage .importSummary div b{
+  color:#f5f4ef;
+  font:700 28px/1 "Segoe UI Variable","Aptos",sans-serif;
+}
+.importPage .importSummary div span{color:#777b86;font-size:8px}
+.importPage .authorityBrowser{
+  border-top:1px solid #383b44;
+}
+.importPage .authorityBrowser button{
+  border-bottom:1px solid #2a2d35;
+  color:#f3f2ee;
+}
+.importPage .authorityBrowser button:hover{background:#171920}
+.importPage .authorityBrowser button span{color:#777b86;font-size:8px}
+.importPage .authorityBrowser button strong{
+  font:620 12px/1.4 "Segoe UI Variable","Aptos",sans-serif;
+}
+.importPage .authorityBrowser button em{
+  color:#ff5a36;
+  font:600 10px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+.importPage .micro{color:#676b75;font-size:9px}
+@media(max-width:900px){
+  .publicTracePage .traceHero{grid-template-columns:1fr}
+  .publicTracePage .traceInputSide{border-right:0;border-bottom:1px solid #2a2d35}
+  .publicTracePage .traceLaw{padding-top:26px}
+  .publicTracePage .traceSummary{grid-template-columns:1fr}
+}

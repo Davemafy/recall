@@ -60,3 +60,38 @@ test('dashboard scales proportionally to browser width without a separate scene'
   await expect(page.locator('.figmaSidebar')).toBeVisible();
   await expect(page.locator('.figmaInsights')).toBeVisible();
 });
+
+
+test('major dashboard regions match authored Figma coordinates at design size',async({page})=>{
+  await page.setViewportSize({width:1690,height:1096});
+  await page.goto('/');
+
+  const read=async(selector:string)=>{
+    const box=await page.locator(selector).boundingBox();
+    if(!box) throw new Error('Missing '+selector);
+    return {
+      x:Math.round(box.x*100)/100,
+      y:Math.round(box.y*100)/100,
+      width:Math.round(box.width*100)/100,
+      height:Math.round(box.height*100)/100
+    };
+  };
+
+  expect(await read('.figmaSidebar')).toEqual({x:0,y:0,width:106,height:1096});
+  expect(await read('.figmaContent')).toEqual({x:106,y:0,width:1584,height:1096});
+  expect(await read('.figmaHeader')).toEqual({x:126,y:22,width:1544,height:136});
+  expect(await read('.figmaSummary')).toEqual({x:126,y:176,width:1544,height:145});
+  expect(await read('.figmaTimeline')).toEqual({x:126,y:339,width:1544,height:373});
+  expect(await read('.figmaInsights')).toEqual({x:126,y:730,width:1544,height:340});
+
+  const panels=page.locator('.figmaPanel');
+  const first=await panels.nth(0).boundingBox();
+  const second=await panels.nth(1).boundingBox();
+  const third=await panels.nth(2).boundingBox();
+  expect(Math.abs((first?.width||0)-518.6666)).toBeLessThan(.1);
+  expect(Math.abs((second?.width||0)-514.6667)).toBeLessThan(.1);
+  expect(Math.abs((third?.width||0)-478.6667)).toBeLessThan(.1);
+
+  const shellShadow=await page.locator('.figmaDashboard').evaluate(el=>getComputedStyle(el).boxShadow);
+  expect(shellShadow).not.toContain('255, 61, 31');
+});

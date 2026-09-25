@@ -44,7 +44,31 @@ export default function FigmaDashboard(){
   const selectedRelationship=data.relationships.find((r:any)=>r.dependencyId===selectedDependency.id);
   const selectedFiling=selectedRelationship?data.filings.find((f:any)=>f.id===selectedRelationship.filingId):null;
 
-  const bubbleHeights=[5,9,7,4,6,8,10,8,7,10,9,12,11,7,10,9,8];
+  const bubbleColumns=[
+    {x:10,ys:[124,150,176,202]},
+    {x:38,ys:[46,72,98,124,150,176,202]},
+    {x:66,ys:[98,124,150,176,202]},
+    {x:94,ys:[-6,20,46,72,98,124,150,176,202]},
+    {x:122,ys:[124,150,176,202]},
+    {x:150,ys:[72,98,124,150,176,202]},
+    {x:178,ys:[20,46,72,98,124,150,176,202]},
+    {x:206,ys:[-32,-6,20,46,72,98,124,150,176,202]},
+    {x:234,ys:[46,72,98,124,150,176,202]},
+    {x:262,ys:[20,46,72,98,124,150,176,202]},
+    {x:290,ys:[-32,-6,20,46,72,98,124,150,176,202]},
+    {x:318,ys:[-84,-58,-32,-6,20,46,72,98,124,150,176,202]},
+    {x:346,ys:[-58,-32,-6,20,46,72,98,124,150,176,202]},
+    {x:374,ys:[46,72,98,124,150,176,202]},
+    {x:402,ys:[-32,-6,20,46,72,98,124,150,176,202]},
+    {x:430,ys:[20,46,72,98,124,150,176,202]}
+  ];
+  const hotPoints=[
+    {x:206,y:98},
+    {x:234,y:98},
+    {x:262,y:124},
+    {x:290,y:150},
+    {x:290,y:176}
+  ];
 
   return <div className="figmaPage" style={{height:DESIGN_H*scale}}>
     <div className="figmaScale" style={{transform:`scale(${scale})`}}>
@@ -167,15 +191,20 @@ export default function FigmaDashboard(){
               </div>
               <div className="figmaBubbleChart">
                 <div className="figmaBubbleColumns">
-                  {bubbleHeights.map((height,col)=><div className="figmaBubbleColumn" key={col}>
-                    {Array.from({length:height}).map((_,row)=>{
-                      const hot=traced&&((col===5&&row===height-1)||(col===7&&row===height-2)||(col===8&&row===height-1)||(col===10&&row===height-3)||(col===12&&row===height-2));
-                      const selectedHot=hot&&((selected<4&&col===7)||(selected===4&&col===12));
-                      return <i key={row} className={'figmaBubble '+(hot?'hot ':'')+(selectedHot?'selected':'')}/>;
-                    })}
-                  </div>)}
+                  {bubbleColumns.flatMap(column=>column.ys.map(y=>{
+                    const hotIndex=hotPoints.findIndex(point=>point.x===column.x&&point.y===y);
+                    const hot=traced&&hotIndex!==-1;
+                    const selectedHot=hot&&hotIndex===selected;
+                    return <i
+                      key={column.x+'-'+y}
+                      className={'figmaBubble '+(hot?'hot ':'')+(selectedHot?'selected':'')}
+                      style={{left:column.x,top:y}}
+                    />;
+                  }))}
                 </div>
-                <div className="figmaChartLabels"><span>Source</span><span>Doc 174</span><span>Doc 182</span><span>Evidence</span></div>
+                <div className="figmaChartLabels" aria-hidden>
+                  {[['SRC',4],['DEP',91],['REL',178],['174',265],['182',352],['EVID',435]].map(([label,left])=><span key={String(label)} style={{left:Number(left)}}>{label}</span>)}
+                </div>
               </div>
             </section>
 
@@ -193,7 +222,9 @@ export default function FigmaDashboard(){
                 <span className="figmaChange c1">INC</span>
                 <span className="figmaChange c2">{selectedFiling?'D'+selectedFiling.documentNumber:'DOC'}</span>
                 <span className="figmaChange c3">{traced?'EXACT':'READY'}</span>
-                <div className="figmaStreamLabels"><span>Source</span><span>Dependency</span><span>Filing</span><span>Evidence</span></div>
+                <div className="figmaStreamLabels" aria-hidden>
+                  {[['SRC',20],['DEP',105],['MATCH',190],['174',275],['182',360],['EVID',430]].map(([label,left])=><span key={String(label)} style={{left:Number(left)}}>{label}</span>)}
+                </div>
               </div>
             </section>
           </section>

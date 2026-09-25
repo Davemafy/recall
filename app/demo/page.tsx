@@ -1,2 +1,2 @@
-import IncidentDemo from '../../components/IncidentDemo';
-export default function DemoPage(){return <IncidentDemo/>}
+import FigmaDashboard from '../../components/FigmaDashboard';
+export default function DemoPage(){return <FigmaDashboard/>}

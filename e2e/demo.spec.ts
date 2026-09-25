@@ -1,7 +1,9 @@
 import {test,expect} from '@playwright/test';
-test('recorded demo is deterministic and source-backed',async({page})=>{
-  await page.goto('/demo');
-  await expect(page.getByText('Johnson v. Dunn',{exact:true}).first()).toBeVisible();
-  await expect(page.getByText(/Disputed Dependencies/i).first()).toBeVisible();
-  await expect(page.getByRole('button',{name:/Trace impact/i})).toBeVisible();
+
+test('demo aliases render the same Figma dashboard',async({page})=>{
+  for(const path of ['/demo','/incident/demo']){
+    await page.goto(path);
+    await expect(page.getByRole('main',{name:'RECALL dashboard'})).toBeVisible();
+    await expect(page.getByText('#JD–01701',{exact:true})).toBeVisible();
+  }
 });

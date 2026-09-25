@@ -3,6 +3,8 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import Link from 'next/link';
 // @ts-ignore shared recorded source fixture
 import {getRecordedPublicTrace,recordedEvidenceFor} from '../lib/recorded-public-trace.mjs';
+// @ts-ignore Shared domain constants are intentionally consumed by browser and Node code.
+import {RELATIONSHIP_STATE,relationshipLabel} from '../lib/domain.mjs';
 
 type TraceDoc={
  id:string; title?:string|null; docketId?:string|null; docketNumber?:string|null; caseName?:string|null; court?:string|null; filingDate?:string|null;
@@ -12,7 +14,7 @@ type TraceDiagnostics={traceId?:string;courtlistenerRequests?:number;firecrawlRe
 type TraceResult={ok?:boolean;sourceState?:string;retrievedAt?:string;checkedAt?:string;capturedAt?:string;authority?:any;authorityResolution?:string;documents:TraceDoc[];summary:any;coverage:any;sourceQueries?:any[];mode?:string;diagnostics?:TraceDiagnostics};
 type TraceError={message:string;state?:string;retryAfterMs?:number};
 
-const isConfirmed=(d:TraceDoc)=>d.classification==='CONFIRMED_CITATION_DEPENDENCY'||d.classification==='CONFIRMED_QUOTE_REUSE';
+const isConfirmed=(d:TraceDoc)=>d.classification===RELATIONSHIP_STATE.CONFIRMED_CITATION||d.classification===RELATIONSHIP_STATE.CONFIRMED_QUOTE;
 const dateLabel=(v?:string|null)=>v?new Intl.DateTimeFormat('en',{year:'numeric',month:'short',day:'2-digit'}).format(new Date(v)):'Date unavailable';
 
 function RecordedResult():TraceResult{
@@ -33,7 +35,7 @@ function RecordedResult():TraceResult{
        }:edge.evidence
      };
    });
-   const primary=relationships.find((r:any)=>r.classification==='CONFIRMED_CITATION_DEPENDENCY')||relationships.find((r:any)=>r.classification==='CONFIRMED_QUOTE_REUSE')||relationships.find((r:any)=>r.classification==='POSSIBLE_RELATED_PROPOSITION');
+   const primary=relationships.find((r:any)=>r.classification===RELATIONSHIP_STATE.CONFIRMED_CITATION)||relationships.find((r:any)=>r.classification===RELATIONSHIP_STATE.CONFIRMED_QUOTE)||relationships.find((r:any)=>r.classification===RELATIONSHIP_STATE.POSSIBLE);
    return {...d,snippet:d.sourceCapture?.segments?.[0]?.text||'',relationships,classification:primary?.classification||'CANDIDATE_UNCONFIRMED',evidence:primary?.evidence||null};
  });
  return {...raw,ok:true,sourceState:'RECORDED',documents};
@@ -44,7 +46,7 @@ function EvidenceMap({docs,onOpen}:{docs:TraceDoc[];onOpen:(d:TraceDoc)=>void}){
  const groups=[...new Map(confirmed.map(d=>[String(d.docketId||d.docketNumber||d.id),{key:String(d.docketId||d.docketNumber||d.id),name:d.caseName||'Public docket',court:d.court||'Court unavailable',number:d.docketNumber||'Docket number unavailable',docs:confirmed.filter(x=>(x.docketId||x.docketNumber||x.id)===(d.docketId||d.docketNumber||d.id))}])).values()];
  return <div className="sourceMap">
    <div className="sourceAuthority"><span>AUTHORITY</span><strong>{confirmed.length?'Confirmed occurrences':'No confirmed occurrences'}</strong></div>
-   <div className="sourceDockets">{groups.map(g=><section key={g.key} className="docketGroup"><div className="docketStem"/><div className="docketHead"><span>DOCKET</span><strong>{g.name}</strong><small>{g.court} · {g.number}</small></div>{g.docs.map(d=><button key={d.id} className="filingNode" onClick={()=>onOpen(d)}><span>{dateLabel(d.filingDate)}</span><strong>{d.title||'Public filing'}</strong><small>{d.relationships?.some(r=>r.classification==='CONFIRMED_QUOTE_REUSE')?'Confirmed citation + quote reuse':d.classification==='CONFIRMED_QUOTE_REUSE'?'Confirmed quote reuse':'Confirmed citation'}</small></button>)}</section>)}</div>
+   <div className="sourceDockets">{groups.map(g=><section key={g.key} className="docketGroup"><div className="docketStem"/><div className="docketHead"><span>DOCKET</span><strong>{g.name}</strong><small>{g.court} · {g.number}</small></div>{g.docs.map(d=><button key={d.id} className="filingNode" onClick={()=>onOpen(d)}><span>{dateLabel(d.filingDate)}</span><strong>{d.title||'Public filing'}</strong><small>{d.relationships?.some(r=>r.classification===RELATIONSHIP_STATE.CONFIRMED_QUOTE)?'Confirmed citation + quote reuse':d.classification===RELATIONSHIP_STATE.CONFIRMED_QUOTE?'Confirmed quote reuse':'Confirmed citation'}</small></button>)}</section>)}</div>
  </div>
 }
 
@@ -74,8 +76,8 @@ export default function PublicTrace({recorded=false,initialInput=''}:{recorded?:
  const docs=result?.documents||[];
  const summary=result?.summary;
  const confirmed=docs.filter(isConfirmed);
- const candidates=docs.filter(d=>d.classification==='CANDIDATE_UNCONFIRMED');
- const possible=docs.filter(d=>d.classification==='POSSIBLE_RELATED_PROPOSITION'||d.classification==='POSSIBLE_RELATED_PROPOSITION');
+ const candidates=docs.filter(d=>d.classification===RELATIONSHIP_STATE.UNCONFIRMED);
+ const possible=docs.filter(d=>d.classification===RELATIONSHIP_STATE.POSSIBLE||d.classification===RELATIONSHIP_STATE.POSSIBLE);
  const label=recorded?'RECORDED PUBLIC TRACE':result?.sourceState==='CACHED'?`CACHED PUBLIC SOURCE — checked ${dateLabel(result.checkedAt||result.retrievedAt)}`:'LIVE PUBLIC SOURCE';
  return <main className="publicTracePage">
    <header className="workMast"><Link href="/" className="wordmark">RECALL</Link><div className="incidentCrumb">{recorded?'Recorded evidence replay':'Trace real filings'}</div><div className={`sourceMode ${recorded?'recorded':'live'}`}>{label}</div></header>

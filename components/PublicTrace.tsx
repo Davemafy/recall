@@ -2,7 +2,6 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import Link from 'next/link';
 import CockpitShell,{SummaryCards} from './CockpitShell';
-import {downloadJson,loadPreferences,recordActivity} from '../lib/recall-client';
 // @ts-ignore recorded source fixture
 import {getRecordedPublicTrace,recordedEvidenceFor} from '../lib/recorded-public-trace.mjs';
 // @ts-ignore relationship constants
@@ -36,66 +35,26 @@ export default function PublicTrace({recorded=false,initialInput=''}:{recorded?:
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState<TraceError|null>(null);
  const [selected,setSelected]=useState<TraceDoc|null>(null);
- const [limit,setLimit]=useState<25|50>(25);
+ const [limit,setLimit]=useState(25);
  const requestRef=useRef<AbortController|null>(null);
+ useEffect(()=>()=>requestRef.current?.abort(),[]);
 
- useEffect(()=>{
-   if(!recorded) setLimit(loadPreferences().traceLimit);
-   return()=>requestRef.current?.abort();
- },[recorded]);
-
- const run=async(nextLimit:25|50=limit)=>{
-   requestRef.current?.abort();
-   const controller=new AbortController();
-   requestRef.current=controller;
-   setBusy(true);setError(null);setSelected(null);
+ const run=async(nextLimit=limit)=>{
+   requestRef.current?.abort(); const controller=new AbortController(); requestRef.current=controller; setBusy(true); setError(null); setSelected(null);
    try{
      const res=await fetch('/api/trace',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({input,quote,maxCandidates:nextLimit}),signal:controller.signal});
      const data=await res.json();
      if(!res.ok||!data.ok){setResult(null);setError({message:data.message||'Live public-source trace failed.',state:data.state,retryAfterMs:data.retryAfterMs});return}
      setResult(data);
-     const checkedCount=data.summary?.checkedCount??data.documents?.length??0;
-     const confirmedCount=data.summary?.confirmedFilingCount??0;
-     recordActivity({
-       kind:'TRACE',
-       title:data.authority?.caseName||input.trim()||'Public trace',
-       subtitle:data.authority?.citation||input.trim()||'Citation unavailable',
-       confirmed:confirmedCount,
-       checked:checkedCount,
-       dockets:data.summary?.uniqueDockets??0,
-       href:'/trace?q='+encodeURIComponent(input.trim())
-     });
-   }catch(err){
-     if((err as Error)?.name!=='AbortError'){setResult(null);setError({message:'Could not reach the live trace endpoint.',state:'SOURCE_UNAVAILABLE'})}
-   }finally{
-     if(requestRef.current===controller){setBusy(false);requestRef.current=null}
-   }
+   }catch(err){if((err as Error)?.name!=='AbortError'){setResult(null);setError({message:'Could not reach the live trace endpoint.',state:'SOURCE_UNAVAILABLE'})}}
+   finally{if(requestRef.current===controller){setBusy(false);requestRef.current=null}}
  };
 
- const docs=result?.documents||[];
- const summary=result?.summary;
- const confirmed=docs.filter(isConfirmed);
- const candidates=docs.filter(d=>d.classification===RELATIONSHIP_STATE.UNCONFIRMED);
- const possible=docs.filter(d=>d.classification===RELATIONSHIP_STATE.POSSIBLE);
- const checked=summary?.checkedCount??docs.length;
- const confirmedCount=summary?.confirmedFilingCount??0;
+ const docs=result?.documents||[]; const summary=result?.summary; const confirmed=docs.filter(isConfirmed); const candidates=docs.filter(d=>d.classification===RELATIONSHIP_STATE.UNCONFIRMED); const possible=docs.filter(d=>d.classification===RELATIONSHIP_STATE.POSSIBLE);
+ const checked=summary?.checkedCount??docs.length; const confirmedCount=summary?.confirmedFilingCount??0;
  const sourceLabel=recorded?'RECORDED PUBLIC TRACE':result?.sourceState==='CACHED'?'CACHED PUBLIC SOURCE':'LIVE PUBLIC SOURCE';
 
- const exportResult=()=>result&&downloadJson('recall-public-trace.json',{
-   authority:result.authority,
-   sourceState:result.sourceState,
-   retrievedAt:result.retrievedAt,
-   coverage:result.coverage,
-   summary:result.summary,
-   documents:result.documents,
-   diagnostics:result.diagnostics
- });
-
- const action=recorded
-   ?result?<button className="fc-secondary-button" onClick={exportResult}>Export trace</button>:undefined
-   :<div className="fc-action-row">{result&&<button className="fc-secondary-button" onClick={exportResult}>Export result</button>}<button className="fc-metal-button" onClick={()=>run(limit)} disabled={busy}>{busy?'Tracing…':'Trace real filings'}</button></div>;
-
- return <CockpitShell pageTitle="Quick trace" heading="Trace" code="#PUBLIC" status="CourtListener / RECAP" action={action}>
+ return <CockpitShell pageTitle="Quick trace" heading="Trace" code="#PUBLIC" status="CourtListener / RECAP" action={!recorded?<button className="fc-metal-button" onClick={()=>run(limit)} disabled={busy}>{busy?'Tracing…':'Trace real filings'}</button>:undefined}>
    <SummaryCards items={[
      {label:'Confirmed Filings',value:result?String(confirmedCount).padStart(2,'0'):'—'},
      {label:'Candidates Checked',value:result?String(checked).padStart(2,'0'):'—'},
@@ -106,7 +65,7 @@ export default function PublicTrace({recorded=false,initialInput=''}:{recorded?:
    <section className="fc-timeline fc-trace-panel">
      <header className="fc-panel-heading"><div><h2>{recorded?'Recorded public trace':'Public filing search'}</h2><small>Search result ≠ confirmation · deterministic source evidence only</small></div>{result&&<span className="fc-state-chip">{sourceLabel}</span>}</header>
      <div className="fc-trace-form">
-       {!recorded?<><label><span>CITATION OR CASE + CITATION</span><input value={input} onChange={e=>setInput(e.target.value)} placeholder="410 U.S. 113"/></label><label><span>DISPUTED QUOTATION <em>optional · never saved in activity history</em></span><textarea value={quote} onChange={e=>setQuote(e.target.value)} placeholder="Paste exact disputed language if quotation reuse matters"/></label></>:<div className="fc-recorded-note"><span>CAPTURED</span><strong>{dateLabel(result?.capturedAt)}</strong><p>Exact captured source excerpts and evidence spans are SHA-256 hashed.</p></div>}
+       {!recorded?<><label><span>CITATION OR CASE + CITATION</span><input value={input} onChange={e=>setInput(e.target.value)} placeholder="410 U.S. 113"/></label><label><span>DISPUTED QUOTATION <em>optional</em></span><textarea value={quote} onChange={e=>setQuote(e.target.value)} placeholder="Paste exact disputed language if quotation reuse matters"/></label></>:<div className="fc-recorded-note"><span>CAPTURED</span><strong>{dateLabel(result?.capturedAt)}</strong><p>Exact captured source excerpts and evidence spans are SHA-256 hashed.</p></div>}
        {busy&&<div className="fc-progress"><i/>Checking filing candidates and confirming source text…</div>}
        {error&&<div className="fc-error" role="alert"><strong>{error.state==='RATE_LIMITED'?'RATE LIMITED':'SOURCE UNAVAILABLE'}</strong><p>{error.message}</p><Link href="/incident/demo">Open recorded incident ↗</Link></div>}
      </div>

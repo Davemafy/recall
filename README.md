@@ -52,7 +52,7 @@ The recorded trace uses the real authority `598 U.S. 508` and source-backed exce
 
 The first two also contain the short Warhol quotation **“further purpose or different character”**, allowing RECALL to demonstrate confirmed quotation reuse without inventing a synthetic public filing.
 
-The replay preserves the real RECAP source URL, capture date, and SHA-256 hash of each captured excerpt. It is visibly labeled **RECORDED PUBLIC TRACE** and never presented as live.
+The replay preserves the real RECAP source URL, capture date, exact verbatim source excerpts, page / capture-time extracted-text line provenance, and SHA-256 hashes for both each stored excerpt and each evidence span. An original-file SHA-256 is stored only when the PDF itself was downloaded during capture; the current recorded fixtures explicitly mark that no original file hash was captured. It is visibly labeled **RECORDED PUBLIC TRACE** and never presented as live.
 
 RECALL does **not** claim that `598 U.S. 508` is invalid. The recorded route demonstrates downstream dependency mechanics with a real authority and real public filings.
 

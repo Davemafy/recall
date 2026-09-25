@@ -1,5 +1,5 @@
 'use client';
-import {useMemo,useState} from 'react';
+import {useEffect,useMemo,useRef,useState} from 'react';
 import Link from 'next/link';
 // @ts-ignore shared recorded source fixture
 import {getRecordedPublicTrace,recordedEvidenceFor} from '../lib/recorded-public-trace.mjs';
@@ -8,7 +8,9 @@ type TraceDoc={
  id:string; title?:string|null; docketId?:string|null; docketNumber?:string|null; caseName?:string|null; court?:string|null; filingDate?:string|null;
  sourceUrl?:string|null; documentUrl?:string|null; snippet?:string; text?:string; classification?:string; evidence?:any; relationships?:Array<{classification:string;evidence:any}>; searchQuery?:string|null; contentHash?:string; retrievedAt?:string; sourceCapture?:any;
 };
-type TraceResult={ok?:boolean;sourceState?:string;retrievedAt?:string;checkedAt?:string;capturedAt?:string;authority?:any;authorityResolution?:string;documents:TraceDoc[];summary:any;coverage:any;sourceQueries?:any[];mode?:string};
+type TraceDiagnostics={traceId?:string;courtlistenerRequests?:number;firecrawlRequests?:number;cacheHits?:number;documentsHydrated?:number;searchPassesUsed?:number};
+type TraceResult={ok?:boolean;sourceState?:string;retrievedAt?:string;checkedAt?:string;capturedAt?:string;authority?:any;authorityResolution?:string;documents:TraceDoc[];summary:any;coverage:any;sourceQueries?:any[];mode?:string;diagnostics?:TraceDiagnostics};
+type TraceError={message:string;state?:string;retryAfterMs?:number};
 
 const isConfirmed=(d:TraceDoc)=>d.classification==='CONFIRMED_CITATION_DEPENDENCY'||d.classification==='CONFIRMED_QUOTE_REUSE';
 const dateLabel=(v?:string|null)=>v?new Intl.DateTimeFormat('en',{year:'numeric',month:'short',day:'2-digit'}).format(new Date(v)):'Date unavailable';
@@ -52,24 +54,28 @@ export default function PublicTrace({recorded=false,initialInput=''}:{recorded?:
  const [quote,setQuote]=useState('');
  const [result,setResult]=useState<TraceResult|null>(recordedData);
  const [busy,setBusy]=useState(false);
- const [error,setError]=useState('');
+ const [error,setError]=useState<TraceError|null>(null);
  const [selected,setSelected]=useState<TraceDoc|null>(null);
  const [limit,setLimit]=useState(25);
+ const requestRef=useRef<AbortController|null>(null);
+ useEffect(()=>()=>requestRef.current?.abort(),[]);
  const run=async(nextLimit=limit)=>{
-   setBusy(true);setError('');setSelected(null);
+   requestRef.current?.abort();
+   const controller=new AbortController();requestRef.current=controller;
+   setBusy(true);setError(null);setSelected(null);
    try{
-     const res=await fetch('/api/trace',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({input,quote,maxCandidates:nextLimit})});
+     const res=await fetch('/api/trace',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({input,quote,maxCandidates:nextLimit}),signal:controller.signal});
      const data=await res.json();
-     if(!res.ok||!data.ok){setResult(null);setError(data.message||'Live public-source trace failed.');return}
+     if(!res.ok||!data.ok){setResult(null);setError({message:data.message||'Live public-source trace failed.',state:data.state,retryAfterMs:data.retryAfterMs});return}
      setResult(data);
-   }catch{setResult(null);setError('Could not reach the live trace endpoint.');}
-   finally{setBusy(false)}
+   }catch(error){if((error as Error)?.name!=='AbortError'){setResult(null);setError({message:'Could not reach the live trace endpoint.',state:'SOURCE_UNAVAILABLE'})}}
+   finally{if(requestRef.current===controller){setBusy(false);requestRef.current=null}}
  };
  const docs=result?.documents||[];
  const summary=result?.summary;
  const confirmed=docs.filter(isConfirmed);
  const candidates=docs.filter(d=>d.classification==='CANDIDATE_UNCONFIRMED');
- const possible=docs.filter(d=>d.classification==='POSSIBLE_DERIVED_CLAIM');
+ const possible=docs.filter(d=>d.classification==='POSSIBLE_RELATED_PROPOSITION'||d.classification==='POSSIBLE_DERIVED_CLAIM');
  const label=recorded?'RECORDED PUBLIC TRACE':result?.sourceState==='CACHED'?`CACHED PUBLIC SOURCE — checked ${dateLabel(result.checkedAt||result.retrievedAt)}`:'LIVE PUBLIC SOURCE';
  return <main className="publicTracePage">
    <header className="workMast"><Link href="/" className="wordmark">RECALL</Link><div className="incidentCrumb">{recorded?'Recorded evidence replay':'Trace real filings'}</div><div className={`sourceMode ${recorded?'recorded':'live'}`}>{label}</div></header>
@@ -77,16 +83,16 @@ export default function PublicTrace({recorded=false,initialInput=''}:{recorded?:
      <div className="traceInputSide"><div className="heroIndex">{recorded?'PUBLIC-SOURCE REPLAY':'LIVE FEDERAL FILING SEARCH'}</div><h1>{recorded?'A real trace, frozen for replay.':'Trace the authority through public filings.'}</h1><p>{recorded?'These records were captured from public CourtListener / RECAP sources during development. The replay does not make network calls.':'Searches public federal filing data available through CourtListener / RECAP. Coverage is not every U.S. court filing.'}</p>
        {!recorded&&<div className="traceForm"><label><span>CITATION OR CASE + CITATION</span><input value={input} onChange={e=>setInput(e.target.value)} placeholder="410 U.S. 113"/></label><label><span>OPTIONAL DISPUTED QUOTATION</span><textarea value={quote} onChange={e=>setQuote(e.target.value)} placeholder="Paste a quotation to trace exact / near-exact reuse"/></label><button className="button danger" onClick={()=>run(limit)} disabled={busy}>{busy?'Tracing public filings…':'Trace real filings →'}</button></div>}
        {recorded&&<div className="recordedStamp"><span>CAPTURED</span><strong>{dateLabel(result?.capturedAt)}</strong><small>Exact captured source excerpts and evidence spans are SHA-256 hashed. Original-file SHA-256 is shown only when the source file was downloaded during capture.</small></div>}
-       {error&&<div className="errorBox"><strong>Live source unavailable</strong><p>{error}</p><Link href="/demo">Open recorded public trace →</Link></div>}
+       {error&&<div className="errorBox"><strong>{error.state==='RATE_LIMITED'?'Public source temporarily rate-limited':'Live source unavailable'}</strong><p>{error.message}{error.state==='RATE_LIMITED'&&error.retryAfterMs?` Retry after about ${Math.ceil(error.retryAfterMs/1000)} seconds.`:''}</p><Link href="/incident/demo">Open recorded public incident →</Link></div>}
      </div>
      <aside className="traceLaw"><div className="railLabel">CONFIRMATION LAW</div><p>A search hit is only a candidate. RECALL counts a filing as confirmed only when its available text contains deterministic citation or quotation evidence.</p><p>Semantic resemblance is always review-only.</p></aside>
    </section>
-   {busy&&<section className="traceProgress"><span>Resolving authority</span><span>Searching public filings</span><span>Confirming citation occurrences</span><span>Grouping dockets</span></section>}
+   {busy&&<section className="traceProgress" aria-live="polite"><span>Tracing public filing candidates…</span></section>}
    {result&&<>
      <section className="traceSummary">
        <div className="summaryLead"><span>{label}</span><h2>{result.authority?.caseName||result.authority?.citation||input}</h2><p>{result.coverage?.language||`${summary?.confirmedFilingCount||0} confirmed in ${summary?.checkedCount||0} filing candidates checked`}</p></div>
-       <div className="traceMetrics"><div><b>{summary?.confirmedFilingCount??0}</b><span>confirmed filings</span></div><div><b>{summary?.uniqueDockets??0}</b><span>dockets</span></div><div><b>{summary?.confirmedQuoteReuseCount??0}</b><span>quote reuses</span></div><div><b>{summary?.candidateUnconfirmedCount??0}</b><span>unconfirmed candidates</span></div></div>
-       <div className="coverageNote">{result.coverage?.bounded?<strong>Bounded search.</strong>:<strong>Checked returned result set.</strong>} <span>RECALL checked {summary?.checkedCount??docs.length} filing candidates. Search counts above 2,000 can be approximate at the source.</span>{!recorded&&result.coverage?.bounded&&limit<50&&<button className="loadMore" onClick={()=>{setLimit(50);void run(50)}} disabled={busy}>Check up to 50 candidates →</button>}</div>
+       <div className="traceMetrics"><div><b>{summary?.confirmedFilingCount??0}</b><span>confirmed filings</span></div><div><b>{summary?.uniqueDockets??0}</b><span>identified dockets</span></div><div><b>{summary?.confirmedQuoteReuseCount??0}</b><span>quote reuses</span></div><div><b>{summary?.candidateUnconfirmedCount??0}</b><span>unconfirmed candidates</span></div></div>
+       <div className="coverageNote">{result.coverage?.bounded?<strong>Bounded search.</strong>:<strong>Checked returned result set.</strong>} <span>RECALL checked {summary?.checkedCount??docs.length} filing candidates. {summary?.unknownDocketCount?`${summary.unknownDocketCount} confirmed filing${summary.unknownDocketCount===1?' has':'s have'} docket metadata unavailable. `:''}Search counts above 2,000 can be approximate at the source.</span>{!recorded&&result.coverage?.bounded&&limit<50&&<button className="loadMore" onClick={()=>{setLimit(50);void run(50)}} disabled={busy}>Check up to 50 candidates →</button>}</div>
      </section>
      <section className="traceEvidenceGrid">
        <div className="traceEvidenceMain"><div className="sectionEyebrow">EVIDENCE MAP</div><h2>Confirmed occurrences by docket.</h2><EvidenceMap docs={docs} onOpen={setSelected}/></div>

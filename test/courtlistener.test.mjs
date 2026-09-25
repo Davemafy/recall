@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   buildAuthorityFromInput,buildSearchPasses,classifyCourtListenerStatus,safeSourceUrl,
   extractDocumentsFromSearchPayload,extractDocketMetadata,confirmPublicCandidate,summarizePublicTrace,
-  searchCourtListenerPages,hydratePublicDocument
+  searchCourtListenerPages,hydratePublicDocument,traceCourtListener
 } from '../lib/courtlistener.mjs';
 import {RECORDED_PUBLIC_FILINGS,getRecordedPublicTrace,recordedAnalysisText,recordedEvidenceFor} from '../lib/recorded-public-trace.mjs';
 
@@ -157,4 +157,63 @@ test('recorded provenance hashes exact stored source spans',()=>{
     assert.ok(!recordedAnalysisText(document).includes('The filing also quotes'));
     assert.ok(!recordedAnalysisText(document).includes('The filing quotes'));
   }
+});
+
+
+test('simple exact trace stays inside the CourtListener request budget and hydration concurrency is at most two',async()=>{
+  const original=global.fetch;
+  let active=0,maxActive=0;
+  global.fetch=async(url,options={})=>{
+    active++;maxActive=Math.max(maxActive,active);
+    try{
+      const value=String(url);
+      if(value.includes('/citation-lookup/')){
+        return new Response(JSON.stringify([{status:200,clusters:[{id:1,case_name:'Roe v. Wade'}]}]),{status:200,headers:{'content-type':'application/json'}});
+      }
+      if(value.includes('/search/')){
+        const parsed=new URL(value);
+        const type=parsed.searchParams.get('type');
+        if(type==='rd') return new Response(JSON.stringify({count:3,next:null,results:[
+          {id:901,docket_id:301,document_number:'1',snippet:'Roe motion concerning constitutional procedure.'},
+          {id:902,docket_id:302,document_number:'2',snippet:'Roe memorandum concerning constitutional procedure.'},
+          {id:903,docket_id:303,document_number:'3',snippet:'Roe order concerning constitutional procedure.'}
+        ]}),{status:200,headers:{'content-type':'application/json'}});
+        if(type==='r') return new Response(JSON.stringify({count:3,next:null,results:[
+          {id:301,docketNumber:'1:26-cv-1',caseName:'A v. B',court_citation_string:'D.D.C.'},
+          {id:302,docketNumber:'1:26-cv-2',caseName:'C v. D',court_citation_string:'D.D.C.'},
+          {id:303,docketNumber:'1:26-cv-3',caseName:'E v. F',court_citation_string:'D.D.C.'}
+        ]}),{status:200,headers:{'content-type':'application/json'}});
+      }
+      if(value.includes('/recap-documents/')){
+        await new Promise(resolve=>setTimeout(resolve,15));
+        const id=value.match(/recap-documents\/(\d+)/)?.[1];
+        return new Response(JSON.stringify({id:Number(id),plain_text:'The filing cites Roe v. Wade, 410 U.S. 113, 120.',description:'Filing',filepath_local:`recap/${id}.pdf`,is_available:true}),{status:200,headers:{'content-type':'application/json'}});
+      }
+      throw new Error('unexpected request '+value);
+    }finally{active--}
+  };
+  try{
+    const result=await traceCourtListener({input:'410 U.S. 113',maxCandidates:3},'token',{firecrawlKey:''});
+    assert.equal(result.ok,true);
+    assert.equal(result.summary.confirmedFilingCount,3);
+    assert.ok(result.diagnostics.courtlistenerRequests<=8,`request count was ${result.diagnostics.courtlistenerRequests}`);
+    assert.ok(maxActive<=2,`max concurrent requests was ${maxActive}`);
+    assert.equal(result.diagnostics.searchPassesUsed,1);
+  }finally{global.fetch=original}
+});
+
+test('429 preserves rate-limit state and Retry-After instead of fabricating results',async()=>{
+  const original=global.fetch;
+  global.fetch=async(url)=>{
+    const value=String(url);
+    if(value.includes('/citation-lookup/')) return new Response(JSON.stringify([{status:404,clusters:[]}]),{status:200,headers:{'content-type':'application/json'}});
+    return new Response(JSON.stringify({detail:'throttled'}),{status:429,headers:{'content-type':'application/json','retry-after':'30'}});
+  };
+  try{
+    const result=await traceCourtListener({input:'347 U.S. 483',maxCandidates:5},'token',{firecrawlKey:''});
+    assert.equal(result.ok,false);
+    assert.equal(result.state,'RATE_LIMITED');
+    assert.ok(result.retryAfterMs>=30000);
+    assert.equal(result.summary,undefined);
+  }finally{global.fetch=original}
 });

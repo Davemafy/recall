@@ -12,7 +12,7 @@ test('same case name different reporter remains different',()=>assert.notEqual(c
 test('exact quote reuse is deterministic',()=>assert.equal(quoteSimilarity(INCIDENT_QUOTE,INCIDENT_QUOTE),1));
 test('semantic similarity never returns confirmed',()=>{
  const r=classifySnippet('A procedural guarantee should attach before an agency causes a material deprivation.');
- assert.ok(['POSSIBLE_DERIVED_CLAIM','NOT_RELATED'].includes(r.type));
+ assert.ok(['POSSIBLE_RELATED_PROPOSITION','NOT_RELATED'].includes(r.type));
 });
 test('critical discussion of bad case is excluded from blast radius',()=>{
  const docs=[{id:'x',title:'x',filename:'x',status:'INTERNAL',text:'Do not rely on Martinez v. State, 999 F.4th 123. The citation is invalid and fabricated.'}];

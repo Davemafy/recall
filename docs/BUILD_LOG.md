@@ -188,3 +188,17 @@ This commit exists only to refresh the branch preview after Vercel skipped autom
 
 
 Preview refresh: precision pass for the live laptop review (shorter timeline, readable filing matrix, contained evidence stream, quieter dependency actions and theme control).
+
+
+## M12 — Production release
+
+The user approved the Figma-derived cockpit for production after the laptop-density, precision, and interaction-completion passes.
+
+Release state:
+- source-of-truth Figma cockpit frontend merged to main
+- visible shell controls are functional (navigation, status menu, workspace menu, appearance settings)
+- dependency rows open exact evidence
+- affected-filing matrix is semantic and interactive
+- evidence stream is contained within its panel
+- CI release candidate passed unit tests, deterministic benchmark, typecheck, lint, production build, and Playwright E2E
+- this documentation-only commit exists to trigger the connected Vercel production Git deployment after the squash merge did not auto-deploy

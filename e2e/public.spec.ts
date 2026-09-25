@@ -15,9 +15,9 @@ test('root is the literal Figma dashboard without the outer scene backdrop',asyn
   await expect(page.getByText('Incident,',{exact:true})).toBeVisible();
   await expect(page.getByText('#JD–01701',{exact:true})).toBeVisible();
   await expect(page.getByText('Incident Timeline',{exact:true})).toBeVisible();
-  await expect(page.getByText('Disputed Dependencies',{exact:true})).toBeVisible();
-  await expect(page.getByText('Affected Filings',{exact:true})).toBeVisible();
-  await expect(page.getByText('Evidence Trace',{exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Disputed Dependencies'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Affected Filings'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Evidence Trace'})).toBeVisible();
 
   await expect(page.locator('.figmaSummaryCard')).toHaveCount(4);
   await expect(page.locator('.figmaPanel')).toHaveCount(3);

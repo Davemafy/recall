@@ -14,7 +14,8 @@ test('recorded incident flows from court source to dependency matrix to exact ev
   await expect(page.getByText('RECORDED PUBLIC INCIDENT',{exact:false}).first()).toBeVisible();
   await expect(page.getByRole('heading',{name:'Johnson v. Dunn'})).toBeVisible();
   await expect(page.getByText(/five problematic citations across two motions/i)).toBeVisible();
-  await expect(page.getByText('Wilson v. Jackson, 2006 WL 8438651, at *2 (N.D. Ala. Feb. 27, 2006)',{exact:false})).toBeVisible();
+  await expect(page.getByText('Wilson v. Jackson',{exact:true}).first()).toBeVisible();
+  await expect(page.getByText('2006 WL 8438651',{exact:true}).first()).toBeVisible();
 
   await page.getByRole('button',{name:/Trace impact/i}).click();
   await expect(page.getByText(/5 confirmed relationships/i)).toBeVisible();

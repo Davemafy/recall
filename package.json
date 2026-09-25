@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --max-warnings=0",
+    "lint": "eslint . --ext .js,.mjs,.ts,.tsx --max-warnings=0",
     "test": "node --test test/*.test.mjs",
     "bench": "node bench/run.mjs",
     "e2e": "playwright test",
@@ -26,7 +26,7 @@
     "@types/react-dom": "^19.1.9",
     "typescript": "^5.9.2",
     "@playwright/test": "^1.55.0",
-    "eslint": "^9.35.0",
+    "eslint": "^8.57.1",
     "eslint-config-next": "^15.5.3"
   }
 }

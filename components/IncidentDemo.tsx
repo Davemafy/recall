@@ -1,10 +1,11 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import {useMemo,useState} from 'react';
-import Link from 'next/link';
-// @ts-ignore Recorded incident fixture is shared with Node benchmark tests.
+import CockpitShell,{SummaryCards} from './CockpitShell';
+// @ts-ignore shared recorded incident fixture
 import {getRecordedIncident,JOHNSON_DUNN_ORDER_URL} from '../lib/recorded-incident.mjs';
-// @ts-ignore Centralized domain labels.
+// @ts-ignore shared domain labels
 import {relationshipLabel} from '../lib/domain.mjs';
 
 type Dependency={
@@ -20,7 +21,7 @@ type Relationship={
   evidence:{exactText:string;sourceUrl:string;sourceType:string;location:string;explanation:string};
 };
 
-const dateLabel=(value:string)=>new Intl.DateTimeFormat('en',{year:'numeric',month:'short',day:'numeric'}).format(new Date(value));
+const dateLabel=(value:string)=>new Intl.DateTimeFormat('en',{year:'numeric',month:'short',day:'2-digit'}).format(new Date(value));
 
 export default function IncidentDemo(){
   const data=useMemo(()=>getRecordedIncident(),[]);
@@ -29,160 +30,162 @@ export default function IncidentDemo(){
   const relationships=data.relationships as Relationship[];
 
   const [traced,setTraced]=useState(false);
-  const [showProvenance,setShowProvenance]=useState(false);
   const [selected,setSelected]=useState<{dependency:Dependency;filing?:Filing;relationship?:Relationship}>(()=>({
     dependency:dependencies[0],
     filing:filings.find(f=>f.dependencyIds.includes(dependencies[0].id)),
     relationship:relationships.find(r=>r.dependencyId===dependencies[0].id)
   }));
+  const [drawerOpen,setDrawerOpen]=useState(false);
+  const [showProvenance,setShowProvenance]=useState(false);
 
-  const relationFor=(dependencyId:string,filingId:string)=>relationships.find(item=>item.dependencyId===dependencyId&&item.filingId===filingId);
-
-  const selectDependency=(dependency:Dependency)=>{
+  const openDependency=(dependency:Dependency)=>{
     const relationship=relationships.find(r=>r.dependencyId===dependency.id);
     const filing=relationship?filings.find(f=>f.id===relationship.filingId):undefined;
     setSelected({dependency,filing,relationship});
     setShowProvenance(false);
   };
-
-  const selectRelationship=(dependency:Dependency,filing:Filing)=>{
-    const relationship=relationFor(dependency.id,filing.id);
-    if(!relationship)return;
+  const openRelationship=(relationship:Relationship)=>{
+    const dependency=dependencies.find(d=>d.id===relationship.dependencyId)!;
+    const filing=filings.find(f=>f.id===relationship.filingId);
     setSelected({dependency,filing,relationship});
     setShowProvenance(false);
+    setDrawerOpen(true);
   };
 
-  return <main className="recallXPage recallCommandIncident">
-    <header className="recallXMast">
-      <Link href="/" className="recallXBrand">RECALL</Link>
-      <div className="recallXMastCase">INCIDENT / JD-01701</div>
-      <div className="recallXMastMode"><span/>Recorded public incident</div>
-    </header>
+  return <CockpitShell
+    pageTitle="Johnson v. Dunn"
+    heading="Incident"
+    code="#JD–01701"
+    status="Recorded public incident"
+    action={<button className={'fc-metal-button '+(traced?'is-done':'')} onClick={()=>setTraced(true)}>{traced?'Impact traced':'Trace impact'}</button>}
+  >
+    <SummaryCards items={[
+      {label:'Disputed Dependencies',value:'05'},
+      {label:'Affected Filings',value:traced?'02':'—'},
+      {label:'Confirmed Relations',value:traced?'05':'—',icon:'vertical'},
+      {label:'Dockets',value:traced?'01':'—',icon:'vertical'}
+    ]}/>
 
-    <section className="recallCommandCaseHeader">
-      <div className="recallCommandCaseIdentity">
-        <span>RECORDED PUBLIC INCIDENT</span>
-        <h1>Johnson v. Dunn</h1>
-        <p>{data.incident.court} · {data.incident.docketNumber}</p>
+    <section className="fc-timeline">
+      <header className="fc-panel-heading">
+        <div><h2>Incident Timeline</h2><small>Recorded public source · {data.incident.court}</small></div>
+        <button className="fc-more" aria-label="Open source order" onClick={()=>window.open(JOHNSON_DUNN_ORDER_URL,'_blank')}><img src="/recall-figma/ellipsis.png" alt=""/></button>
+      </header>
+      <div className="fc-timeline-plot">
+        <div className="fc-time-labels" aria-hidden>
+          {['07 MAY','12 MAY','23 JUL','SOURCE','DEP 01','DEP 02','DEP 03','DEP 04','DEP 05','DOC 174','DOC 182','EVID.'].map((label,index)=><span key={index}>{label}</span>)}
+        </div>
+        <div className="fc-time-grid" aria-hidden>{Array.from({length:12}).map((_,i)=><i key={i}/>)}</div>
+        <div className="fc-now-line" aria-hidden><span>{traced?'TRACED':'READY'}</span><i/></div>
+        <article className="fc-event event-a"><b/><div><strong>Document 174 filed</strong><small>4 disputed authorities</small></div></article>
+        <article className="fc-event event-b purple"><b/><div><strong>Document 182 filed</strong><small>1 disputed authority</small></div></article>
+        <article className="fc-event event-c"><b/><div><strong>Sanctions order identifies 5 citations</strong><small>{dateLabel(data.incident.sourceDate)}</small></div></article>
+        <article className={'fc-event event-d '+(traced?'is-hot':'')}><b/><div><strong>{traced?'5 confirmed relationships':'Impact trace ready'}</strong><small>{traced?'2 affected motions · 1 docket':'Run the deterministic trace'}</small></div></article>
       </div>
-      <div className="recallCommandFacts">
-        <div><span>SOURCE DATE</span><strong>{dateLabel(data.incident.sourceDate)}</strong></div>
-        <div><span>DISPUTED</span><strong>05 dependencies</strong></div>
-        <div><span>AFFECTED</span><strong>{traced?'02 filed motions':'— pending trace'}</strong></div>
-        <a href={JOHNSON_DUNN_ORDER_URL} target="_blank" rel="noreferrer"><span>AUTHORITY</span><strong>Source order ↗</strong></a>
-      </div>
     </section>
 
-    <section className={'recallCommandTimeline '+(traced?'is-traced':'')} aria-label="Incident trace stages">
-      <div className="is-complete"><span>01</span><i/><strong>Court finding</strong><small>Five citations flagged</small></div>
-      <div className="is-complete"><span>02</span><i/><strong>Dependencies</strong><small>Five under review</small></div>
-      <div className={traced?'is-complete':'is-current'}><span>03</span><i/><strong>Trace impact</strong><small>{traced?'Deterministic pass complete':'Ready to run'}</small></div>
-      <div className={traced?'is-complete':''}><span>04</span><i/><strong>Affected work</strong><small>{traced?'Two motions resolved':'Awaiting trace'}</small></div>
-      <div className={traced?'is-current':''}><span>05</span><i/><strong>Exact evidence</strong><small>{traced?'Select a relationship':'Locked until trace'}</small></div>
-    </section>
-
-    <section className="recallCommandFindingBand">
-      <div><span>COURT FINDING</span><strong>The court identified five problematic citations across two motions.</strong></div>
-      <blockquote>“{data.incident.sourceExcerpt.exactText}”</blockquote>
-      <small>Source order · PDF p. {data.incident.sourceExcerpt.pdfPageNumber}</small>
-    </section>
-
-    <section className="recallCommandOps">
-      <aside className="recallCommandDeps" aria-label="Incident dependencies">
-        <header><span>DISPUTED DEPENDENCIES</span><b>05</b></header>
-        {dependencies.map((dependency,index)=>{
-          const active=selected.dependency.id===dependency.id;
-          return <button key={dependency.id} className={active?'is-active':''} onClick={()=>selectDependency(dependency)}>
-            <em>{String(index+1).padStart(2,'0')}</em>
-            <span><strong>{dependency.caseName||dependency.rawText.split(',')[0]}</strong><small>{dependency.canonicalCitation||dependency.rawText}</small></span>
-            <i/>
-          </button>
-        })}
-      </aside>
-
-      <section className="recallCommandCenter">
-        {!traced?<div className="recallCommandBefore">
-          <span>IMPACT / NOT YET RESOLVED</span>
-          <strong className="recallCommandBigNumber">05</strong>
-          <h2>Flagging the dependency<br/>is only the first half.</h2>
-          <p>Run one deterministic trace to reveal which filed motions contain the five dependencies. Recorded mode is instant and does not require network access.</p>
-          <button onClick={()=>setTraced(true)}>Trace impact <b>↗</b></button>
-          <small>Recorded incident · exact source evidence already captured</small>
-        </div>:<>
-          <header className="recallCommandImpactHead">
-            <div><span>BLAST RADIUS</span><h2>{data.summary.confirmedCitationRelationships} confirmed relationships</h2></div>
-            <div><b>05</b><i>→</i><b>02</b><small>dependencies / motions</small></div>
-          </header>
-
-          <div className="recallCommandMatrix" role="region" aria-label="Dependency by filing matrix" tabIndex={0}>
-            <div className="recallCommandMatrixHead">
-              <span>DEPENDENCY</span>
-              {filings.map(filing=><div key={filing.id}><strong>DOC. {filing.documentNumber}</strong><small>{filing.title}</small></div>)}
-            </div>
-            {dependencies.map((dependency,index)=><div className={'recallCommandMatrixRow '+(selected.dependency.id===dependency.id?'is-active':'')} key={dependency.id}>
-              <button className="recallCommandMatrixDependency" onClick={()=>selectDependency(dependency)}>
-                <em>{String(index+1).padStart(2,'0')}</em>
-                <span><strong>{dependency.caseName||dependency.rawText.split(',')[0]}</strong><small>{dependency.canonicalCitation||dependency.rawText}</small></span>
-              </button>
-              {filings.map(filing=>{
-                const relationship=relationFor(dependency.id,filing.id);
-                const accessible=(dependency.caseName||dependency.rawText)+' — '+(relationship?relationshipLabel(relationship.state):'No relationship')+' in Document '+filing.documentNumber;
-                return relationship?<button key={filing.id} className="recallCommandHit" aria-label={accessible} onClick={()=>selectRelationship(dependency,filing)}>
-                  <span>●</span><small>{relationshipLabel(relationship.state)}</small>
-                </button>:<div key={filing.id} className="recallCommandBlank" aria-label="No documented relationship">—</div>
-              })}
-            </div>)}
-          </div>
-
-          <div className="recallCommandFiles">
-            <header><span>AFFECTED WORK</span><strong>02</strong></header>
-            {filings.map(filing=><button key={filing.id} onClick={()=>{
-              const dep=dependencies.find(d=>filing.dependencyIds.includes(d.id));
-              if(dep)selectRelationship(dep,filing);
-            }}>
-              <span>DOC. {filing.documentNumber}</span>
-              <strong>{filing.title}</strong>
-              <small>{dateLabel(filing.filingDate)} · {filing.dependencyIds.length} documented {filing.dependencyIds.length===1?'dependency':'dependencies'}</small>
-              <b>↗</b>
-            </button>)}
-          </div>
-        </>}
+    <section className="fc-insights">
+      <section className="fc-panel fc-dependency-panel">
+        <header className="fc-panel-heading compact"><div><h2>Disputed Dependencies</h2><small>05 from court source</small></div><span className="fc-filter">All <img src="/recall-figma/chevron.png" alt=""/></span></header>
+        <div className="fc-dependency-list">
+          {dependencies.map((dependency)=><button
+            key={dependency.id}
+            className={'fc-dependency-row '+(selected.dependency.id===dependency.id?'is-selected':'')}
+            onClick={()=>{openDependency(dependency);setDrawerOpen(true)}}
+            aria-label={'Inspect '+(dependency.caseName||dependency.rawText)}
+          >
+            <div><strong>{dependency.caseName||dependency.rawText}</strong><small>{dependency.canonicalCitation||dependency.rawText}</small></div>
+            <span className="fc-flag">Flagged</span>
+          </button>)}
+        </div>
       </section>
 
-      <aside className="recallCommandEvidence" aria-label="Relationship evidence">
-        <header>
-          <span>EVIDENCE / SELECTED</span>
-          <strong>{selected.dependency.caseName||selected.dependency.rawText.split(',')[0]}</strong>
-          <small>{selected.dependency.canonicalCitation||selected.dependency.rawText}</small>
+      <section className="fc-panel fc-dot-panel">
+        <header className="fc-panel-heading compact">
+          <div><h2>Affected Filings</h2><small role="status">{traced?'5 confirmed relationships':'Trace not run'}</small></div>
+          <strong className="fc-panel-total">{traced?'05':'—'}</strong>
         </header>
+        <div className="fc-dot-map" role="region" aria-label="Dependency by filing matrix">
+          <div className="fc-dot-row-labels" aria-hidden>
+            {dependencies.map((_,index)=><span key={index}>{String(index+1).padStart(2,'0')}</span>)}
+          </div>
+          <div className="fc-dot-guides" aria-hidden>{Array.from({length:4}).map((_,i)=><i key={i}/>)}</div>
+          <div className="fc-dots">
+            {Array.from({length:60}).map((_,index)=>{
+              const row=Math.floor(index/12);
+              const column=index%12;
+              const dependency=dependencies[row];
+              const relationship=relationships.find(item=>item.dependencyId===dependency?.id);
+              const filing=relationship?filings.find(item=>item.id===relationship.filingId):undefined;
+              const hitColumn=filing?.documentNumber==='174'?6:filing?.documentNumber==='182'?9:-1;
+              const isHit=Boolean(traced&&relationship&&column===hitColumn);
+              return isHit&&relationship
+                ?<button
+                    key={index}
+                    className={'fc-dot is-hot '+(selected.relationship?.id===relationship.id?'is-selected':'')}
+                    aria-label={(dependency?.caseName||'Dependency')+' — Confirmed citation — Document '+(filing?.documentNumber||'')}
+                    onClick={()=>openRelationship(relationship)}
+                  />
+                :<i key={index} className="fc-dot"/>;
+            })}
+          </div>
+          <div className="fc-dot-axis"><span>Source</span><span>Doc 174</span><span>Doc 182</span><span>Evidence</span></div>
+        </div>
+      </section>
 
-        <section className="recallCommandEvidenceBlock incident">
-          <div className="recallXLabel"><span>01</span> INCIDENT SOURCE</div>
+      <section className="fc-panel fc-stream-panel">
+        <header className="fc-panel-heading compact">
+          <div><h2>Evidence Trace</h2><small>{selected.dependency.caseName}</small></div>
+          <strong className="fc-panel-total">{traced?'5/5':'—'}</strong>
+        </header>
+        <button className="fc-stream-chart" onClick={()=>traced&&setDrawerOpen(true)} aria-label="Open selected exact evidence" disabled={!traced}>
+          <span className="fc-stream-atmosphere"/>
+          <span className="fc-stream-guides">{Array.from({length:5}).map((_,i)=><i key={i}/>)}</span>
+          <img className="fc-stream outer" src="/recall-figma/stream-outer.png" alt=""/>
+          <img className="fc-stream middle" src="/recall-figma/stream-middle.png" alt=""/>
+          <img className="fc-stream core" src="/recall-figma/stream-core.png" alt=""/>
+          <span className="fc-stream-tag t1">INCIDENT</span>
+          <span className="fc-stream-tag t2">{selected.filing?'DOC '+selected.filing.documentNumber:'FILING'}</span>
+          <span className="fc-stream-tag t3">{traced?'EXACT':'READY'}</span>
+          <span className="fc-stream-axis"><i>Source</i><i>Dependency</i><i>Filing</i><i>Evidence</i></span>
+        </button>
+      </section>
+    </section>
+
+    {drawerOpen&&<div className="fc-drawer-backdrop" onClick={()=>setDrawerOpen(false)}>
+      <aside className="fc-drawer" onClick={event=>event.stopPropagation()}>
+        <button className="fc-drawer-close" onClick={()=>setDrawerOpen(false)}>×</button>
+        <div className="fc-drawer-kicker">EXACT EVIDENCE / SELECTED</div>
+        <h2>{selected.dependency.caseName||selected.dependency.rawText}</h2>
+        <p className="fc-drawer-citation">{selected.dependency.canonicalCitation||selected.dependency.rawText}</p>
+
+        <section className="fc-evidence-block">
+          <div><span>INCIDENT SOURCE</span><small>01</small></div>
           <blockquote>“{selected.dependency.incidentEvidence.exactText}”</blockquote>
           {selected.dependency.incidentFinding&&<p className="recallXFindingText">{selected.dependency.incidentFinding}</p>}
           <a href={selected.dependency.incidentEvidence.sourceUrl} target="_blank" rel="noreferrer">Court order ↗</a>
         </section>
 
-        <section className={'recallCommandEvidenceBlock affected '+(!traced?'is-locked':'')}>
-          <div className="recallXLabel"><span>02</span> AFFECTED WORK</div>
+        <section className="fc-evidence-block">
+          <div><span>AFFECTED WORK</span><small>02</small></div>
           {traced&&selected.relationship&&selected.filing?<>
             <h3>{selected.filing.title}</h3>
             <blockquote>“{selected.relationship.evidence.exactText}”</blockquote>
             <p>{selected.relationship.evidence.location}. {selected.relationship.evidence.explanation}</p>
             <a href={selected.relationship.evidence.sourceUrl} target="_blank" rel="noreferrer">Public source ↗</a>
-          </>:<p>{traced?'Select a confirmed matrix mark to inspect its downstream evidence.':'Trace impact to unlock the downstream evidence pair.'}</p>}
+          </>:<p>Trace impact to resolve the downstream filing evidence.</p>}
         </section>
 
-        <div className="recallCommandProvenance">
+        <div className="fc-provenance">
           <button onClick={()=>setShowProvenance(value=>!value)} aria-expanded={showProvenance}>Provenance <span>{showProvenance?'−':'+'}</span></button>
           {showProvenance&&<dl>
             <div><dt>Relationship</dt><dd>{selected.relationship?relationshipLabel(selected.relationship.state):'Incident dependency'}</dd></div>
             <div><dt>Incident evidence SHA-256</dt><dd><code>{selected.dependency.incidentEvidence.sha256}</code></dd></div>
             <div><dt>Capture date</dt><dd>{data.capturedAt}</dd></div>
-            <div><dt>Source mode</dt><dd>Recorded public incident</dd></div>
+            <div><dt>Mode</dt><dd>Recorded public incident</dd></div>
           </dl>}
         </div>
       </aside>
-    </section>
-  </main>
+    </div>}
+  </CockpitShell>
 }

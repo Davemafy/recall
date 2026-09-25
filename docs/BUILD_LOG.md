@@ -137,3 +137,54 @@ Workflow change:
 - production remains on the last READY deployment during validation
 - GitHub CI / build / Playwright are the validation loop
 - Vercel receives one final production deployment only after the branch is green and the deployment cap resets
+
+
+## M10 — Figma is the frontend source of truth
+
+The previous RECALL frontend was discarded after the user clarified that the authored Figma frame — not the prior production UI and not the Netlify reference — is the actual design source.
+
+Visual source:
+- Figma file `vvhEh4DFpbuuXexBtnpWQx`
+- node `33:1617` (“Security dashboard scene”)
+- natural scene 1770×1328
+- dashboard shell 1690×1096
+
+Implementation rule:
+- preserve only engine/data contracts
+- do not preserve prior RECALL layout, typography, colors, navigation, matrix presentation, landing composition, evidence rail, or CSS because they already exist
+- translate RECALL data into the exact Figma composition and visual grammar
+
+Material changes:
+- root route is now the real Johnson v. Dunn incident cockpit rather than a marketing landing page
+- Figma shell, icon rail, compact header, four summary cards, dominant timeline, and three-panel lower workspace are reproduced in code
+- security-specific dummy content is replaced by RECALL facts without importing security claims or risk scores
+- disputed dependencies occupy the left lower panel
+- affected filing relationships occupy the Figma dot-map position
+- exact evidence trace occupies the Figma stream-chart position
+- evidence opens in a dense dark drawer while preserving exact incident source, affected filing evidence, and provenance
+- manual incident, Quick Trace, Corpus, and corpus-incident states use the same authored cockpit language
+- Figma icon/vector nodes were captured to local repository assets; no temporary Figma asset URL is used by the implementation
+- Inter is retained because the authored Figma frame itself specifies Inter
+
+Deployment policy:
+- this reset stays on a non-production branch until CI and preview validation pass and the user has inspected the Figma-derived preview
+- no production merge is implied by passing tests
+
+
+## M11 — Laptop density pass
+
+After first full-viewport visual review, the authored Figma cockpit was adapted from poster-scale dimensions to a real laptop viewport without changing its visual language.
+
+- removed the exterior presentation/backdrop layer
+- made the dashboard itself the browser viewport
+- made the sidebar viewport-height/sticky
+- tightened top/header and summary-card vertical rhythm
+- preserved full metric labels instead of truncating them
+- reduced the flagship incident timeline from 23 crushed columns to 12 deliberate columns
+- repositioned/resized timeline event blocks for laptop widths
+- compressed lower-panel rhythm so more of the working surface enters the first viewport
+
+This commit exists only to refresh the branch preview after Vercel skipped automatic deployment of the validated UI commit. It will be squashed before merge.
+
+
+Preview refresh: precision pass for the live laptop review (shorter timeline, readable filing matrix, contained evidence stream, quieter dependency actions and theme control).

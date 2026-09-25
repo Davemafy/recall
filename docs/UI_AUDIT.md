@@ -1,102 +1,68 @@
-# UI anti-slop audit — incident command reset
+# UI source of truth — Figma cockpit reset
 
-This pass replaces the earlier "premium SaaS" reflex with a product-specific incident-command grammar.
+## Authority
 
-## Primary reference studied
+The visual source of truth is the user-designed Figma frame:
 
-### #INC-2050 — Incident management dashboard
-The supplied incident-response reference is treated as a composition reference, not a skin.
+- File: `vvhEh4DFpbuuXexBtnpWQx`
+- Node: `33:1617` — “Security dashboard scene”
+- Natural frame: 1770 × 1328
+- Dashboard shell: 1690 × 1096
 
-What mattered:
-- incident identity is visible before analytics
-- one horizontal timeline carries the eye across the state change
-- the working area is dense, edge-to-edge, and operational
-- tiny metadata and large incident facts coexist
-- dark chrome recedes while the active investigation owns contrast
-- the interface makes "what happened / where are we / what now" legible without a wall of KPI cards
+The previous RECALL frontend has no design authority after this reset.
 
-What RECALL does differently:
-- no security charts
-- no threat score
-- no synthetic confidence meter
-- no copied icons, branding, or proprietary copy
-- the signature object is dependency × filing evidence, not a generic incident dashboard
+## What is preserved
 
-## 2026 product references
+Only product/engine truth survives the reset:
 
-- Linear 2026 visual refresh
-  - supporting chrome should not compete for attention it has not earned
-  - preserve density while making the task surface dominant
-- Attio / Ramp / Vercel / Mercury / modern observability products
-  - quiet navigation
-  - strong table rhythm
-  - color reserved for state
-  - progressive disclosure for technical detail
-- data-heavy incident and operations interfaces
-  - timeline first
-  - status conveyed structurally before decorative labels
-  - action and evidence stay in the same working context
+- recorded Johnson v. Dunn incident data
+- provenance hashes and source excerpts
+- dependency and relationship engine
+- CourtListener / RECAP integration
+- Firecrawl fallback
+- request-budget logic, caching and error states
+- corpus ingestion
+- benchmarks and automated tests
 
-## AI-generated patterns removed
+## Figma grammar carried into RECALL
 
-- centered marketing hero + feature cards
-- generic sidebar + card grid
-- identical rounded rectangles
-- KPI rows
-- large decorative empty space
-- blue/purple "AI" glow
-- glassmorphism
-- pill status soup
-- legal-paper / law-firm styling
-- graph spaghetti
-- generic right inspector as the entire evidence model
-- identical spacing and radius on every surface
+- #171717 outer scene
+- #0a0b0b hardware-like application shell
+- 5px #242525 frame edge
+- 40px outer radius
+- 106px icon rail
+- 22px / 42px top hierarchy
+- four 145px summary cards
+- dominant 373px incident timeline with narrow vertical grid
+- three 340px lower operational panels
+- #151616 cards and #202121 dense row surfaces
+- #ff4b2b incident signal
+- purple evidence stream
+- metallic selected controls
+- bottom-right orange/red atmospheric spill
+- Inter typography exactly because the source design uses Inter
 
-## Current visual system
+## Content translation
 
-### Palette
-- mineral black: #090b0a
-- working black: #0f1210
-- exact-evidence paper: #eeeee7
-- incident signal: #ff684f
-- confirmed/action signal: #d9ff63
-- technical secondary: #9fb8ff
+Security-specific labels from the visual concept are replaced by RECALL facts without changing the composition:
 
-Color has a job. Incident red means disputed/flagged state. Lime means active/confirmed/action. The evidence column deliberately flips to a light working surface so exact text feels materially different from navigation chrome.
+- affected asset → disputed dependencies / affected filings
+- MITRE / source IP / confidence → relationship and docket counts
+- security timeline → court source / filing / trace timeline
+- AI suggested actions → disputed dependency list
+- login attempts → affected filing relationship map
+- threat detection → exact evidence trace
 
-### Typography
-- Clash Display: incident identity, counts, high-level state
-- Satoshi: product UI, dense data, prose
-- system monospace: citations, docket metadata, hashes
+No security claim, risk score, confidence score, or invented legal fact is retained.
 
-### Flagship composition
+## Removed from the prior frontend
 
-The recorded incident is now:
+- Swiss editorial landing page
+- mineral/lime command-surface theme
+- prior navigation/header hierarchy
+- paper-colored evidence rail
+- previous dependency matrix styling
+- previous marketing hero and footer
+- Clash Display / Satoshi visual system
 
-1. incident identity + source facts
-2. horizontal investigation timeline
-3. court finding band
-4. disputed dependency rail
-5. dependency × filing blast-radius matrix
-6. paired exact evidence on a contrasting evidence surface
-7. affected filings
-8. provenance on demand
-
-The visual object is still the relationship itself.
-
-## Mobile rule
-
-Mobile does not shrink the desktop command center. It becomes a vertical investigation:
-
-incident → court finding → dependencies → trace → affected work → exact evidence.
-
-The matrix remains horizontally inspectable rather than being crushed into unreadable cells.
-
-## Product-specific kill test
-
-Hide the RECALL wordmark.
-
-A viewer should still see:
-court finding → disputed dependency → filed motion → exact evidence.
-
-If the structure can be relabeled as CRM, analytics, project management, or a generic security dashboard without changing the composition, it fails.
+The Figma frame, not the previous production UI, is the implementation target.

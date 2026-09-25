@@ -25,7 +25,7 @@ test('recorded incident selection drives matrix and evidence before drawer discl
   await page.getByRole('button',{name:/Select Wilson v\. Jackson/i}).click();
   await expect(page.getByText('Wilson v. Jackson',{exact:true}).first()).toBeVisible();
   await expect(page.getByLabel('Selected exact evidence')).toHaveCount(0);
-  await expect(page.locator('.fc-dot.is-row-context')).toHaveCount(11);
+  await expect(page.locator('.fc-dot.is-row-context')).toHaveCount(12);
 
   await page.getByRole('button',{name:/Trace impact/i}).click();
   await expect(page.getByRole('status')).toHaveText('05');

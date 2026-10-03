@@ -1,9 +1,0 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-*{box-sizing:border-box}
-html{background:#171717;color:#f7f7f7}
-body{margin:0;background:#171717;color:#f7f7f7;font-family:Inter,Arial,sans-serif}
-button,input,textarea,select{font:inherit}
-button,a{color:inherit}
-a{text-decoration:none}
-::selection{background:#ff4b2b;color:#fff}

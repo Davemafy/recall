@@ -267,63 +267,123 @@ function Guest() {
 
   return (
     <Shell>
-      <section className="narrow">
-        <div className="language-switch" role="group" aria-label="Language">
-          {(Object.keys(guestCopy) as Array<keyof typeof guestCopy>).map((key) => (
-            <button key={key} className={language === key ? "language active" : "language"} onClick={() => setLanguage(key)}>
-              {guestCopy[key].label}
-            </button>
-          ))}
+      <section className="capture-screen">
+        <div className="capture-context">
+          <span>VISITOR NOTE</span>
+          <span>{language === "en" ? "ENGLISH" : "KISWAHILI"}</span>
+          <span>{voiceState === "listening" ? "RECORDING LOCALLY" : "THIS DEVICE"}</span>
         </div>
-        <p className="eyebrow">{copy.eyebrow}</p>
-        <h1 className="screen-title">{copy.title}</h1>
-        <p className="lede">{copy.helper}</p>
 
-        {language === "en" && (
-          <section className={"voice-panel " + (voiceState === "listening" ? "listening" : "")}>
-            <div className="voice-copy">
-              <span>VOICE INPUT · ON-DEVICE WASM</span>
+        <div className="capture-heading">
+          <div>
+            <p className="eyebrow">{copy.eyebrow}</p>
+            <h1>{copy.title}</h1>
+          </div>
+          <p>{copy.helper}</p>
+        </div>
+
+        <div className="capture-workspace">
+          <div className="transcript-column">
+            <div className="transcript-head">
+              <span>TRANSCRIPT</span>
+              <span>EDITABLE BEFORE SAVE</span>
+            </div>
+            <textarea
+              className="capture-transcript"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder={copy.placeholder}
+              rows={8}
+              aria-label="Guest note"
+            />
+            <div className="transcript-meta">
+              <span>{text.length} characters</span>
+              <span>source words stay attached</span>
+            </div>
+          </div>
+
+          <aside className={"capture-dock " + (voiceState === "listening" ? "listening" : "")}>
+            <div className="capture-dock-top">
+              <span>OFFLINE VOICE</span>
+              <span>{language === "en" ? "MOONSHINE WASM" : "TYPE ONLY"}</span>
+            </div>
+
+            <button
+              className="record-control"
+              onClick={
+                language !== "en" || voiceState === "loading"
+                  ? undefined
+                  : canInstall
+                    ? prepareVoice
+                    : voiceState === "ready"
+                      ? startVoice
+                      : voiceState === "listening"
+                        ? stopVoice
+                        : undefined
+              }
+              disabled={language !== "en" || voiceState === "loading"}
+              aria-label={
+                language !== "en" ? "Kiswahili typed input" :
+                voiceState === "install" ? "Install offline voice" :
+                voiceState === "cached" ? "Load cached offline voice" :
+                voiceState === "loading" ? "Preparing offline voice" :
+                voiceState === "ready" ? "Start offline voice" :
+                voiceState === "listening" ? "Stop offline voice" :
+                "Retry offline voice"
+              }
+            >
+              <span className="record-ring">
+                <span className="record-core" />
+              </span>
+            </button>
+
+            <div className="record-bars" aria-hidden="true">
+              {Array.from({ length: 11 }).map((_, index) => <i key={index} />)}
+            </div>
+
+            <div className="record-copy">
               <strong>
-                {voiceState === "install" && "INSTALL OFFLINE VOICE"}
-                {voiceState === "cached" && "LOAD CACHED VOICE"}
-                {voiceState === "loading" && "PREPARING VOICE…"}
-                {voiceState === "ready" && "VOICE READY"}
-                {voiceState === "listening" && "LISTENING…"}
-                {voiceState === "error" && "VOICE NEEDS ATTENTION"}
+                {language === "sw" && "TYPE IN KISWAHILI"}
+                {language === "en" && voiceState === "install" && "INSTALL VOICE ONCE"}
+                {language === "en" && voiceState === "cached" && "LOAD CACHED VOICE"}
+                {language === "en" && voiceState === "loading" && "PREPARING VOICE…"}
+                {language === "en" && voiceState === "ready" && "TAP TO SPEAK"}
+                {language === "en" && voiceState === "listening" && "LISTENING… TAP TO STOP"}
+                {language === "en" && voiceState === "error" && "VOICE NEEDS ATTENTION"}
               </strong>
               <p>
-                {voiceState === "install" && "Download the small English speech pack once while connected. After that, transcription runs on this device."}
-                {voiceState === "cached" && "The speech pack was installed before. Load it from the browser cache to use voice offline."}
-                {voiceState === "loading" && `Downloading/loading locally${progressPercent === null ? "" : ` · ${progressPercent}%`}${progressSize ? ` · ${progressSize}` : ""}`}
-                {(voiceState === "ready" || voiceState === "listening") && "Moonshine transcribes locally. Audio never goes to Guestbook servers or a speech API."}
-                {voiceState === "error" && (voiceError || "Typing remains available while voice is unavailable.")}
+                {language === "sw" && "Kiswahili stays fully offline through typed input in this build."}
+                {language === "en" && voiceState === "install" && "Download the English speech pack once while connected. After that, transcription runs on this device."}
+                {language === "en" && voiceState === "cached" && "The voice pack is already cached on this browser. Load it without downloading again."}
+                {language === "en" && voiceState === "loading" && `Loading locally${progressPercent === null ? "" : ` · ${progressPercent}%`}${progressSize ? ` · ${progressSize}` : ""}`}
+                {language === "en" && (voiceState === "ready" || voiceState === "listening") && "Audio stays on this device. No speech API and no Guestbook server."}
+                {language === "en" && voiceState === "error" && (voiceError || "Typing remains available while voice is unavailable.")}
               </p>
+              {voiceState === "loading" && (
+                <div className="dock-progress" aria-label="Voice pack loading progress">
+                  <span style={{ width: `${progressPercent ?? 8}%` }} />
+                </div>
+              )}
             </div>
-            {canInstall && (
-              <button className="voice-action" onClick={prepareVoice}>
-                {voiceState === "cached" ? "LOAD" : "INSTALL"}
+
+            <div className="capture-trust">
+              <span>~240 KB classifier</span>
+              <span>0 inference requests</span>
+            </div>
+          </aside>
+        </div>
+
+        <div className="capture-footer">
+          <div className="language-switch compact-switch" role="group" aria-label="Language">
+            {(Object.keys(guestCopy) as Array<keyof typeof guestCopy>).map((key) => (
+              <button key={key} className={language === key ? "language active" : "language"} onClick={() => setLanguage(key)}>
+                {guestCopy[key].label}
               </button>
-            )}
-            {voiceState === "loading" && (
-              <div className="voice-progress" aria-label="Voice pack loading progress">
-                <span style={{ width: `${progressPercent ?? 8}%` }} />
-              </div>
-            )}
-            {voiceState === "ready" && <button className="voice-action" onClick={startVoice}>SPEAK</button>}
-            {voiceState === "listening" && <button className="voice-action" onClick={stopVoice}>STOP</button>}
-          </section>
-        )}
-
-        {language === "sw" && (
-          <p className="voice-language-note">Kiswahili stays typed in this prototype; the local voice pack is English-only.</p>
-        )}
-
-        <div className="type-divider"><span>{language === "en" ? "OR TYPE" : "TYPE"}</span></div>
-        <textarea className="guest-input" value={text} onChange={(e) => setText(e.target.value)} placeholder={copy.placeholder} rows={7} />
-        <div className="input-footer">
-          <span>{text.length} characters</span>
-          <button className="primary" disabled={text.trim().length < 3 || busy} onClick={submit}>
-            {busy ? "Understanding locally…" : copy.submit}
+            ))}
+          </div>
+          <button className="capture-save" disabled={text.trim().length < 3 || busy} onClick={submit}>
+            <span>{busy ? "INTERPRETING LOCALLY" : "REVIEW NOTE"}</span>
+            <b>→</b>
           </button>
         </div>
       </section>

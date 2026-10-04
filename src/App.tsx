@@ -59,22 +59,7 @@ function formatPercent(value: number) {
 
 
 type AppMode = "light" | "dark";
-type NavTarget = "home" | "add" | "memory";
-type IconName = "menu" | "back" | "home" | "profile" | "plus" | "heart" | "mic" | "send" | "attach" | "more";
-
-function Icon({ name, size = 24, filled = false }: { name: IconName; size?: number; filled?: boolean }) {
-  const common = { width: size, height: size, viewBox: "0 0 24 24", "aria-hidden": true } as const;
-  if (name === "menu") return <svg {...common}><rect x="6" y="6" width="12" height="2.5" rx="1.25" fill="currentColor"/><rect x="3" y="10.75" width="18" height="2.5" rx="1.25" fill="currentColor"/><rect x="6" y="15.5" width="12" height="2.5" rx="1.25" fill="currentColor"/></svg>;
-  if (name === "back") return <svg {...common} fill="none"><path d="M15 5 8 12l7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-  if (name === "home") return <svg {...common} fill={filled ? "currentColor" : "none"}><path d="M4 10.5 12 4l8 6.5V20h-5v-5H9v5H4v-9.5Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"/></svg>;
-  if (name === "profile") return <svg {...common} fill="none"><circle cx="12" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.8"/><path d="M5.5 20c.7-4 3.1-6 6.5-6s5.8 2 6.5 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>;
-  if (name === "plus") return <svg {...common} fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>;
-  if (name === "heart") return <svg {...common} fill={filled ? "currentColor" : "none"}><path d="M20.3 5.7a5 5 0 0 0-7.1 0L12 6.9l-1.2-1.2a5 5 0 0 0-7.1 7.1L12 21l8.3-8.2a5 5 0 0 0 0-7.1Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>;
-  if (name === "mic") return <svg {...common} fill="none"><rect x="8.2" y="3.3" width="7.6" height="11.1" rx="3.8" stroke="currentColor" strokeWidth="1.7"/><path d="M5.5 11.7a6.5 6.5 0 0 0 13 0M12 18.2V21M8.5 21h7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>;
-  if (name === "send") return <svg {...common} fill="none"><path d="m4 5 16 7-16 7 3-7-3-7Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/><path d="M7 12h13" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>;
-  if (name === "attach") return <svg {...common} fill="none"><path d="m8.4 12.8 6.2-6.2a3.2 3.2 0 1 1 4.5 4.5l-8 8a5 5 0 0 1-7.1-7.1l8.1-8.1" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg>;
-  return <svg {...common}><circle cx="6" cy="12" r="1.7" fill="currentColor"/><circle cx="12" cy="12" r="1.7" fill="currentColor"/><circle cx="18" cy="12" r="1.7" fill="currentColor"/></svg>;
-}
+type SectionName = "capture" | "memory" | "decide" | "lab";
 
 function formatRelative(timestamp: number) {
   const minutes = Math.max(1, Math.round((Date.now() - timestamp) / 60_000));
@@ -85,30 +70,23 @@ function formatRelative(timestamp: number) {
 }
 
 function sourceName(observation: Observation) {
-  if (observation.source === "guide") return "Guide note";
-  if (observation.source === "operator") return "Operator note";
-  if (observation.source === "demo") return "Guest visitor";
-  return "Guest visitor";
+  if (observation.source === "guide") return "Guide";
+  if (observation.source === "operator") return "Operator";
+  if (observation.source === "demo") return "Demo visit";
+  return "Guest";
 }
 
-function Avatar({ label, size = 32, outline = false, dark = false }: { label: string; size?: 24 | 32; outline?: boolean; dark?: boolean }) {
-  const initial = label.trim().charAt(0).toUpperCase() || "G";
-  return <span className={"ds-avatar " + (outline ? "outline" : "") + (dark ? " dark-avatar" : "")} style={{ width: size, height: size, fontSize: size === 24 ? 9 : 11 }}>{initial}</span>;
-}
-
-function RoundedTabs({ items, active, onChange, dark = false }: { items: Array<{ key: string; label: string }>; active: string; onChange: (key: string) => void; dark?: boolean }) {
-  return (
-    <nav className={"rounded-tabs " + (dark ? "dark-tabs" : "")} aria-label="Content views">
-      {items.map((item) => (
-        <button key={item.key} className={"ds-chip " + (active === item.key ? "active" : "")} onClick={() => onChange(item.key)}>
-          {item.label}
-        </button>
-      ))}
-    </nav>
-  );
-}
-
-function AppHeader({ title, subtitle, dark = false, back = false }: { title: string; subtitle?: string; dark?: boolean; back?: boolean }) {
+function AppFrame({
+  children,
+  section,
+  mode = "light",
+  back = false,
+}: {
+  children: ReactNode;
+  section: SectionName;
+  mode?: AppMode;
+  back?: boolean;
+}) {
   const [online, setOnline] = useState(navigator.onLine);
   const [offlineReady, setOfflineReady] = useState(false);
 
@@ -126,196 +104,73 @@ function AppHeader({ title, subtitle, dark = false, back = false }: { title: str
     };
   }, []);
 
-  const status = online ? (offlineReady ? "Offline ready" : "Preparing offline") : "Offline";
+  const status = online ? (offlineReady ? "OFFLINE READY" : "PREPARING OFFLINE") : "OFFLINE";
 
   return (
-    <header className={"ds-header " + (dark ? "dark-header" : "")}>
-      <button className="menu-button" onClick={() => back ? window.history.back() : go("/memory")} aria-label={back ? "Go back" : "Open business memory"}>
-        <Icon name={back ? "back" : "menu"} />
-      </button>
-      <div className="ds-title-block">
-        <h1>{title}</h1>
-        <p className="sr-only">{subtitle ? subtitle + " · " : ""}{status}</p>
-      </div>
-    </header>
-  );
-}
-
-function BottomBar({ active, dark = false }: { active: NavTarget; dark?: boolean }) {
-  return (
-    <nav className={"tab-bar " + (dark ? "dark-tab-bar" : "")} aria-label="Primary navigation">
-      <div className="tab-options">
-        <button className={"nav-segment " + (active === "home" ? "active" : "")} onClick={() => go("/")}>
-          <Icon name="home" filled={active === "home"} />
-          <span>Home</span>
-        </button>
-        <button className={"add-button " + (active === "add" ? "current" : "")} onClick={() => go("/guest")} aria-label="Leave a message">
-          <Icon name="plus" size={32} />
-        </button>
-        <button className={"nav-segment " + (active === "memory" ? "active" : "")} onClick={() => go("/memory")}>
-          <Icon name="profile" filled={active === "memory"} />
-          <span>Memory</span>
-        </button>
-      </div>
-      <span className="home-indicator" />
-    </nav>
-  );
-}
-
-function Shell({ children, mode = "light", active = "home", hideNav = false }: { children: ReactNode; mode?: AppMode; active?: NavTarget; hideNav?: boolean }) {
-  return (
-    <main className={"app-shell " + mode}>
+    <main className={"field-app " + mode}>
+      <header className="field-nav">
+        <div className="field-nav-inner">
+          <button className="brand" onClick={() => go("/")}>GUESTBOOK</button>
+          <nav className="primary-nav" aria-label="Primary">
+            <button className={section === "capture" ? "active" : ""} onClick={() => go("/")}>Capture</button>
+            <button className={section === "memory" ? "active" : ""} onClick={() => go("/memory")}>Memory</button>
+            <button className={section === "decide" ? "active" : ""} onClick={() => go("/decide")}>Decide</button>
+          </nav>
+          <div className="nav-meta">
+            {back && <button className="back-text" onClick={() => window.history.back()}>Back</button>}
+            <span className={"system-status " + (!online || offlineReady ? "ready" : "")}>{status}</span>
+          </div>
+        </div>
+      </header>
       {children}
-      {!hideNav && <BottomBar active={active} dark={mode === "dark"} />}
     </main>
   );
 }
 
-function AvatarStack({ count = 3, dark = false }: { count?: number; dark?: boolean }) {
+function PageIntro({
+  eyebrow,
+  title,
+  body,
+}: {
+  eyebrow: string;
+  title: string;
+  body?: string;
+}) {
   return (
-    <span className="avatar-stack" aria-hidden="true">
-      {Array.from({ length: Math.min(3, Math.max(1, count)) }).map((_, index) => (
-        <Avatar key={index} label={String.fromCharCode(71 + index)} size={24} outline dark={dark} />
-      ))}
-    </span>
+    <div className="page-intro">
+      <p className="eyebrow">{eyebrow}</p>
+      <h1>{title}</h1>
+      {body && <p className="intro-body">{body}</p>}
+    </div>
   );
 }
 
 function GuestMedia({ src, label = "Guest photo" }: { src: string; label?: string }) {
   return (
-    <div className="guest-media">
+    <figure className="field-media">
       <img src={src} alt="" />
-      <span className="media-tag">{label}</span>
-    </div>
+      <figcaption>{label}</figcaption>
+    </figure>
   );
 }
 
-function EntryCard({
-  observation,
-  reacted,
-  replies,
-  onReact,
-  onReply,
-}: {
-  observation: Observation;
-  reacted: boolean;
-  replies: string[];
-  onReact: () => void;
-  onReply: (text: string) => void;
-}) {
-  const [draft, setDraft] = useState("");
-  const [showReplies, setShowReplies] = useState(false);
-
-  function submitReply() {
-    const next = draft.trim();
-    if (!next) return;
-    onReply(next);
-    setDraft("");
-    setShowReplies(true);
-  }
-
+function EvidenceQuote({ observation }: { observation: Observation }) {
   return (
-    <article className="guest-post">
-      <div className="user-post-copy">
-        <div className="user-title">
-          <Avatar label={sourceName(observation)} />
-          <div>
-            <strong>{sourceName(observation)}</strong>
-            <span>{formatRelative(observation.createdAt)}{observation.isDemo ? " · demo" : ""}</span>
-          </div>
-        </div>
-        <p className="post-message">{observation.rawText}</p>
-        {observation.mediaDataUrl && <GuestMedia src={observation.mediaDataUrl} />}
-        <div className="user-likes-row">
-          <button className="reply-summary" onClick={() => setShowReplies((value) => !value)}>
-            <AvatarStack count={Math.max(1, replies.length)} />
-            <span>{replies.length ? "View " + replies.length + (replies.length === 1 ? " reply" : " replies") : "Reply"}</span>
-          </button>
-          <button className={"reaction-button " + (reacted ? "reacted" : "")} onClick={onReact} aria-label="React to this entry">
-            <Icon name="heart" size={16} filled={reacted} />
-            <span>{reacted ? "1 reaction" : "React"}</span>
-          </button>
-        </div>
+    <article className="evidence-quote">
+      <blockquote>“{observation.rawText}”</blockquote>
+      <div>
+        <span>{observation.language.toUpperCase()}</span>
+        <span>{observation.isDemo ? "DEMO VISIT" : sourceName(observation).toUpperCase()}</span>
+        <span>{formatRelative(observation.createdAt)}</span>
       </div>
-
-      {showReplies && replies.map((reply, index) => (
-        <div className="reply-card" key={index}>
-          <Avatar label="Host" size={24} />
-          <p><strong>Host</strong><span> · {reply}</span></p>
-        </div>
-      ))}
-
-      <div className="comment-field">
-        <input value={draft} onChange={(event) => setDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") submitReply(); }} placeholder="Write reply" aria-label="Write reply" />
-        <button onClick={submitReply} disabled={!draft.trim()} aria-label="Send reply"><Icon name="send" size={16} /></button>
-      </div>
+      {observation.mediaDataUrl && <GuestMedia src={observation.mediaDataUrl} />}
     </article>
   );
 }
 
 function Home() {
-  const [observations, setObservations] = useState<Observation[]>([]);
-  const [filter, setFilter] = useState("all");
-  const [reactions, setReactions] = useState<Record<string, boolean>>(() => JSON.parse(localStorage.getItem("guestbook-reactions") ?? "{}"));
-  const [replies, setReplies] = useState<Record<string, string[]>>(() => JSON.parse(localStorage.getItem("guestbook-replies") ?? "{}"));
-
-  useEffect(() => {
-    seedDemoData().then(() => db.observations.orderBy("createdAt").reverse().toArray()).then((rows) => setObservations(rows.filter((row) => row.status === "confirmed")));
-  }, []);
-
-  const visible = observations.filter((observation) => {
-    if (filter === "all") return true;
-    if (filter === "requests") return observation.confirmedLabels.some((label) => label.startsWith("WANT_"));
-    if (filter === "needs") return observation.confirmedLabels.some((label) => label.startsWith("REQUIREMENT_") || label.startsWith("FRICTION_"));
-    if (filter === "praise") return observation.confirmedLabels.some((label) => label === "PRAISE_EXPERIENCE" || label === "RETURN_REFERRAL");
-    return true;
-  });
-
-  function toggleReaction(id: string) {
-    const next = { ...reactions, [id]: !reactions[id] };
-    setReactions(next);
-    localStorage.setItem("guestbook-reactions", JSON.stringify(next));
-  }
-
-  function addReply(id: string, text: string) {
-    const next = { ...replies, [id]: [...(replies[id] ?? []), text] };
-    setReplies(next);
-    localStorage.setItem("guestbook-replies", JSON.stringify(next));
-  }
-
-  return (
-    <Shell active="home">
-      <section className="home-hero">
-        <AppHeader title="What guests are saying" subtitle="Guestbook · local memory" />
-        <RoundedTabs
-          active={filter}
-          onChange={setFilter}
-          items={[
-            { key: "all", label: "All" },
-            { key: "requests", label: "Requests" },
-            { key: "needs", label: "Needs" },
-            { key: "praise", label: "Praise" },
-          ]}
-        />
-      </section>
-
-      <section className="feed">
-        {visible.slice(0, 7).map((observation) => (
-          <EntryCard
-            key={observation.id}
-            observation={observation}
-            reacted={Boolean(reactions[observation.id])}
-            replies={replies[observation.id] ?? []}
-            onReact={() => toggleReaction(observation.id)}
-            onReply={(text) => addReply(observation.id, text)}
-          />
-        ))}
-        {visible.length === 0 && <div className="empty-state">No entries in this view yet.</div>}
-      </section>
-    </Shell>
-  );
+  return <Guest />;
 }
-
 
 const guestCopy = {
   en: {
@@ -517,29 +372,36 @@ function Guest() {
   const progressFile = voiceProgress?.file?.split("/").pop();
 
   return (
-    <Shell active="add">
-      <AppHeader title="Leave a message" subtitle="Guest mode · no account" back />
-      <RoundedTabs
-        active={language}
-        onChange={(key) => setLanguage(key as keyof typeof guestCopy)}
-        items={[
-          { key: "en", label: "English" },
-          { key: "sw", label: "Kiswahili" },
-        ]}
-      />
+    <AppFrame section="capture">
+      <section className="field-main capture-page">
+        <div className="capture-grid">
+          <div>
+            <PageIntro
+              eyebrow="VISITOR SOURCE"
+              title={copy.title}
+              body="Keep the exact words first. Guestbook interprets them locally, then asks a person what should enter memory."
+            />
 
-      <section className="single-feed">
-        <article className="guest-post composer-post">
-          <div className="user-post-copy">
-            <div className="user-title">
-              <Avatar label="Guest" />
-              <div><strong>Guest visitor</strong><span>Right now · this device</span></div>
+            <div className="language-row" role="group" aria-label="Language">
+              {(Object.keys(guestCopy) as Array<keyof typeof guestCopy>).map((key) => (
+                <button key={key} className={language === key ? "active" : ""} onClick={() => setLanguage(key)}>
+                  {guestCopy[key].label}
+                </button>
+              ))}
             </div>
-            <p className="composer-help">{copy.helper}</p>
 
-            <div className="message-composer writing">
-              <textarea value={text} onChange={(event) => setText(event.target.value)} placeholder={copy.placeholder} rows={6} aria-label={copy.title} />
-              {mediaDataUrl && <GuestMedia src={mediaDataUrl} label="Photo" />}
+            <div className="capture-surface">
+              <textarea
+                className="field-input"
+                value={text}
+                onChange={(event) => setText(event.target.value)}
+                placeholder={copy.placeholder}
+                rows={7}
+                aria-label={copy.title}
+              />
+
+              {mediaDataUrl && <GuestMedia src={mediaDataUrl} label="ATTACHED PHOTO" />}
+
               <input
                 ref={mediaInputRef}
                 className="sr-only"
@@ -548,57 +410,65 @@ function Guest() {
                 onChange={(event) => attachMedia(event.target.files?.[0])}
                 aria-label="Attach guest photo"
               />
-              <div className="composer-actions">
-                <button className="field-action labelled" onClick={() => mediaInputRef.current?.click()}><Icon name="attach" size={16} /><span>Photo</span></button>
-                {language === "en" && (
-                  <>
-                    {quickVoiceState === "idle" && navigator.onLine && (
-                      <button className="field-action labelled primary-voice" onClick={startQuickVoice}>
-                        <Icon name="mic" size={16} /><span>Speak now</span>
-                      </button>
-                    )}
-                    {quickVoiceState === "listening" && (
-                      <button className="field-action labelled active-voice" onClick={stopQuickVoice}>
-                        <Icon name="mic" size={16} /><span>Listening</span>
-                      </button>
-                    )}
-                    {canPrepare && (
-                      <button className="field-action labelled secondary-voice" onClick={prepareVoice}>
-                        <Icon name="mic" size={16} /><span>{voiceState === "cached" ? "Load offline voice" : "Install offline voice · ~74 MB"}</span>
-                      </button>
-                    )}
-                    {voiceState === "loading" && (
-                      <span className="voice-caption">
-                        {progressKnown
-                          ? "Offline voice · " + progressPercent + "% · " + progressSize + (progressFile ? " · " + progressFile : "")
-                          : "Offline voice downloading · " + (progressSize ?? "starting…") + (progressFile ? " · " + progressFile : "")}
-                      </span>
-                    )}
-                    {voiceState === "ready" && <button className="field-action labelled secondary-voice" onClick={startVoice}><Icon name="mic" size={16} /><span>Speak offline</span></button>}
-                    {voiceState === "listening" && <button className="field-action labelled active-voice" onClick={stopVoice}><Icon name="mic" size={16} /><span>Listening offline</span></button>}
-                  </>
+
+              <div className="capture-actions">
+                <button className="text-action" onClick={() => mediaInputRef.current?.click()}>Attach photo</button>
+
+                {language === "en" && canPrepare && (
+                  <button className="text-action" onClick={prepareVoice}>
+                    {voiceState === "cached" ? "Load offline voice" : "Install offline voice"}
+                  </button>
                 )}
-                {language === "sw" && <span className="voice-caption">Typed input · offline</span>}
-                <span className="field-count">{text.length}</span>
+                {language === "en" && voiceState === "ready" && (
+                  <button className="text-action voice-ready" onClick={startVoice}>Speak offline</button>
+                )}
+                {language === "en" && voiceState === "listening" && (
+                  <button className="text-action voice-live" onClick={stopVoice}>Stop recording</button>
+                )}
+                {language === "en" && quickVoiceState === "idle" && navigator.onLine && (
+                  <button className="text-action secondary-input" onClick={startQuickVoice}>Connected voice</button>
+                )}
+                {language === "en" && quickVoiceState === "listening" && (
+                  <button className="text-action voice-live" onClick={stopQuickVoice}>Stop connected voice</button>
+                )}
+
+                <span className="char-count">{text.length}</span>
               </div>
+
               {voiceState === "loading" && (
-                <div className={"field-progress " + (progressKnown ? "" : "indeterminate")}>
-                  <span style={progressKnown ? { width: progressPercent + "%" } : undefined} />
+                <div className="voice-load">
+                  <div className={"voice-load-bar " + (progressKnown ? "" : "indeterminate")}>
+                    <span style={progressKnown ? { width: progressPercent + "%" } : undefined} />
+                  </div>
+                  <p>
+                    Preparing offline voice
+                    {progressKnown ? " · " + progressPercent + "%" : ""}
+                    {progressSize ? " · " + progressSize : ""}
+                  </p>
                 </div>
               )}
               {voiceError && language === "en" && <p className="field-error">{voiceError}</p>}
             </div>
+
+            <button className="primary-action" disabled={text.trim().length < 3 || busy} onClick={submit}>
+              {busy ? "Interpreting on this device…" : "Interpret locally"}
+            </button>
           </div>
 
-          <button className="post-submit" disabled={text.trim().length < 3 || busy} onClick={submit}>
-            <span>{busy ? "Understanding locally…" : copy.submit}</span>
-            <Icon name="send" size={16} />
-          </button>
-        </article>
-
-        <p className="screen-footnote">Speak now uses the browser speech service while connected. Offline voice is an optional ~74 MB on-device pack. The 240 KB Guestbook classifier and typed workflow still work offline.</p>
+          <aside className="capture-proof">
+            <div className="proof-heading">WHAT HAPPENS NEXT</div>
+            <p>Guestbook keeps this sentence as the source record.</p>
+            <p>The 240 KB local classifier proposes a small set of business signals.</p>
+            <p>You confirm or correct them before anything enters memory.</p>
+            <dl className="proof-facts">
+              <div><dt>Inference</dt><dd>0 network requests</dd></div>
+              <div><dt>Memory</dt><dd>Stored in this browser</dd></div>
+              <div><dt>Uncertainty</dt><dd>UNKNOWN is allowed</dd></div>
+            </dl>
+          </aside>
+        </div>
       </section>
-    </Shell>
+    </AppFrame>
   );
 }
 
@@ -629,40 +499,59 @@ function Capture() {
   }
 
   return (
-    <Shell active="add">
-      <AppHeader title="Capture a visit" subtitle="Guide or operator note" back />
-      <div className="stacked-tabs">
-        <RoundedTabs
-          active={source}
-          onChange={(key) => setSource(key as "guide" | "operator")}
-          items={[{ key: "guide", label: "Guide" }, { key: "operator", label: "Operator" }]}
-        />
-        <RoundedTabs
-          active={language}
-          onChange={setLanguage}
-          items={[{ key: "en", label: "English" }, { key: "sw", label: "Kiswahili" }]}
-        />
-      </div>
+    <AppFrame section="capture" back>
+      <section className="field-main">
+        <div className="capture-grid">
+          <div>
+            <PageIntro
+              eyebrow="POST-VISIT CAPTURE"
+              title="Keep what the guest said."
+              body="When the visitor never touches the shared phone, a guide or operator can preserve the observation afterward. The source stays attached."
+            />
 
-      <section className="single-feed capture-later-feed">
-        <article className="guest-post composer-post">
-          <div className="user-post-copy">
-            <div className="user-title">
-              <Avatar label={source} />
-              <div><strong>{source === "guide" ? "Guide note" : "Operator note"}</strong><span>Captured after the visit</span></div>
+            <div className="dual-controls">
+              <div className="language-row" role="group" aria-label="Source">
+                <button className={source === "guide" ? "active" : ""} onClick={() => setSource("guide")}>GUIDE</button>
+                <button className={source === "operator" ? "active" : ""} onClick={() => setSource("operator")}>OPERATOR</button>
+              </div>
+              <div className="language-row" role="group" aria-label="Language">
+                <button className={language === "en" ? "active" : ""} onClick={() => setLanguage("en")}>ENGLISH</button>
+                <button className={language === "sw" ? "active" : ""} onClick={() => setLanguage("sw")}>KISWAHILI</button>
+              </div>
             </div>
-            <p className="composer-help">Keep the visitor's words when they never touch the shared phone. Source and language stay attached.</p>
-            <div className="message-composer writing">
-              <textarea value={text} onChange={(event) => setText(event.target.value)} placeholder="They loved the roasting, said the road was difficult, and asked whether we sell beans." rows={6} autoFocus />
-              <div className="composer-actions"><span className="voice-caption">{language === "sw" ? "Kiswahili" : "English"} · local note</span><span className="field-count">{text.length}</span></div>
+
+            <div className="capture-surface">
+              <textarea
+                className="field-input"
+                value={text}
+                onChange={(event) => setText(event.target.value)}
+                placeholder="They loved the roasting, said the road was difficult, and asked whether we sell beans."
+                rows={7}
+                autoFocus
+              />
+              <div className="capture-actions">
+                <span className="source-stamp">{source.toUpperCase()} SOURCE · {language.toUpperCase()}</span>
+                <span className="char-count">{text.length}</span>
+              </div>
             </div>
+
+            <button className="primary-action" disabled={text.trim().length < 3 || busy} onClick={submit}>
+              {busy ? "Interpreting on this device…" : "Review before memory"}
+            </button>
           </div>
-          <button className="post-submit" disabled={text.trim().length < 3 || busy} onClick={submit}>
-            <span>{busy ? "Understanding locally…" : "Review observation"}</span><Icon name="send" size={16} />
-          </button>
-        </article>
+
+          <aside className="capture-proof">
+            <div className="proof-heading">SAME LOOP</div>
+            <p>This is not a separate analytics path. It becomes the same reviewable source record as a guest entry.</p>
+            <dl className="proof-facts">
+              <div><dt>Source</dt><dd>{source}</dd></div>
+              <div><dt>Language</dt><dd>{language}</dd></div>
+              <div><dt>Decision</dt><dd>Still human</dd></div>
+            </dl>
+          </aside>
+        </div>
       </section>
-    </Shell>
+    </AppFrame>
   );
 }
 
@@ -705,61 +594,97 @@ function Review() {
     go("/memory");
   }
 
-  if (loading) return <Shell active="add"><AppHeader title="Review message" subtitle="Loading local record" back /></Shell>;
-  if (!observation) return <Shell active="add"><AppHeader title="Review message" subtitle="No pending note" back /><section className="single-feed"><div className="empty-state">No pending observation.</div></section></Shell>;
+  if (loading) {
+    return (
+      <AppFrame section="capture" back>
+        <section className="field-main"><p className="loading-line">Loading local record…</p></section>
+      </AppFrame>
+    );
+  }
+
+  if (!observation) {
+    return (
+      <AppFrame section="capture" back>
+        <section className="field-main"><p className="loading-line">No pending observation.</p></section>
+      </AppFrame>
+    );
+  }
 
   return (
-    <Shell active="add">
-      <AppHeader title="Review message" subtitle="Human confirmation" back />
-      <section className="single-feed review-feed">
-        <article className="guest-post">
-          <div className="user-post-copy">
-            <div className="user-title">
-              <Avatar label={sourceName(observation)} />
-              <div><strong>{sourceName(observation)}</strong><span>{formatRelative(observation.createdAt)} · {observation.language.toUpperCase()}</span></div>
-            </div>
-            <p className="post-message">{observation.rawText}</p>
-            {observation.mediaDataUrl && <GuestMedia src={observation.mediaDataUrl} />}
-          </div>
-        </article>
+    <AppFrame section="capture" back>
+      <section className="field-main review-page">
+        <PageIntro
+          eyebrow="HUMAN REVIEW"
+          title="Keep the words. Check the interpretation."
+          body="Nothing enters business memory until a person confirms it."
+        />
 
-        <article className="guest-post review-post">
-          <div className="user-post-copy">
-            <div className="section-label-row"><strong>Guestbook understood</strong><span>~240 KB · 0 network</span></div>
-            <div className="signal-chips">
+        <div className="review-source">
+          <div className="source-meta">
+            <span>{sourceName(observation).toUpperCase()}</span>
+            <span>{observation.language.toUpperCase()}</span>
+            <span>{formatRelative(observation.createdAt)}</span>
+          </div>
+          <blockquote>“{observation.rawText}”</blockquote>
+          {observation.mediaDataUrl && <GuestMedia src={observation.mediaDataUrl} />}
+        </div>
+
+        <div className="review-grid">
+          <div className="signal-review">
+            <div className="section-heading">
+              <span>LOCAL INTERPRETATION</span>
+              <span>~240 KB · 0 NETWORK</span>
+            </div>
+
+            <div className="signal-list">
               {observation.predictions.map((prediction) => {
-                const selectedNow = selected.has(prediction.label);
-                const needsConfirm = HUMAN_CONFIRM_REQUIRED.has(prediction.label);
+                const active = selected.has(prediction.label);
+                const needsHuman = HUMAN_CONFIRM_REQUIRED.has(prediction.label);
                 return (
                   <button
                     key={prediction.label}
-                    className={"ds-chip signal-chip " + (selectedNow ? "active" : "") + (selectedNow && needsConfirm ? "human-check" : "")}
+                    className={"signal-row " + (active ? "selected" : "")}
                     onClick={() => toggle(prediction.label)}
+                    aria-pressed={active}
                   >
-                    {LABEL_META[prediction.label].title} · {formatPercent(prediction.score)}
+                    <span className="signal-check">{active ? "✓" : ""}</span>
+                    <span className="signal-copy">
+                      <strong>{LABEL_META[prediction.label].title}</strong>
+                      <small>{LABEL_META[prediction.label].description}</small>
+                    </span>
+                    <span className="signal-score">
+                      {formatPercent(prediction.score)}
+                      {needsHuman && <em>HUMAN CONFIRM</em>}
+                    </span>
                   </button>
                 );
               })}
             </div>
-            <p className="small-copy">Tap a signal to correct it. Accessibility and dietary/safety signals require explicit human confirmation.</p>
 
-            <details className="correction-panel">
+            <details className="signal-correction">
               <summary>Add or correct a signal</summary>
-              <div className="signal-chips correction-chips">
+              <div className="correction-list">
                 {LABELS.filter((label) => label !== "UNKNOWN").map((label) => (
-                  <button key={label} className={"ds-chip signal-chip " + (selected.has(label) ? "active" : "")} onClick={() => toggle(label)}>
+                  <button key={label} className={selected.has(label) ? "selected" : ""} onClick={() => toggle(label)}>
                     {LABEL_META[label].title}
                   </button>
                 ))}
               </div>
             </details>
           </div>
-          <button className="post-submit" onClick={confirm}><span>Confirm into memory</span><Icon name="send" size={16} /></button>
-        </article>
 
-        <p className="screen-footnote">Original words stay attached. Guestbook interprets; a person decides what enters memory.</p>
+          <aside className="review-note">
+            <p>The score is a model score, not a calibrated probability.</p>
+            <p>Accessibility and dietary/safety labels require explicit confirmation.</p>
+            <p>UNKNOWN is a valid outcome when Guestbook does not have enough signal.</p>
+          </aside>
+        </div>
+
+        <div className="review-footer">
+          <button className="primary-action" onClick={confirm}>Confirm into memory</button>
+        </div>
       </section>
-    </Shell>
+    </AppFrame>
   );
 }
 
@@ -805,65 +730,90 @@ function Memory() {
 
   const memory = useMemo(() => buildMemory(observations), [observations]);
   const featured = memory.find((signal) => signal.label === "WANT_PRODUCT" && signal.visitCount >= 5) ?? memory[0] ?? null;
-  const ordered = featured ? [featured, ...memory.filter((signal) => signal.label !== featured.label)] : memory;
+  const rest = featured ? memory.filter((signal) => signal.label !== featured.label) : memory;
+  const changed = featured ? previousCounts[featured.label] !== undefined && featured.visitCount > previousCounts[featured.label] : false;
 
   return (
-    <Shell mode="dark" active="memory">
-      <section className="home-hero dark-hero">
-        <AppHeader title="Business memory" subtitle="Confirmed patterns · local only" dark />
-        <RoundedTabs
-          active="signals"
-          dark
-          onChange={(key) => {
-            if (key === "entries") go("/");
-            if (key === "actions") go("/decide");
-          }}
-          items={[{ key: "signals", label: "Signals" }, { key: "entries", label: "Entries" }, { key: "actions", label: "Actions" }]}
+    <AppFrame section="memory" mode="dark">
+      <section className="field-main memory-page">
+        <PageIntro
+          eyebrow="BUSINESS MEMORY"
+          title="What keeps repeating?"
+          body="A pattern only exists when confirmed observations from distinct visits keep pointing to the same thing."
         />
-      </section>
 
-      <section className="feed signal-feed">
-        {ordered.map((signal, index) => {
-          const changed = previousCounts[signal.label] !== undefined && signal.visitCount > previousCounts[signal.label];
-          const open = expanded === signal.label;
-          return (
-            <article className="guest-post dark-post signal-post" key={signal.label}>
-              <div className="user-post-copy">
-                <div className="user-title">
-                  <Avatar label={signal.title} dark />
-                  <div>
-                    <strong>{signal.title}</strong>
-                    <span>{changed ? previousCounts[signal.label] + " → " + signal.visitCount + " visits · just now" : signal.visitCount + " independent visits"}</span>
-                  </div>
+        {featured && (
+          <section className="featured-memory">
+            <div className="featured-count">
+              {changed ? (
+                <div className="count-transition">
+                  <span>{previousCounts[featured.label]}</span>
+                  <b>→</b>
+                  <strong>{featured.visitCount}</strong>
                 </div>
-                <p className="post-message">{signal.description}</p>
-                <div className="user-likes-row">
-                  <button className="reply-summary dark-link" onClick={() => setExpanded(open ? null : signal.label)}>
-                    <AvatarStack count={signal.observations.length} dark />
-                    <span>{open ? "Hide evidence" : "View " + signal.observations.length + " sources"}</span>
-                  </button>
-                  {index === 0 && <span className="kit-badge">Repeating</span>}
-                </div>
+              ) : (
+                <strong>{featured.visitCount}</strong>
+              )}
+              <span>independent visits</span>
+            </div>
+
+            <div className="featured-copy">
+              <p className="eyebrow">STRONGEST REPEATING SIGNAL</p>
+              <h2>{featured.title}</h2>
+              <p>{featured.description}</p>
+              <p className="memory-law">Not a prediction. {featured.visitCount} confirmed source records from distinct visits.</p>
+            </div>
+          </section>
+        )}
+
+        {featured && (
+          <section className="evidence-ledger">
+            <div className="section-heading">
+              <span>SOURCE EVIDENCE</span>
+              <span>ORIGINAL WORDS</span>
+            </div>
+            {featured.observations.slice(0, expanded === featured.label ? featured.observations.length : 4).map((observation) => (
+              <EvidenceQuote key={observation.id} observation={observation} />
+            ))}
+            {featured.observations.length > 4 && (
+              <button className="ledger-toggle" onClick={() => setExpanded(expanded === featured.label ? null : featured.label)}>
+                {expanded === featured.label ? "Show fewer sources" : "Show all " + featured.observations.length + " sources"}
+              </button>
+            )}
+          </section>
+        )}
+
+        <section className="other-signals">
+          <div className="section-heading">
+            <span>OTHER SIGNALS</span>
+            <span>{rest.length} IN MEMORY</span>
+          </div>
+          {rest.map((signal) => (
+            <article className="signal-ledger-row" key={signal.label}>
+              <div>
+                <h3>{signal.title}</h3>
+                <p>{signal.description}</p>
               </div>
-
-              {open && signal.observations.map((observation) => (
-                <div className="reply-card dark-reply" key={observation.id}>
-                  <Avatar label={sourceName(observation)} size={24} dark />
-                  <p><strong>{observation.isDemo ? "Demo visit" : sourceName(observation)}</strong><span> · {observation.rawText}</span></p>
+              <strong>{signal.visitCount}</strong>
+              <button onClick={() => setExpanded(expanded === signal.label ? null : signal.label)}>
+                {expanded === signal.label ? "Close" : "Evidence"}
+              </button>
+              {expanded === signal.label && (
+                <div className="row-evidence">
+                  {signal.observations.map((observation) => <EvidenceQuote key={observation.id} observation={observation} />)}
                 </div>
-              ))}
+              )}
             </article>
-          );
-        })}
+          ))}
+        </section>
 
-        <div className="memory-tools">
-          <button className="ds-chip dark-tool" onClick={() => go("/capture")}>Capture later</button>
-          <button className="ds-chip dark-tool" onClick={() => exportMemory(observations)}>Export JSON</button>
-          <button className="ds-chip active dark-action" onClick={() => go("/decide")}>Review actions</button>
+        <div className="memory-footer">
+          <button className="text-action inverted" onClick={() => go("/capture")}>Capture later</button>
+          <button className="text-action inverted" onClick={() => exportMemory(observations)}>Export local memory</button>
+          <button className="primary-action light-action" onClick={() => go("/decide")}>Review what to act on</button>
         </div>
-        <p className="screen-footnote dark-footnote">Demo visits remain visibly marked inside source evidence. New records stay in this browser via IndexedDB.</p>
       </section>
-    </Shell>
+    </AppFrame>
   );
 }
 
@@ -882,55 +832,81 @@ function Decide() {
   }
 
   const featured = signals.find((signal) => signal.label === "WANT_PRODUCT") ?? signals[0] ?? null;
-  const ordered = featured ? [featured, ...signals.filter((signal) => signal.label !== featured.label)] : signals;
+  const rest = featured ? signals.filter((signal) => signal.label !== featured.label) : [];
 
   return (
-    <Shell mode="dark" active="memory">
-      <section className="home-hero dark-hero">
-        <AppHeader title="What should I act on?" subtitle="Evidence, not autopilot" dark back />
-        <RoundedTabs
-          active="actions"
-          dark
-          onChange={(key) => {
-            if (key === "signals") go("/memory");
-            if (key === "entries") go("/");
-          }}
-          items={[{ key: "signals", label: "Signals" }, { key: "actions", label: "Actions" }, { key: "entries", label: "Entries" }]}
+    <AppFrame section="decide" mode="dark">
+      <section className="field-main decide-page">
+        <PageIntro
+          eyebrow="OPERATOR DECISION"
+          title="Evidence stops here."
+          body="Guestbook can show what repeats. It cannot decide what your business should become."
         />
-      </section>
 
-      <section className="feed decision-feed">
-        {ordered.map((signal, index) => {
-          const copy = decisionCopy(signal);
+        {featured ? (() => {
+          const copy = decisionCopy(featured);
           return (
-            <article className="guest-post dark-post decision-post" key={signal.label}>
-              <div className="user-post-copy">
-                <div className="user-title">
-                  <Avatar label={signal.title} dark />
-                  <div><strong>{copy.headline}</strong><span>{signal.visitCount} independent visits{index === 0 ? " · strongest signal" : ""}</span></div>
+            <>
+              <section className="decision-focus">
+                <div className="decision-count">
+                  <strong>{featured.visitCount}</strong>
+                  <span>distinct visits</span>
                 </div>
-                <p className="post-message">{copy.body}</p>
-                {index === 0 && <p className="small-copy dark-small-copy">Not a prediction. Not a generated recommendation. {signal.visitCount} source-backed observations.</p>}
-                <div className="decision-buttons">
-                  {["Explore", "Not now", "Wrong signal"].map((option) => (
-                    <button key={option} className={"ds-chip decision-chip " + (decisions[signal.label] === option ? "active" : "")} onClick={() => decide(signal.label, option)}>
-                      {option}
-                    </button>
-                  ))}
+
+                <div className="decision-copy">
+                  <p className="eyebrow">REPEATED REQUEST</p>
+                  <h2>People keep asking to take something home.</h2>
+                  <h3>{copy.headline}</h3>
+                  <p>{copy.body}</p>
+
+                  <div className="decision-choices" role="group" aria-label="Decision">
+                    {["Explore", "Not now", "Wrong signal"].map((option) => (
+                      <button
+                        key={option}
+                        className={decisions[featured.label] === option ? "selected" : ""}
+                        onClick={() => decide(featured.label, option)}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              {index === 0 && signal.observations.slice(0, 3).map((observation) => (
-                <div className="reply-card dark-reply" key={observation.id}>
-                  <Avatar label={sourceName(observation)} size={24} dark />
-                  <p><strong>{observation.isDemo ? "Demo visit" : sourceName(observation)}</strong><span> · {observation.rawText}</span></p>
+              </section>
+
+              <section className="decision-evidence">
+                <div className="section-heading">
+                  <span>WHY THIS IS HERE</span>
+                  <span>{featured.visitCount} SOURCES</span>
                 </div>
-              ))}
-            </article>
+                {featured.observations.slice(0, 3).map((observation) => (
+                  <EvidenceQuote key={observation.id} observation={observation} />
+                ))}
+              </section>
+            </>
           );
-        })}
-        {ordered.length === 0 && <div className="empty-state dark-empty">No repeated signal has crossed the three-visit threshold yet.</div>}
+        })() : (
+          <p className="loading-line">No signal has repeated across three visits yet.</p>
+        )}
+
+        {rest.length > 0 && (
+          <section className="secondary-decisions">
+            <div className="section-heading">
+              <span>OTHER REPEATED SIGNALS</span>
+              <span>{rest.length}</span>
+            </div>
+            {rest.map((signal) => {
+              const copy = decisionCopy(signal);
+              return (
+                <article key={signal.label}>
+                  <div><strong>{signal.visitCount}</strong><span>visits</span></div>
+                  <div><h3>{copy.headline}</h3><p>{copy.body}</p></div>
+                </article>
+              );
+            })}
+          </section>
+        )}
       </section>
-    </Shell>
+    </AppFrame>
   );
 }
 
@@ -968,71 +944,62 @@ function Lab() {
   }
 
   return (
-    <Shell hideNav>
-      <AppHeader title="Model lab" subtitle="Local inference" back />
-      <section className="utility-stack">
-        <article className="guest-post utility-post">
-          <div className="user-post-copy">
-            <div className="section-label-row"><strong>Observation</strong><span>On-device test</span></div>
-            <div className="message-composer writing lab-composer">
-              <textarea value={text} onChange={(event) => setText(event.target.value)} rows={5} />
-            </div>
-          </div>
-          <button className="post-submit" onClick={run} disabled={running}><span>{running ? "Running locally…" : "Run local inference"}</span><Icon name="send" size={16} /></button>
-        </article>
+    <AppFrame section="lab" back>
+      <section className="field-main lab-page">
+        <PageIntro
+          eyebrow="MODEL LAB"
+          title="Prove the hard part."
+          body="The product story is simple; this page keeps the implementation claims inspectable."
+        />
 
-        <article className="guest-post utility-post">
-          <div className="user-post-copy">
-            <div className="section-label-row"><strong>Predictions</strong><span>{inferenceMs === null ? "—" : inferenceMs.toFixed(2) + " ms"}</span></div>
-            <div className="signal-chips">
-              {predictions.length === 0 ? <p className="small-copy">Run an observation.</p> : predictions.map((prediction) => (
-                <span className="ds-chip active signal-chip" key={prediction.label}>{LABEL_META[prediction.label].title} · {formatPercent(prediction.score)}</span>
-              ))}
-            </div>
+        <section className="lab-block">
+          <div className="section-heading"><span>LOCAL INFERENCE</span><span>{inferenceMs === null ? "—" : inferenceMs.toFixed(2) + " MS"}</span></div>
+          <textarea className="lab-input" value={text} onChange={(event) => setText(event.target.value)} rows={5} />
+          <button className="primary-action" onClick={run} disabled={running}>{running ? "Running locally…" : "Run local inference"}</button>
+          <div className="lab-predictions">
+            {predictions.map((prediction) => (
+              <div key={prediction.label}><strong>{LABEL_META[prediction.label].title}</strong><span>{formatPercent(prediction.score)}</span></div>
+            ))}
           </div>
-        </article>
+        </section>
 
-        <article className="guest-post utility-post">
-          <div className="user-post-copy">
-            <div className="section-label-row"><strong>Frozen stress set</strong><span>Synthetic regression check</span></div>
-            <div className="metric-list">
-              <Metric label="Micro F1" value={report ? formatPercent(report.f1) : "—"} />
-              <Metric label="Precision" value={report ? formatPercent(report.precision) : "—"} />
-              <Metric label="Recall" value={report ? formatPercent(report.recall) : "—"} />
-              <Metric label="Exact match" value={report ? formatPercent(report.exactMatch) : "—"} />
-              <Metric label="Cases" value={report ? String(report.cases) : "35"} />
-              <Metric label="Weights" value={report ? Math.round(report.weightBytes / 1024) + " KB" : "~240 KB"} />
-              <Metric label="Network inference" value="0 requests" />
-            </div>
+        <section className="lab-block">
+          <div className="section-heading"><span>FROZEN STRESS SET</span><span>SYNTHETIC REGRESSION CHECK</span></div>
+          <div className="metric-list">
+            <Metric label="Micro F1" value={report ? formatPercent(report.f1) : "—"} />
+            <Metric label="Precision" value={report ? formatPercent(report.precision) : "—"} />
+            <Metric label="Recall" value={report ? formatPercent(report.recall) : "—"} />
+            <Metric label="Exact match" value={report ? formatPercent(report.exactMatch) : "—"} />
+            <Metric label="Cases" value={report ? String(report.cases) : "35"} />
+            <Metric label="Weights" value={report ? Math.round(report.weightBytes / 1024) + " KB" : "~240 KB"} />
+            <Metric label="Network inference" value="0 requests" />
           </div>
-          <button className="post-submit secondary-submit" onClick={runBenchmark} disabled={running}><span>Run benchmark</span><Icon name="send" size={16} /></button>
-        </article>
+          <button className="text-action" onClick={runBenchmark} disabled={running}>Run benchmark on this device</button>
+        </section>
 
-        <article className="guest-post utility-post">
-          <div className="user-post-copy">
-            <div className="section-label-row"><strong>External evidence</strong><span>Held out</span></div>
-            <div className="metric-list">
-              <Metric label="MASSIVE English" value="91.1%" />
-              <Metric label="MASSIVE Swahili" value="92.8%" />
-              <Metric label="Nairobi weak-label holdout" value="98.0%" />
-              <Metric label="Training cases" value="2,687" />
-              <Metric label="Dimensions" value="4,096" />
-              <Metric label="Weights" value="240 KB" />
-            </div>
-            <p className="small-copy">Transfer probes, not field accuracy.</p>
+        <section className="lab-block">
+          <div className="section-heading"><span>EXTERNAL EVIDENCE</span><span>HELD OUT</span></div>
+          <div className="metric-list">
+            <Metric label="MASSIVE English" value="91.1%" />
+            <Metric label="MASSIVE Swahili" value="92.8%" />
+            <Metric label="Nairobi weak-label holdout" value="98.0%" />
+            <Metric label="Training cases" value="2,687" />
+            <Metric label="Dimensions" value="4,096" />
+            <Metric label="Weights" value="240 KB" />
           </div>
-        </article>
+          <p className="lab-note">Transfer probes and weak-label agreement, not field accuracy.</p>
+        </section>
 
-        <article className="guest-post utility-post">
-          <div className="user-post-copy">
-            <div className="section-label-row"><strong>Recording utility</strong><span>Demo state</span></div>
-            <p className="post-message">Clear local test entries and restore five marked product-request demo visits.</p>
-            {resetMessage && <p className="small-copy">{resetMessage}</p>}
+        <section className="lab-block demo-reset">
+          <div>
+            <div className="section-heading"><span>RECORDING UTILITY</span><span>DEMO STATE</span></div>
+            <p>Clear local test entries and restore five marked product-request demo visits.</p>
+            {resetMessage && <p className="reset-message">{resetMessage}</p>}
           </div>
-          <button className="post-submit secondary-submit" onClick={resetDemo}><span>Reset demo</span><Icon name="send" size={16} /></button>
-        </article>
+          <button className="text-action" onClick={resetDemo}>Reset demo</button>
+        </section>
       </section>
-    </Shell>
+    </AppFrame>
   );
 }
 

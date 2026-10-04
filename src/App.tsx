@@ -182,9 +182,13 @@ function routeForPath(pathname: string): Route {
 }
 
 function go(path: string) {
+  if (window.location.pathname + window.location.search === path) {
+    window.scrollTo({ top: 0, behavior: "auto" });
+    return;
+  }
   window.history.pushState({}, "", path);
   window.dispatchEvent(new PopStateEvent("popstate"));
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({ top: 0, behavior: "auto" });
 }
 
 function formatPercent(value: number) {
@@ -313,7 +317,7 @@ function Shell({ route, children, layout = "compact" }: { route: Route; children
           <button className="brand-mark" onClick={() => go("/")}>Guestbook</button>
           <nav className="desktop-nav" aria-label="Primary">
             {NAV.filter((item) => item.key !== "system").map((item) => (
-              <button key={item.key} className={route === item.key ? "active" : ""} onClick={() => go(item.path)}>
+              <button key={item.key} className={route === item.key ? "active" : ""} aria-current={route === item.key ? "page" : undefined} onClick={() => go(item.path)}>
                 <RouteIcon route={item.key} active={route === item.key} size={16} />
                 <span>{item.label}</span>
               </button>
@@ -323,7 +327,7 @@ function Shell({ route, children, layout = "compact" }: { route: Route; children
             <span className={"status-pip " + (!online || offlineReady ? "positive" : "warning")} />
             <span>{status}</span>
           </div>
-          <button className={"nav-system-link " + (route === "system" ? "active" : "")} onClick={() => go("/system")} aria-label="System" title="System">
+          <button className={"nav-system-link " + (route === "system" ? "active" : "")} aria-current={route === "system" ? "page" : undefined} onClick={() => go("/system")} aria-label="System" title="System">
             <RouteIcon route="system" active={route === "system"} size={18} />
           </button>
         </div>
@@ -333,7 +337,7 @@ function Shell({ route, children, layout = "compact" }: { route: Route; children
 
       <nav className="base-bottom-navigation" aria-label="Primary mobile navigation">
         {mobileNav.map((item) => (
-          <button key={item.key} className={route === item.key ? "active" : ""} onClick={() => go(item.path)}>
+          <button key={item.key} className={route === item.key ? "active" : ""} aria-current={route === item.key ? "page" : undefined} onClick={() => go(item.path)}>
             <RouteIcon route={item.key} active={route === item.key} size={20} />
             <span>{item.label}</span>
           </button>
@@ -754,8 +758,8 @@ function GuestScreen() {
         <div className="normal-grid dock-grid">
           <div className="dock-copy"><LockSimpleIcon size={18} weight="regular" aria-hidden="true" /><span>No sign-in. Your words stay with this visit.</span></div>
           <BaseButton hierarchy="primary" size="medium" shape="rect" onClick={submit} disabled={text.trim().length < 3 || busy}>
-            <span>{busy ? "Sending…" : "Send feedback"}</span>
-            {!busy && <ArrowRightIcon size={18} weight="bold" aria-hidden="true" />}
+            <span>{busy ? "Sending…" : text.trim().length < 3 ? "Write a note to continue" : "Send feedback"}</span>
+            {!busy && text.trim().length >= 3 && <ArrowRightIcon size={18} weight="bold" aria-hidden="true" />}
           </BaseButton>
         </div>
       </DockedAction>
@@ -773,10 +777,15 @@ function ReviewScreen() {
 
   useEffect(() => {
     (async () => {
-      const row = requestedId
-        ? await db.observations.get(requestedId)
+      const requestedRow = requestedId ? await db.observations.get(requestedId) : undefined;
+      const row = requestedRow?.status === "pending"
+        ? requestedRow
         : await db.observations.where("status").equals("pending").last();
-      if (!row) return;
+      if (!row) {
+        setObservation(null);
+        setSelected(new Set());
+        return;
+      }
       setObservation(row);
       setSelected(new Set(row.predictions.filter((prediction) => prediction.label !== "UNKNOWN").map((prediction) => prediction.label)));
     })();
@@ -800,6 +809,7 @@ function ReviewScreen() {
     const previous = Object.fromEntries([...selected].map((label) => [label, before.find((signal) => signal.label === label)?.visitCount ?? 0]));
     sessionStorage.setItem("guestbook-last-accumulation", JSON.stringify(previous));
     await db.observations.update(observation.id, { status: "confirmed", confirmedLabels: [...selected] });
+    sessionStorage.removeItem("guestbook-pending-id");
     go("/memory");
   }
 
@@ -822,23 +832,30 @@ function ReviewScreen() {
               {observation.mediaDataUrl && <img className="review-media" src={observation.mediaDataUrl} alt="" />}
             </div>
           ) : (
-            <div className="empty-inline"><InfoIcon size={18} weight="regular" aria-hidden="true" /> No visit is waiting for review.</div>
+            <div className="empty-state review-empty">
+              <CheckSquareOffsetIcon size={30} weight="regular" aria-hidden="true" />
+              <h2>Nothing to review</h2>
+              <p>Add a guest note first. Guestbook will bring you back here with its suggested themes.</p>
+              <BaseButton hierarchy="primary" size="medium" shape="rect" onClick={() => go("/")}>
+                <span>Add guest feedback</span><ArrowRightIcon size={18} weight="bold" aria-hidden="true" />
+              </BaseButton>
+            </div>
           )}
         </section>
 
-        <section className="review-signals">
-          <div className="section-heading">
-            <div><h2>Does this look right?</h2><p>Keep only what the guest actually meant.</p></div>
-          </div>
+        {observation && (
+          <section className="review-signals">
+            <div className="section-heading">
+              <div><h2>Does this look right?</h2><p>Keep only what the guest actually meant.</p></div>
+            </div>
 
-          {observation && (
             <>
               <div className="selection-list">
                 {observation.predictions.map((prediction) => {
                   const active = selected.has(prediction.label);
                   const sensitive = HUMAN_CONFIRM_REQUIRED.has(prediction.label);
                   return (
-                    <button className={"selection-row " + (active ? "selected" : "")} key={prediction.label} onClick={() => toggle(prediction.label)}>
+                    <button className={"selection-row " + (active ? "selected" : "")} key={prediction.label} aria-pressed={active} onClick={() => toggle(prediction.label)}>
                       <span className="base-check">{active && <CheckCircleIcon size={20} weight="fill" aria-hidden="true" />}</span>
                       <span className="selection-copy">
                         <strong>{LABEL_META[prediction.label].title}</strong>
@@ -882,18 +899,21 @@ function ReviewScreen() {
                 </BaseBanner>
               )}
             </>
-          )}
-        </section>
+          </section>
+        )}
       </main>
 
-      <DockedAction>
-        <div className="compact-grid dock-grid">
-          <div className="dock-copy"><UserCheckIcon size={18} weight="regular" aria-hidden="true" /><span>You decide what gets remembered.</span></div>
-          <BaseButton hierarchy="primary" size="medium" shape="rect" onClick={confirm} disabled={!observation || (hasSensitive && !sensitiveConfirmed)}>
-            <span>Confirm</span><ArrowRightIcon size={18} weight="bold" aria-hidden="true" />
-          </BaseButton>
-        </div>
-      </DockedAction>
+      {observation && (
+        <DockedAction>
+          <div className="compact-grid dock-grid">
+            <div className="dock-copy"><UserCheckIcon size={18} weight="regular" aria-hidden="true" /><span>You decide what gets remembered.</span></div>
+            <BaseButton hierarchy="primary" size="medium" shape="rect" onClick={confirm} disabled={hasSensitive && !sensitiveConfirmed}>
+              <span>{hasSensitive && !sensitiveConfirmed ? "Confirm the requirement first" : "Confirm"}</span>
+              {(!hasSensitive || sensitiveConfirmed) && <ArrowRightIcon size={18} weight="bold" aria-hidden="true" />}
+            </BaseButton>
+          </div>
+        </DockedAction>
+      )}
     </Shell>
   );
 }
@@ -976,31 +996,44 @@ function EvidenceScreen() {
           )}
         </section>
 
-        <section className="evidence-summary">
-          {signal && <>
-            <UsersThreeIcon size={22} weight="regular" aria-hidden="true" />
-            <div><h2>{signal.title}</h2><p>{signal.description}</p></div>
-            <strong>{signal.visitCount} visits</strong>
-          </>}
-        </section>
+        {signal ? (
+          <>
+            <section className="evidence-summary">
+              <UsersThreeIcon size={22} weight="regular" aria-hidden="true" />
+              <div><h2>{signal.title}</h2><p>{signal.description}</p></div>
+              <strong>{signal.visitCount} visits</strong>
+            </section>
 
-        <section className="evidence-ledger">
-          <div className="section-heading"><div><h2>Guest comments</h2><p>Exactly what was said on each visit.</p></div><span className="paragraph-small">{signal?.observations.length ?? 0}</span></div>
-          <div className="evidence-rows">
-            {(signal?.observations ?? []).map((observation) => (
-              <article className="evidence-row" key={observation.id}>
-                <QuotesIcon className="evidence-quote-icon" size={22} weight="fill" aria-hidden="true" />
-                <div className="evidence-quote">“{observation.rawText}”</div>
-                <div className="evidence-meta">
-                  <span>{observation.isDemo ? <InfoIcon size={15} weight="regular" aria-hidden="true" /> : <UserCheckIcon size={15} weight="regular" aria-hidden="true" />}{observation.isDemo ? "Demo" : sourceLabel(observation)}</span>
-                  <span><TranslateIcon size={15} weight="regular" aria-hidden="true" />{observation.language.toUpperCase()}</span>
-                  <span><ClockIcon size={15} weight="regular" aria-hidden="true" />{formatAge(observation.createdAt)}</span>
-                </div>
-                {observation.mediaDataUrl && <img className="evidence-media" src={observation.mediaDataUrl} alt="" />}
-              </article>
-            ))}
-          </div>
-        </section>
+            <section className="evidence-ledger">
+              <div className="section-heading"><div><h2>Guest comments</h2><p>Exactly what was said on each visit.</p></div><span className="paragraph-small">{signal.observations.length}</span></div>
+              <div className="evidence-rows">
+                {signal.observations.map((observation) => (
+                  <article className="evidence-row" key={observation.id}>
+                    <QuotesIcon className="evidence-quote-icon" size={22} weight="fill" aria-hidden="true" />
+                    <div className="evidence-quote">“{observation.rawText}”</div>
+                    <div className="evidence-meta">
+                      <span>{observation.isDemo ? <InfoIcon size={15} weight="regular" aria-hidden="true" /> : <UserCheckIcon size={15} weight="regular" aria-hidden="true" />}{observation.isDemo ? "Demo" : sourceLabel(observation)}</span>
+                      <span><TranslateIcon size={15} weight="regular" aria-hidden="true" />{observation.language.toUpperCase()}</span>
+                      <span><ClockIcon size={15} weight="regular" aria-hidden="true" />{formatAge(observation.createdAt)}</span>
+                    </div>
+                    {observation.mediaDataUrl && <img className="evidence-media" src={observation.mediaDataUrl} alt="" />}
+                  </article>
+                ))}
+              </div>
+            </section>
+          </>
+        ) : (
+          <section className="memory-empty evidence-empty">
+            <div className="empty-state">
+              <QuotesIcon size={30} weight="regular" aria-hidden="true" />
+              <h2>No comments to show yet</h2>
+              <p>Confirm a guest note first. Its source comments will stay attached here.</p>
+              <BaseButton hierarchy="primary" size="medium" shape="rect" onClick={() => go("/review")}>
+                <span>Go to review</span><ArrowRightIcon size={18} weight="bold" aria-hidden="true" />
+              </BaseButton>
+            </div>
+          </section>
+        )}
       </main>
     </Shell>
   );
@@ -1039,9 +1072,9 @@ function DecideScreen() {
               <h2>{copy.headline}</h2>
               <p>{copy.body}</p>
               <div className="decision-choice-grid" role="group" aria-label="Decision">
-                <button className={decision === "Explore" ? "selected" : ""} type="button" onClick={() => choose("Explore")}><CompassIcon size={20} weight={decision === "Explore" ? "fill" : "regular"} aria-hidden="true" /><span>Explore it</span></button>
-                <button className={decision === "Not now" ? "selected" : ""} type="button" onClick={() => choose("Not now")}><ClockIcon size={20} weight={decision === "Not now" ? "fill" : "regular"} aria-hidden="true" /><span>Not now</span></button>
-                <button className={decision === "Wrong signal" ? "selected" : ""} type="button" onClick={() => choose("Wrong signal")}><XCircleIcon size={20} weight={decision === "Wrong signal" ? "fill" : "regular"} aria-hidden="true" /><span>Not relevant</span></button>
+                <button className={decision === "Explore" ? "selected" : ""} type="button" aria-pressed={decision === "Explore"} onClick={() => choose("Explore")}><CompassIcon size={20} weight={decision === "Explore" ? "fill" : "regular"} aria-hidden="true" /><span>Explore it</span></button>
+                <button className={decision === "Not now" ? "selected" : ""} type="button" aria-pressed={decision === "Not now"} onClick={() => choose("Not now")}><ClockIcon size={20} weight={decision === "Not now" ? "fill" : "regular"} aria-hidden="true" /><span>Not now</span></button>
+                <button className={decision === "Wrong signal" ? "selected" : ""} type="button" aria-pressed={decision === "Wrong signal"} onClick={() => choose("Wrong signal")}><XCircleIcon size={20} weight={decision === "Wrong signal" ? "fill" : "regular"} aria-hidden="true" /><span>Not relevant</span></button>
               </div>
               {decision && <div className={"decision-state " + (decision === "Wrong signal" ? "negative" : decision === "Explore" ? "positive" : "neutral")}><CheckCircleIcon size={18} weight="fill" aria-hidden="true" />Saved: {decision === "Wrong signal" ? "Not relevant" : decision}</div>}
             </section>
@@ -1115,7 +1148,9 @@ function SystemScreen() {
 
   async function resetDemo() {
     await db.observations.clear();
-    localStorage.removeItem("guestbook-decisions");
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith("guestbook-decision-"))
+      .forEach((key) => localStorage.removeItem(key));
     sessionStorage.removeItem("guestbook-last-accumulation");
     sessionStorage.removeItem("guestbook-pending-id");
     await seedDemoData();
@@ -1129,10 +1164,10 @@ function SystemScreen() {
         <section className="system-title">
           <PageTitle title="System & data" body="Check offline mode, voice, model tests, and what is saved on this device." />
           <div className="system-tabs" role="tablist" aria-label="System sections">
-            <button type="button" className={tab === "Offline" ? "active" : ""} onClick={() => setTab("Offline")}><WifiHighIcon size={18} weight={tab === "Offline" ? "fill" : "regular"} aria-hidden="true" /><span>Offline</span></button>
-            <button type="button" className={tab === "Voice" ? "active" : ""} onClick={() => setTab("Voice")}><MicrophoneIcon size={18} weight={tab === "Voice" ? "fill" : "regular"} aria-hidden="true" /><span>Voice</span></button>
-            <button type="button" className={tab === "Model" ? "active" : ""} onClick={() => setTab("Model")}><GearSixIcon size={18} weight={tab === "Model" ? "fill" : "regular"} aria-hidden="true" /><span>Model</span></button>
-            <button type="button" className={tab === "Data" ? "active" : ""} onClick={() => setTab("Data")}><HardDriveIcon size={18} weight={tab === "Data" ? "fill" : "regular"} aria-hidden="true" /><span>Data</span></button>
+            <button type="button" role="tab" aria-selected={tab === "Offline"} className={tab === "Offline" ? "active" : ""} onClick={() => setTab("Offline")}><WifiHighIcon size={18} weight={tab === "Offline" ? "fill" : "regular"} aria-hidden="true" /><span>Offline</span></button>
+            <button type="button" role="tab" aria-selected={tab === "Voice"} className={tab === "Voice" ? "active" : ""} onClick={() => setTab("Voice")}><MicrophoneIcon size={18} weight={tab === "Voice" ? "fill" : "regular"} aria-hidden="true" /><span>Voice</span></button>
+            <button type="button" role="tab" aria-selected={tab === "Model"} className={tab === "Model" ? "active" : ""} onClick={() => setTab("Model")}><GearSixIcon size={18} weight={tab === "Model" ? "fill" : "regular"} aria-hidden="true" /><span>Model</span></button>
+            <button type="button" role="tab" aria-selected={tab === "Data"} className={tab === "Data" ? "active" : ""} onClick={() => setTab("Data")}><HardDriveIcon size={18} weight={tab === "Data" ? "fill" : "regular"} aria-hidden="true" /><span>Data</span></button>
           </div>
         </section>
 

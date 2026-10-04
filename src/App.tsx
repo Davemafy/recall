@@ -973,11 +973,14 @@ function MemoryScreen() {
 
         {featured ? (
           <>
-            <section className="memory-feature">
+            <section className={"memory-feature " + (changed ? "changed" : "")}>
               <div className={"memory-evidence-line " + (changed ? "changed" : "")}>
                 <UsersThreeIcon size={20} weight="regular" aria-hidden="true" />
                 <strong>{featured.visitCount} visits</strong>
                 {changed && <span className="memory-new-evidence"><TrendUpIcon size={16} weight="bold" aria-hidden="true" />+{featured.visitCount - (previousCount ?? featured.visitCount)} new</span>}
+              </div>
+              <div className={"memory-signal-chain " + (changed ? "changed" : "")} aria-hidden="true">
+                {Array.from({ length: Math.min(featured.visitCount, 6) }).map((_, index) => <span key={index} />)}
               </div>
               <h2>{featured.title}</h2>
               <p>{featured.description}</p>

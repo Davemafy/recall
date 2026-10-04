@@ -1,4 +1,14 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  ChatCenteredDotsIcon,
+  CheckSquareOffsetIcon,
+  CompassIcon,
+  DatabaseIcon,
+  FileTextIcon,
+  GearSixIcon,
+  ImageIcon,
+  MicrophoneIcon,
+} from "@phosphor-icons/react";
 import { activeClassifier } from "./ai/classifier";
 import { db } from "./storage/db";
 import { seedDemoData } from "./data/demoData";
@@ -244,6 +254,20 @@ function DockedAction({ children }: { children: ReactNode }) {
   return <div className="docked-action">{children}</div>;
 }
 
+function RouteIcon({ route, active, size = 18 }: { route: Route; active: boolean; size?: number }) {
+  const props = {
+    size,
+    weight: active ? "fill" as const : "regular" as const,
+    "aria-hidden": true,
+  };
+  if (route === "guest") return <ChatCenteredDotsIcon {...props} />;
+  if (route === "review") return <CheckSquareOffsetIcon {...props} />;
+  if (route === "memory") return <DatabaseIcon {...props} />;
+  if (route === "evidence") return <FileTextIcon {...props} />;
+  if (route === "decide") return <CompassIcon {...props} />;
+  return <GearSixIcon {...props} />;
+}
+
 function Shell({ route, children, layout = "compact" }: { route: Route; children: ReactNode; layout?: "normal" | "compact" }) {
   const [online, setOnline] = useState(navigator.onLine);
   const [offlineReady, setOfflineReady] = useState(false);
@@ -270,7 +294,10 @@ function Shell({ route, children, layout = "compact" }: { route: Route; children
           <button className="brand-mark" onClick={() => go("/")}>Guestbook</button>
           <nav className="desktop-nav" aria-label="Primary">
             {NAV.map((item) => (
-              <button key={item.key} className={route === item.key ? "active" : ""} onClick={() => go(item.path)}>{item.label}</button>
+              <button key={item.key} className={route === item.key ? "active" : ""} onClick={() => go(item.path)}>
+                <RouteIcon route={item.key} active={route === item.key} size={16} />
+                <span>{item.label}</span>
+              </button>
             ))}
           </nav>
           <div className="nav-status">
@@ -278,7 +305,8 @@ function Shell({ route, children, layout = "compact" }: { route: Route; children
             <span>{status}</span>
           </div>
           <button className={"mobile-system-link " + (route === "system" ? "active" : "")} onClick={() => go("/system")}>
-            System
+            <RouteIcon route="system" active={route === "system"} size={18} />
+            <span>System</span>
           </button>
         </div>
       </header>
@@ -288,6 +316,7 @@ function Shell({ route, children, layout = "compact" }: { route: Route; children
       <nav className="base-bottom-navigation" aria-label="Primary mobile navigation">
         {mobileNav.map((item) => (
           <button key={item.key} className={route === item.key ? "active" : ""} onClick={() => go(item.path)}>
+            <RouteIcon route={item.key} active={route === item.key} size={20} />
             <span>{item.label}</span>
           </button>
         ))}
@@ -667,11 +696,13 @@ function GuestScreen() {
             </Field>
             <div className="composer-controls">
               <button className="composer-tool-button" type="button" onClick={() => mediaRef.current?.click()}>
-                Add photo
+                <ImageIcon size={18} weight="regular" aria-hidden="true" />
+                <span>Add photo</span>
               </button>
               {voiceState !== "listening" && voiceState !== "unavailable" && (
                 <button className="composer-voice-button" type="button" onClick={() => void startVoice()}>
-                  Speak now
+                  <MicrophoneIcon size={18} weight="regular" aria-hidden="true" />
+                  <span>Speak now</span>
                 </button>
               )}
               {voiceState === "listening" && (
@@ -1147,12 +1178,42 @@ function SystemScreen() {
               </div>
               <div className="benchmark-panel">
                 <div className="section-heading"><div><h2>Regression evidence</h2></div><BaseButton hierarchy="secondary" size="small" shape="rect" onClick={runBenchmark}>Run benchmark</BaseButton></div>
+                <div className="metric-row"><span>Learned weights</span><strong>245,820 bytes</strong></div>
+                <div className="metric-row"><span>Training cases</span><strong>2,687</strong></div>
+                <div className="metric-row"><span>Decision threshold</span><strong>0.60</strong></div>
+                <div className="metric-row"><span>Inference network</span><strong>0 requests</strong></div>
                 <div className="metric-row"><span>Micro F1</span><strong>{benchmark ? formatPercent(benchmark.f1) : "90.2%"}</strong></div>
                 <div className="metric-row"><span>Precision</span><strong>{benchmark ? formatPercent(benchmark.precision) : "92.5%"}</strong></div>
                 <div className="metric-row"><span>Recall</span><strong>{benchmark ? formatPercent(benchmark.recall) : "88.1%"}</strong></div>
                 <div className="metric-row"><span>Exact match</span><strong>{benchmark ? formatPercent(benchmark.exactMatch) : "82.9%"}</strong></div>
                 <div className="metric-row"><span>Contradiction guards</span><strong>{benchmark ? (benchmark.contradictionGuardPassed ?? 0) + "/" + (benchmark.contradictionGuardCases ?? 0) : "9 policy checks"}</strong></div>
-                <div className="system-caveat">External probes: MASSIVE English 91.1%, Swahili 92.8%, Nairobi weak-label agreement 98.0%. These are not field accuracy.</div>
+                <div className="system-caveat">The frozen 35-case set is synthetic regression evidence, not field accuracy.</div>
+              </div>
+
+              <div className="benchmark-panel">
+                <div className="section-heading"><div><h2>Model evolution</h2></div></div>
+                <div className="system-list">
+                  <div><span>First synthetic-only model · Nairobi stress sample</span><strong>79.8% UNKNOWN</strong></div>
+                  <div><span>First model · untouched Kiswahili transfer</span><strong>0.3%</strong></div>
+                  <div><span>Decision</span><strong>Rejected</strong></div>
+                  <div><span>Promoted model · MASSIVE English</span><strong>91.1%</strong></div>
+                  <div><span>Promoted model · MASSIVE Kiswahili</span><strong>92.8%</strong></div>
+                  <div><span>Held-out Nairobi weak-label agreement</span><strong>98.0%</strong></div>
+                </div>
+                <div className="system-caveat">MASSIVE is a semantic-transfer probe. Nairobi uses weak supervision. Neither result is claimed as tourism field accuracy.</div>
+              </div>
+
+              <div className="benchmark-panel">
+                <div className="section-heading"><div><h2>Why learned AI here?</h2></div></div>
+                <div className="system-list">
+                  <div><span>Synthetic rules · micro F1</span><strong>93.0%</strong></div>
+                  <div><span>Guestbook Micro · synthetic micro F1</span><strong>90.2%</strong></div>
+                  <div><span>Rules · MASSIVE English</span><strong>16.7%</strong></div>
+                  <div><span>Guestbook Micro · MASSIVE English</span><strong>91.1%</strong></div>
+                  <div><span>Rules · MASSIVE Kiswahili</span><strong>2.3%</strong></div>
+                  <div><span>Guestbook Micro · MASSIVE Kiswahili</span><strong>92.8%</strong></div>
+                </div>
+                <div className="system-note"><strong>Use deterministic code where it works.</strong><span>The learned model exists only for messy-language interpretation. Distinct-visit counting, evidence grouping, thresholds, persistence, and the final business decision remain deterministic or human-controlled.</span></div>
               </div>
             </div>
           )}

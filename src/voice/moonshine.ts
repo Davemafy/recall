@@ -19,7 +19,7 @@ export type OfflineVoiceController = {
   close: () => void;
 };
 
-const MOONSHINE_MIRROR =
+// Use Moonshine's official mirror to avoid mobile CDN stalls.\nconst MOONSHINE_MIRROR =
   "https://huggingface.co/moonshine-ai/moonshine-voice-assets/resolve/v0.1.5/model/tiny-streaming-en/quantized_26_08_21";
 
 const KEYTERMS = [

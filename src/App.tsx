@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { activeClassifier } from "./ai/classifier";
+import { benchmarkLexicalBaseline } from "./ai/lexicalBaseline";
 import { db } from "./storage/db";
 import { seedDemoData } from "./data/demoData";
 import { buildMemory, decisionCopy, type MemorySignal } from "./domain/memory";
@@ -526,6 +527,8 @@ function TechnicalLab({ benchmark = false }: { benchmark?: boolean }) {
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [report, setReport] = useState<Awaited<ReturnType<typeof activeClassifier.benchmark>> | null>(null);
   const [ms, setMs] = useState<number | null>(null);
+  const lexical = useMemo(() => benchmarkLexicalBaseline(), []);
+
   async function run() {
     if (benchmark) setReport(await activeClassifier.benchmark());
     else {
@@ -534,7 +537,76 @@ function TechnicalLab({ benchmark = false }: { benchmark?: boolean }) {
       setMs(result.inferenceMs);
     }
   }
-  return <div className="grid-2"><Card>{benchmark ? <Alert title="Frozen regression set">35 synthetic stress cases. This is not field accuracy.</Alert> : <Field label="Observation"><Textarea rows={7} value={text} onChange={(e) => setText(e.target.value)} /></Field>}<div className="actions"><Button onClick={run}>{benchmark ? "Run benchmark" : "Run local inference"}</Button></div></Card><Card>{benchmark ? <div className="metric-grid"><div><span>Micro F1</span><strong>{report ? fmtPercent(report.f1) : "—"}</strong></div><div><span>Precision</span><strong>{report ? fmtPercent(report.precision) : "—"}</strong></div><div><span>Recall</span><strong>{report ? fmtPercent(report.recall) : "—"}</strong></div><div><span>Exact</span><strong>{report ? fmtPercent(report.exactMatch) : "—"}</strong></div><div><span>Weights</span><strong>~240 KB</strong></div><div><span>Network</span><strong>0</strong></div></div> : <><div className="card-header"><div><h3>Predictions</h3><p>{ms === null ? "Run an observation." : ms.toFixed(2) + " ms on this device"}</p></div></div><div className="signal-stack">{predictions.map((p) => <div className="signal-item static" key={p.label}><span className="checkbox">✓</span><span><strong>{LABEL_META[p.label].title}</strong><small>{LABEL_META[p.label].description}</small></span><span className="score">{fmtPercent(p.score)}</span></div>)}</div></>}</Card></div>;
+
+  if (benchmark) {
+    return (
+      <div className="stack-lg">
+        <Card>
+          <div className="card-header">
+            <div>
+              <Badge variant="outline">WHY AI</Badge>
+              <h2>Start with the simpler tool.</h2>
+              <p>A transparent lexical baseline gets the same frozen synthetic cases. If rules are enough, we should use rules.</p>
+            </div>
+          </div>
+          <DataTable rows={[
+            ["Transparent lexical rules", fmtPercent(lexical.f1) + " micro-F1", fmtPercent(lexical.exactMatch) + " exact · 0 learned bytes"],
+            ["Guestbook Micro", report ? fmtPercent(report.f1) + " micro-F1" : "Run benchmark", report ? fmtPercent(report.exactMatch) + " exact · 245,820 learned bytes" : "Same 35 cases"],
+          ]} />
+          <div className="actions">
+            <Button onClick={run}>Run both on this device</Button>
+          </div>
+        </Card>
+
+        <div className="proof-statement">
+          <span>SYNTHETIC RESULT</span>
+          <strong>Rules are competitive here.</strong>
+          <p>That is exactly why Guestbook does not use its synthetic score as the reason to choose machine learning. Untouched external language is the harder test.</p>
+        </div>
+
+        <Card>
+          <div className="card-header">
+            <div>
+              <Badge variant="outline">UNTOUCHED MASSIVE TEST</Badge>
+              <h2>Outside the phrases we wrote.</h2>
+              <p>Same bounded signals, evaluated on external English and Kiswahili utterances that were not used to fit the promoted model.</p>
+            </div>
+          </div>
+          <DataTable rows={[
+            ["English · 305 cases","Rules 16.7%","Guestbook Micro 91.1% mapped-label hit"],
+            ["Kiswahili · 305 cases","Rules 2.3%","Guestbook Micro 92.8% mapped-label hit"],
+          ]} />
+          <Alert title="Interpretation">MASSIVE is a semantic-transfer probe, not tourism field accuracy. The lexical baseline is deliberately transparent and readable, not an exhaustive rules engine.</Alert>
+        </Card>
+
+        {report && (
+          <Card>
+            <div className="metric-grid">
+              <div><span>Micro F1</span><strong>{fmtPercent(report.f1)}</strong></div>
+              <div><span>Precision</span><strong>{fmtPercent(report.precision)}</strong></div>
+              <div><span>Recall</span><strong>{fmtPercent(report.recall)}</strong></div>
+              <div><span>Exact match</span><strong>{fmtPercent(report.exactMatch)}</strong></div>
+              <div><span>Learned weights</span><strong>245,820 B</strong></div>
+              <div><span>Network inference</span><strong>0</strong></div>
+            </div>
+          </Card>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid-2">
+      <Card>
+        <Field label="Observation"><Textarea rows={7} value={text} onChange={(e) => setText(e.target.value)} /></Field>
+        <div className="actions"><Button onClick={run}>Run local inference</Button></div>
+      </Card>
+      <Card>
+        <div className="card-header"><div><h3>Predictions</h3><p>{ms === null ? "Run an observation." : ms.toFixed(2) + " ms on this device"}</p></div></div>
+        <div className="signal-stack">{predictions.map((p) => <div className="signal-item static" key={p.label}><span className="checkbox">✓</span><span><strong>{LABEL_META[p.label].title}</strong><small>{LABEL_META[p.label].description}</small></span><span className="score">{fmtPercent(p.score)}</span></div>)}</div>
+      </Card>
+    </div>
+  );
 }
 
 function ScreenBody({ screen }: { screen: ScreenSpec }) {
@@ -664,7 +736,36 @@ function ScreenBody({ screen }: { screen: ScreenSpec }) {
     case 68: return <TechnicalLab />;
     case 69: return <TechnicalLab benchmark />;
     case 70:
-      return <Card><DataTable rows={[["MASSIVE English","91.1%","Mapped-label hit"],["MASSIVE Swahili","92.8%","Mapped-label hit"],["Nairobi holdout","98.0%","Weak-label agreement"],["Field accuracy","Not claimed","Needs consented human labels"]]} /><Alert title="Interpretation">These are transfer and weak-supervision probes. They are not tourism field accuracy.</Alert></Card>;
+      return (
+        <div className="stack-lg">
+          <div className="proof-statement">
+            <span>MODEL SELECTION</span>
+            <strong>Small enough to survive outside our own data.</strong>
+            <p>The first model looked good on examples we controlled. External evidence was the stop signal, not something added after the demo was finished.</p>
+          </div>
+          <div className="grid-2">
+            <Card>
+              <div className="card-header"><div><Badge variant="destructive">REJECTED</Badge><h2>Synthetic-only first pass</h2><p>External data exposed the failure.</p></div></div>
+              <DataTable rows={[
+                ["Nairobi stress sample","79.8% UNKNOWN","5,000 external human-written reviews"],
+                ["MASSIVE Swahili","0.3% mapped hit","Untouched semantic-transfer probe"],
+                ["Decision","Do not ship","Retrain using external training partitions only"],
+              ]} />
+            </Card>
+            <Card>
+              <div className="card-header"><div><Badge variant="success">PROMOTED</Badge><h2>Guestbook Micro v1</h2><p>Frozen after the new training mix.</p></div></div>
+              <DataTable rows={[
+                ["Learned weights","245,820 bytes","4,096 hashed dimensions"],
+                ["Training cases","2,687","Synthetic + licensed external train partitions"],
+                ["MASSIVE English","91.1%","305 untouched test cases"],
+                ["MASSIVE Swahili","92.8%","305 untouched test cases"],
+                ["Nairobi holdout","98.0%","1,055 weak-label sentences"],
+              ]} />
+            </Card>
+          </div>
+          <Alert title="What these numbers mean">MASSIVE is a semantic-transfer probe. Nairobi uses transparent lexical weak labels. Neither is tourism field accuracy; real deployment still needs consented, human-labeled field evaluation.</Alert>
+        </div>
+      );
     case 71:
       return <div className="grid-2"><Card><h3>Proof sequence</h3><ol className="steps"><li>Open while connected.</li><li>Wait for Offline ready.</li><li>Close the tab.</li><li>Disconnect / airplane mode.</li><li>Reopen Guestbook.</li><li>Enter an unseen sentence.</li><li>Classify and confirm it.</li><li>Reopen memory and verify persistence.</li></ol></Card><Card><Alert title="What this proves" variant="success">Offline shell + local inference + local persistence. Not merely a cached landing page.</Alert></Card></div>;
     case 72:

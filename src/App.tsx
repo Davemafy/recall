@@ -1,13 +1,30 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
+  ArrowRightIcon,
   ChatCenteredDotsIcon,
+  CheckCircleIcon,
   CheckSquareOffsetIcon,
+  ClockIcon,
   CompassIcon,
   DatabaseIcon,
+  DownloadSimpleIcon,
   FileTextIcon,
   GearSixIcon,
+  HardDriveIcon,
   ImageIcon,
+  InfoIcon,
+  LockSimpleIcon,
   MicrophoneIcon,
+  QuotesIcon,
+  ShieldCheckIcon,
+  TrendUpIcon,
+  TranslateIcon,
+  TrashIcon,
+  UserCheckIcon,
+  UsersThreeIcon,
+  WarningCircleIcon,
+  WifiHighIcon,
+  XCircleIcon,
 } from "@phosphor-icons/react";
 import { activeClassifier } from "./ai/classifier";
 import { db } from "./storage/db";
@@ -134,12 +151,16 @@ const guestCopy = {
   en: {
     language: "English",
     title: "What should the host know?",
-    placeholder: "Tell us what worked, what was difficult, or what you wish you could do next.",
+    body: "Tell them what stood out, what was difficult, or what you’d come back for.",
+    field: "Your note",
+    placeholder: "What worked? What was confusing? What would make the visit better?",
   },
   sw: {
     language: "Kiswahili",
     title: "Mwenyeji anapaswa kujua nini?",
-    placeholder: "Tuambie kilichofanya kazi, kilichokuwa kigumu, au unachotamani kufanya baadaye.",
+    body: "Mwambie kilichokuvutia, kilichokuwa kigumu, au kile ungependa kurudia.",
+    field: "Ujumbe wako",
+    placeholder: "Nini kilifanya kazi? Nini kilikuwa kigumu? Nini kingeboresha ziara?",
   },
 } as const;
 
@@ -293,7 +314,7 @@ function Shell({ route, children, layout = "compact" }: { route: Route; children
         <div className={"nav-grid " + layout + "-grid"}>
           <button className="brand-mark" onClick={() => go("/")}>Guestbook</button>
           <nav className="desktop-nav" aria-label="Primary">
-            {NAV.map((item) => (
+            {NAV.filter((item) => item.key !== "system").map((item) => (
               <button key={item.key} className={route === item.key ? "active" : ""} onClick={() => go(item.path)}>
                 <RouteIcon route={item.key} active={route === item.key} size={16} />
                 <span>{item.label}</span>
@@ -304,9 +325,8 @@ function Shell({ route, children, layout = "compact" }: { route: Route; children
             <span className={"status-pip " + (!online || offlineReady ? "positive" : "warning")} />
             <span>{status}</span>
           </div>
-          <button className={"mobile-system-link " + (route === "system" ? "active" : "")} onClick={() => go("/system")}>
+          <button className={"nav-system-link " + (route === "system" ? "active" : "")} onClick={() => go("/system")} aria-label="System" title="System">
             <RouteIcon route="system" active={route === "system"} size={18} />
-            <span>System</span>
           </button>
         </div>
       </header>
@@ -674,10 +694,7 @@ function GuestScreen() {
     <Shell route="guest" layout="normal">
       <main className="normal-grid guest-layout">
         <section className="guest-primary">
-          <PageTitle
-            title={copy.title}
-            body="Leave the exact words first. Guestbook interprets them on this device, then a person decides what belongs in business memory."
-          />
+          <PageTitle title={copy.title} body={copy.body} />
 
           <div className="section-gap">
             <BaseButtonGroup
@@ -691,18 +708,16 @@ function GuestScreen() {
           </div>
 
           <div className={"message-composer " + (voiceState === "listening" ? "is-listening" : "")}>
-            <Field label="Your message" meta={text.length + "/1000"} hint="No account required. You can edit this before it is saved.">
+            <Field label={copy.field} meta={text.length + "/1000"} hint={language === "sw" ? "Huhitaji akaunti." : "No account needed."}>
               <Textarea rows={9} maxLength={1000} value={text} onChange={(event) => setText(event.target.value)} placeholder={copy.placeholder} />
             </Field>
             <div className="composer-controls">
-              <button className="composer-tool-button" type="button" onClick={() => mediaRef.current?.click()}>
-                <ImageIcon size={18} weight="regular" aria-hidden="true" />
-                <span>Add photo</span>
+              <button className="composer-icon-action" type="button" onClick={() => mediaRef.current?.click()} aria-label="Add photo" title="Add photo">
+                <ImageIcon size={20} weight="regular" aria-hidden="true" />
               </button>
               {voiceState !== "listening" && voiceState !== "unavailable" && (
-                <button className="composer-voice-button" type="button" onClick={() => void startVoice()}>
-                  <MicrophoneIcon size={18} weight="regular" aria-hidden="true" />
-                  <span>Speak now</span>
+                <button className="composer-icon-action" type="button" onClick={() => void startVoice()} aria-label="Speak" title="Speak">
+                  <MicrophoneIcon size={20} weight="regular" aria-hidden="true" />
                 </button>
               )}
               {voiceState === "listening" && (
@@ -718,31 +733,31 @@ function GuestScreen() {
           {mediaDataUrl && (
             <div className="media-preview">
               <img src={mediaDataUrl} alt="" />
-              <div><span>Attached photo</span><BaseButton hierarchy="tertiary" size="small" shape="rect" onClick={() => setMediaDataUrl("")}>Remove</BaseButton></div>
+              <div><span><ImageIcon size={16} weight="regular" aria-hidden="true" /> Photo added</span><BaseButton hierarchy="tertiary" size="small" shape="rect" onClick={() => setMediaDataUrl("")}>Remove</BaseButton></div>
             </div>
           )}
 
           <input ref={mediaRef} className="sr-only" type="file" accept="image/*" onChange={(event) => attachPhoto(event.target.files?.[0])} />
 
-          {voiceState === "unavailable" && <div className="inline-note">Voice is unavailable in this browser. Typing and local Guestbook inference still work offline.</div>}
+          {voiceState === "unavailable" && <div className="inline-note"><InfoIcon size={18} weight="regular" aria-hidden="true" /> Voice isn’t available here. You can still type your note.</div>}
           {voiceError && <BaseBanner tone="negative">{voiceError}</BaseBanner>}
         </section>
 
-        <aside className="guest-context">
-          <div className="context-rule">
-            <h2 className="context-heading">What happens next</h2>
-            <div className="context-step"><strong>Interpret</strong><p>~240 KB classifier. No inference request.</p></div>
-            <div className="context-step"><strong>Review</strong><p>A person confirms or corrects the signals.</p></div>
-            <div className="context-step"><strong>Remember</strong><p>Only confirmed evidence accumulates across distinct visits.</p></div>
+        <aside className="guest-context" aria-label="About your feedback">
+          <div className="guest-facts">
+            <div><ShieldCheckIcon size={22} weight="regular" aria-hidden="true" /><span>No account needed</span></div>
+            <div><UserCheckIcon size={22} weight="regular" aria-hidden="true" /><span>The host reviews it</span></div>
+            <div><TrendUpIcon size={22} weight="regular" aria-hidden="true" /><span>Repeat requests stand out</span></div>
           </div>
         </aside>
       </main>
 
       <DockedAction>
         <div className="normal-grid dock-grid">
-          <div className="dock-copy"><strong>Source stays attached</strong><span>Guest words remain evidence, not a generated summary.</span></div>
+          <div className="dock-copy"><LockSimpleIcon size={18} weight="regular" aria-hidden="true" /><span>No sign-in. Your words stay with this visit.</span></div>
           <BaseButton hierarchy="primary" size="medium" shape="rect" onClick={submit} disabled={text.trim().length < 3 || busy}>
-            {busy ? "Interpreting locally…" : "Interpret locally"}
+            <span>{busy ? "Sending…" : "Send feedback"}</span>
+            {!busy && <ArrowRightIcon size={18} weight="bold" aria-hidden="true" />}
           </BaseButton>
         </div>
       </DockedAction>
@@ -794,27 +809,26 @@ function ReviewScreen() {
     <Shell route="review" layout="compact">
       <main className="compact-grid compact-page">
         <section className="review-source">
-          <PageTitle title="Keep the words. Check the interpretation." body="Nothing enters business memory until a person confirms it." />
+          <PageTitle title="Review this visit" body="Check what Guestbook picked up before it joins your memory." />
 
           {observation ? (
             <div className="source-block">
               <div className="source-meta">
-                <strong>{sourceLabel(observation)}</strong>
-                <span>{observation.language.toUpperCase()}</span>
-                <span>{formatAge(observation.createdAt)}</span>
+                <span><UserCheckIcon size={16} weight="regular" aria-hidden="true" />{sourceLabel(observation)}</span>
+                <span><TranslateIcon size={16} weight="regular" aria-hidden="true" />{observation.language.toUpperCase()}</span>
+                <span><ClockIcon size={16} weight="regular" aria-hidden="true" />{formatAge(observation.createdAt)}</span>
               </div>
               <blockquote>“{observation.rawText}”</blockquote>
               {observation.mediaDataUrl && <img className="review-media" src={observation.mediaDataUrl} alt="" />}
             </div>
           ) : (
-            <div className="empty-inline">No pending observation. Capture a guest message first.</div>
+            <div className="empty-inline"><InfoIcon size={18} weight="regular" aria-hidden="true" /> No visit is waiting for review.</div>
           )}
         </section>
 
         <section className="review-signals">
           <div className="section-heading">
-            <div><h2>Proposed signals</h2></div>
-            <div className="proof-inline"><span>~240 KB local classifier</span><span>No inference request</span></div>
+            <div><h2>Does this look right?</h2><p>Keep only what the guest actually meant.</p></div>
           </div>
 
           {observation && (
@@ -825,19 +839,19 @@ function ReviewScreen() {
                   const sensitive = HUMAN_CONFIRM_REQUIRED.has(prediction.label);
                   return (
                     <button className={"selection-row " + (active ? "selected" : "")} key={prediction.label} onClick={() => toggle(prediction.label)}>
-                      <span className="base-check">{active ? "✓" : ""}</span>
+                      <span className="base-check">{active && <CheckCircleIcon size={20} weight="fill" aria-hidden="true" />}</span>
                       <span className="selection-copy">
                         <strong>{LABEL_META[prediction.label].title}</strong>
                         <small>{LABEL_META[prediction.label].description}</small>
                       </span>
-                      <span className="selection-score">{formatPercent(prediction.score)}{sensitive && <em>Human confirm</em>}</span>
+                      {sensitive && <span className="sensitive-mark"><WarningCircleIcon size={18} weight="regular" aria-hidden="true" /> Check</span>}
                     </button>
                   );
                 })}
               </div>
 
               <BaseButton hierarchy="tertiary" size="small" shape="rect" onClick={() => setShowCorrections((value) => !value)}>
-                {showCorrections ? "Close corrections" : "Add or correct a signal"}
+                {showCorrections ? "Hide other options" : "Something missing?"}
               </BaseButton>
 
               {showCorrections && (
@@ -853,7 +867,7 @@ function ReviewScreen() {
                           aria-pressed={active}
                           onClick={() => toggle(label)}
                         >
-                          <span>{LABEL_META[label].title}</span>
+                          <span>{active && <CheckCircleIcon size={18} weight="fill" aria-hidden="true" />}{LABEL_META[label].title}</span>
                           <small>{LABEL_META[label].description}</small>
                         </button>
                       );
@@ -864,7 +878,7 @@ function ReviewScreen() {
 
               {hasSensitive && (
                 <BaseBanner tone="warning">
-                  <label className="sensitive-confirm"><input type="checkbox" checked={sensitiveConfirmed} onChange={(event) => setSensitiveConfirmed(event.target.checked)} />I checked the source words and explicitly confirm the sensitive requirement.</label>
+                  <label className="sensitive-confirm"><input type="checkbox" checked={sensitiveConfirmed} onChange={(event) => setSensitiveConfirmed(event.target.checked)} />The guest clearly mentioned this accessibility, dietary, or safety need.</label>
                 </BaseBanner>
               )}
             </>
@@ -874,8 +888,10 @@ function ReviewScreen() {
 
       <DockedAction>
         <div className="compact-grid dock-grid">
-          <div className="dock-copy"><strong>Human authority</strong><span>Model scores are not calibrated probabilities.</span></div>
-          <BaseButton hierarchy="primary" size="medium" shape="rect" onClick={confirm} disabled={!observation || (hasSensitive && !sensitiveConfirmed)}>Confirm into memory</BaseButton>
+          <div className="dock-copy"><UserCheckIcon size={18} weight="regular" aria-hidden="true" /><span>You decide what gets remembered.</span></div>
+          <BaseButton hierarchy="primary" size="medium" shape="rect" onClick={confirm} disabled={!observation || (hasSensitive && !sensitiveConfirmed)}>
+            <span>Confirm</span><ArrowRightIcon size={18} weight="bold" aria-hidden="true" />
+          </BaseButton>
         </div>
       </DockedAction>
     </Shell>
@@ -898,40 +914,40 @@ function MemoryScreen() {
     <Shell route="memory" layout="compact">
       <main className="compact-grid compact-page">
         <section className="memory-title">
-          <PageTitle title="What keeps repeating?" body="A pattern exists only when confirmed observations from distinct visits keep pointing to the same thing." />
+          <PageTitle title="What guests keep bringing up" body="Only feedback you confirmed across different visits shows up here." />
         </section>
 
         {featured ? (
           <>
             <section className="memory-feature">
               <div className={"memory-evidence-line " + (changed ? "changed" : "")}>
-                <strong>{changed && previousCount !== null ? previousCount + " → " + featured.visitCount : featured.visitCount}</strong>
-                <span>independent visits</span>
-                {changed && <span className="memory-new-evidence">New evidence</span>}
+                <UsersThreeIcon size={20} weight="regular" aria-hidden="true" />
+                <strong>{featured.visitCount} visits</strong>
+                {changed && <span className="memory-new-evidence"><TrendUpIcon size={16} weight="bold" aria-hidden="true" />+{featured.visitCount - (previousCount ?? featured.visitCount)} new</span>}
               </div>
               <h2>{featured.title}</h2>
               <p>{featured.description}</p>
-              <div className="memory-proof-note">Confirmed source records from distinct visits. This is observed repetition, not a prediction.</div>
+              <div className="memory-proof-note"><CheckCircleIcon size={18} weight="fill" aria-hidden="true" /> Confirmed by you across different visits.</div>
               <div className="base-button-group">
-                <BaseButton hierarchy="primary" size="medium" shape="rect" onClick={() => go("/evidence?signal=" + featured.label)}>View evidence</BaseButton>
-                <BaseButton hierarchy="secondary" size="medium" shape="rect" onClick={() => go("/decide")}>Review decision</BaseButton>
+                <BaseButton hierarchy="primary" size="medium" shape="rect" onClick={() => go("/evidence?signal=" + featured.label)}><QuotesIcon size={18} weight="regular" aria-hidden="true" /><span>See comments</span></BaseButton>
+                <BaseButton hierarchy="secondary" size="medium" shape="rect" onClick={() => go("/decide")}><CompassIcon size={18} weight="regular" aria-hidden="true" /><span>Decide</span></BaseButton>
               </div>
             </section>
 
             <section className="memory-list-section">
-              <div className="section-heading"><div><h2>Everything else in memory</h2></div></div>
+              <div className="section-heading"><div><h2>Other patterns</h2><p>Confirmed themes from your recent visits.</p></div></div>
               <div className="base-list">
                 {rest.map((signal) => (
                   <button className="base-list-row" key={signal.label} onClick={() => go("/evidence?signal=" + signal.label)}>
                     <span><strong>{signal.title}</strong><small>{signal.description}</small></span>
-                    <span className="row-meta">{signal.visitCount} visits</span>
+                    <span className="row-meta"><UsersThreeIcon size={16} weight="regular" aria-hidden="true" />{signal.visitCount}</span>
                   </button>
                 ))}
               </div>
             </section>
           </>
         ) : (
-          <section className="memory-empty"><div className="empty-state"><h2>No confirmed memory yet</h2><p>Capture and review an observation to begin.</p><BaseButton hierarchy="primary" size="medium" shape="rect" onClick={() => go("/")}>Open Guest</BaseButton></div></section>
+          <section className="memory-empty"><div className="empty-state"><DatabaseIcon size={28} weight="regular" aria-hidden="true" /><h2>Nothing in memory yet</h2><p>Review a guest note first. Repeated themes will collect here.</p><BaseButton hierarchy="primary" size="medium" shape="rect" onClick={() => go("/")}>Open Guest</BaseButton></div></section>
         )}
       </main>
     </Shell>
@@ -949,38 +965,36 @@ function EvidenceScreen() {
     <Shell route="evidence" layout="compact">
       <main className="compact-grid compact-page">
         <section className="evidence-title">
-          <PageTitle title={signal ? signal.title : "Evidence"} body="Original words stay visible. Guestbook never needs to replace evidence with a generated summary." />
+          <PageTitle title="Where this came from" body="Read the original guest comments behind a pattern." />
           {memory.length > 0 && (
-            <div className="section-gap">
-              <BaseButtonGroup
-                items={memory.slice(0, 6).map((item) => ({ value: item.label, label: item.title }))}
-                value={signal?.label ?? ""}
-                onChange={(value) => go("/evidence?signal=" + value)}
-                shape="rect"
-                size="small"
-              />
-            </div>
+            <label className="signal-switcher">
+              <span>Showing</span>
+              <select value={signal?.label ?? ""} onChange={(event) => go("/evidence?signal=" + event.target.value)}>
+                {memory.slice(0, 12).map((item) => <option key={item.label} value={item.label}>{item.title}</option>)}
+              </select>
+            </label>
           )}
         </section>
 
         <section className="evidence-summary">
           {signal && <>
-            <strong>{signal.visitCount} distinct visits</strong>
-            <p>{signal.description}</p>
+            <UsersThreeIcon size={22} weight="regular" aria-hidden="true" />
+            <div><h2>{signal.title}</h2><p>{signal.description}</p></div>
+            <strong>{signal.visitCount} visits</strong>
           </>}
         </section>
 
         <section className="evidence-ledger">
-          <div className="section-heading"><div><h2>Every source record</h2></div><span className="paragraph-small">{signal?.observations.length ?? 0} observations</span></div>
+          <div className="section-heading"><div><h2>Guest comments</h2><p>Exactly what was said on each visit.</p></div><span className="paragraph-small">{signal?.observations.length ?? 0}</span></div>
           <div className="evidence-rows">
             {(signal?.observations ?? []).map((observation) => (
               <article className="evidence-row" key={observation.id}>
+                <QuotesIcon className="evidence-quote-icon" size={22} weight="fill" aria-hidden="true" />
                 <div className="evidence-quote">“{observation.rawText}”</div>
                 <div className="evidence-meta">
-                  <strong>{observation.isDemo ? "Demo source" : "Confirmed source"}</strong>
-                  <span>{sourceLabel(observation)}</span>
-                  <span>{observation.language.toUpperCase()}</span>
-                  <span>{formatAge(observation.createdAt)}</span>
+                  <span>{observation.isDemo ? <InfoIcon size={15} weight="regular" aria-hidden="true" /> : <UserCheckIcon size={15} weight="regular" aria-hidden="true" />}{observation.isDemo ? "Demo" : sourceLabel(observation)}</span>
+                  <span><TranslateIcon size={15} weight="regular" aria-hidden="true" />{observation.language.toUpperCase()}</span>
+                  <span><ClockIcon size={15} weight="regular" aria-hidden="true" />{formatAge(observation.createdAt)}</span>
                 </div>
                 {observation.mediaDataUrl && <img className="evidence-media" src={observation.mediaDataUrl} alt="" />}
               </article>
@@ -1014,47 +1028,41 @@ function DecideScreen() {
     <Shell route="decide" layout="compact">
       <main className="compact-grid compact-page">
         <section className="decide-title">
-          <PageTitle title="Evidence stops here." body="Guestbook can show what repeats. It cannot decide what the business should become." />
+          <PageTitle title="Worth acting on?" body="Guestbook brings the pattern and the comments. You make the call." />
         </section>
 
         {signal && copy ? (
           <>
             <section className="decision-main">
-              <div className="decision-source-line">Based on {signal.visitCount} distinct visits</div>
-              <h2>People keep asking to take something home.</h2>
-              <h3>{copy.headline}</h3>
+              <div className="decision-pattern"><TrendUpIcon size={18} weight="bold" aria-hidden="true" /><span>{signal.title}</span></div>
+              <div className="decision-source-line"><UsersThreeIcon size={18} weight="regular" aria-hidden="true" />{signal.visitCount} confirmed visits</div>
+              <h2>{copy.headline}</h2>
               <p>{copy.body}</p>
-              <BaseButtonGroup
-                items={[
-                  { value: "Explore", label: "Explore" },
-                  { value: "Not now", label: "Not now" },
-                  { value: "Wrong signal", label: "Wrong signal" },
-                ]}
-                value={decision}
-                onChange={choose}
-                shape="rect"
-                size="medium"
-              />
-              {decision && <div className={"decision-state " + (decision === "Wrong signal" ? "negative" : decision === "Explore" ? "positive" : "neutral")}>Decision saved locally: {decision}.</div>}
+              <div className="decision-choice-grid" role="group" aria-label="Decision">
+                <button className={decision === "Explore" ? "selected" : ""} type="button" onClick={() => choose("Explore")}><CompassIcon size={20} weight={decision === "Explore" ? "fill" : "regular"} aria-hidden="true" /><span>Explore it</span></button>
+                <button className={decision === "Not now" ? "selected" : ""} type="button" onClick={() => choose("Not now")}><ClockIcon size={20} weight={decision === "Not now" ? "fill" : "regular"} aria-hidden="true" /><span>Not now</span></button>
+                <button className={decision === "Wrong signal" ? "selected" : ""} type="button" onClick={() => choose("Wrong signal")}><XCircleIcon size={20} weight={decision === "Wrong signal" ? "fill" : "regular"} aria-hidden="true" /><span>Not relevant</span></button>
+              </div>
+              {decision && <div className={"decision-state " + (decision === "Wrong signal" ? "negative" : decision === "Explore" ? "positive" : "neutral")}><CheckCircleIcon size={18} weight="fill" aria-hidden="true" />Saved: {decision === "Wrong signal" ? "Not relevant" : decision}</div>}
             </section>
 
             <section className="decision-proof">
-              <div className="section-heading"><div><h2>Source-backed repetition</h2></div><span className="paragraph-small">{signal.visitCount} source records</span></div>
+              <div className="section-heading"><div><h2>What guests said</h2><p>A few of the comments behind this pattern.</p></div><span className="paragraph-small">{signal.visitCount}</span></div>
               <div className="mini-evidence">
                 {signal.observations.slice(0, 3).map((observation) => (
-                  <div key={observation.id}><p>“{observation.rawText}”</p><span>{observation.isDemo ? "Demo visit" : sourceLabel(observation)}</span></div>
+                  <div key={observation.id}><QuotesIcon size={18} weight="fill" aria-hidden="true" /><p>“{observation.rawText}”</p><span>{observation.isDemo ? "Demo visit" : sourceLabel(observation)}</span></div>
                 ))}
               </div>
-              <BaseButton hierarchy="secondary" size="small" shape="rect" onClick={() => go("/evidence?signal=" + signal.label)}>Open all evidence</BaseButton>
+              <BaseButton hierarchy="secondary" size="small" shape="rect" onClick={() => go("/evidence?signal=" + signal.label)}><QuotesIcon size={16} weight="regular" aria-hidden="true" /><span>See all comments</span></BaseButton>
             </section>
 
             <section className="decision-boundary">
-              <h2>Guestbook stops before action.</h2>
-              <p>It does not set prices, order stock, send messages, change bookings, or act automatically.</p>
+              <ShieldCheckIcon size={28} weight="regular" aria-hidden="true" />
+              <div><h2>You stay in control.</h2><p>Guestbook never sends messages, changes bookings, orders stock, or takes action for you.</p></div>
             </section>
           </>
         ) : (
-          <section className="memory-empty"><div className="empty-state"><h2>Nothing has repeated enough yet</h2><p>Signals appear here after confirmation across at least three distinct visits.</p><BaseButton hierarchy="primary" size="medium" shape="rect" onClick={() => go("/memory")}>Open memory</BaseButton></div></section>
+          <section className="memory-empty"><div className="empty-state"><CompassIcon size={28} weight="regular" aria-hidden="true" /><h2>No decision needed yet</h2><p>A decision appears after the same theme shows up in at least three confirmed visits.</p><BaseButton hierarchy="primary" size="medium" shape="rect" onClick={() => go("/memory")}>See memory</BaseButton></div></section>
         )}
       </main>
     </Shell>
@@ -1119,55 +1127,52 @@ function SystemScreen() {
     <Shell route="system" layout="compact">
       <main className="compact-grid compact-page">
         <section className="system-title">
-          <PageTitle title="What is actually running here?" body="Offline readiness, optional voice, model evidence, and local data controls in one place." />
-          <div className="section-gap">
-            <BaseButtonGroup
-              items={["Offline", "Voice", "Model", "Data"].map((value) => ({ value, label: value }))}
-              value={tab}
-              onChange={setTab}
-              shape="rect"
-              size="small"
-            />
+          <PageTitle title="System & data" body="Check offline mode, voice, model tests, and what is saved on this device." />
+          <div className="system-tabs" role="tablist" aria-label="System sections">
+            <button type="button" className={tab === "Offline" ? "active" : ""} onClick={() => setTab("Offline")}><WifiHighIcon size={18} weight={tab === "Offline" ? "fill" : "regular"} aria-hidden="true" /><span>Offline</span></button>
+            <button type="button" className={tab === "Voice" ? "active" : ""} onClick={() => setTab("Voice")}><MicrophoneIcon size={18} weight={tab === "Voice" ? "fill" : "regular"} aria-hidden="true" /><span>Voice</span></button>
+            <button type="button" className={tab === "Model" ? "active" : ""} onClick={() => setTab("Model")}><GearSixIcon size={18} weight={tab === "Model" ? "fill" : "regular"} aria-hidden="true" /><span>Model</span></button>
+            <button type="button" className={tab === "Data" ? "active" : ""} onClick={() => setTab("Data")}><HardDriveIcon size={18} weight={tab === "Data" ? "fill" : "regular"} aria-hidden="true" /><span>Data</span></button>
           </div>
         </section>
 
         <section className="system-content">
           {tab === "Offline" && (
             <div className="system-stack">
-              <BaseBanner tone={offlineReady ? "positive" : "warning"}>{offlineReady ? "Offline ready. App shell, local classifier, and IndexedDB are available." : "Preparing offline cache. Do not claim offline readiness yet."}</BaseBanner>
+              <BaseBanner tone={offlineReady ? "positive" : "warning"}>{offlineReady ? "Ready to work offline." : "Finishing offline setup…"}</BaseBanner>
               <div className="system-list">
                 <div><span>App shell</span><strong>{offlineReady ? "Cached" : "Preparing"}</strong></div>
                 <div><span>Classifier</span><strong>~240 KB · local</strong></div>
                 <div><span>Inference network</span><strong>0 requests</strong></div>
                 <div><span>Business memory</span><strong>IndexedDB</strong></div>
               </div>
-              <div className="proof-sequence">
-                <h2>Cold proof</h2>
-                <ol><li>Wait for Offline ready.</li><li>Close the tab.</li><li>Disconnect.</li><li>Reopen Guestbook.</li><li>Enter an unseen sentence.</li><li>Classify, confirm, and reopen memory.</li></ol>
-              </div>
+              <details className="proof-sequence">
+                <summary>Test offline mode</summary>
+                <ol><li>Wait for “Ready to work offline.”</li><li>Close the tab and disconnect.</li><li>Reopen Guestbook.</li><li>Add a new typed note, review it, and open Memory.</li></ol>
+              </details>
             </div>
           )}
 
           {tab === "Voice" && (
             <div className="system-stack">
-              <div className="system-note"><strong>Voice is optional and connected.</strong><span>The critical Guestbook classifier remains local and offline.</span></div>
+              <div className="system-note"><MicrophoneIcon size={20} weight="regular" aria-hidden="true" /><div><strong>Voice needs a connection.</strong><span>Typing, review, memory, evidence, and decisions still work offline.</span></div></div>
               <div className="system-list">
                 <div><span>Guestbook voice-model download</span><strong>0 MB</strong></div>
                 <div><span>Browser speech API</span><strong>{browserVoiceAvailable ? "Available" : "Unavailable"}</strong></div>
                 <div><span>Offline free-form speech</span><strong>Not claimed</strong></div>
                 <div><span>Offline typed inference</span><strong>~240 KB · local</strong></div>
               </div>
-              <div className="system-caveat">General free-form offline speech recognition does not fit a credible ~1 MB model budget. Guestbook keeps speech connected and optional instead of hiding a tens-of-megabytes download behind the core flow.</div>
+              <div className="system-caveat"><InfoIcon size={18} weight="regular" aria-hidden="true" /><span>Guestbook does not hide a large speech model download behind the voice button.</span></div>
             </div>
           )}
 
           {tab === "Model" && (
             <div className="model-grid">
               <div className="model-lab">
-                <Field label="Observation" hint="Runs through the frozen local classifier.">
+                <Field label="Test phrase" hint="Runs through the same model used in Review.">
                   <Textarea rows={6} value={labText} onChange={(event) => setLabText(event.target.value)} />
                 </Field>
-                <BaseButton hierarchy="primary" size="medium" shape="rect" onClick={runInference}>Run local inference</BaseButton>
+                <BaseButton hierarchy="primary" size="medium" shape="rect" onClick={runInference}><GearSixIcon size={18} weight="regular" aria-hidden="true" /><span>Test model</span></BaseButton>
                 {inferenceMs !== null && <span className="paragraph-small">{inferenceMs.toFixed(2)} ms on this device</span>}
               </div>
               <div className="model-results">
@@ -1226,10 +1231,10 @@ function SystemScreen() {
                 <div><span>Demo records</span><strong>{rows.filter((row) => row.isDemo).length}</strong></div>
               </div>
               <div className="base-button-group">
-                <BaseButton hierarchy="primary" size="medium" shape="rect" onClick={exportMemory}>Export confirmed JSON</BaseButton>
-                <BaseButton hierarchy="negative" size="medium" shape="rect" onClick={resetDemo}>Reset demo</BaseButton>
+                <BaseButton hierarchy="primary" size="medium" shape="rect" onClick={exportMemory}><DownloadSimpleIcon size={18} weight="bold" aria-hidden="true" /><span>Export data</span></BaseButton>
+                <BaseButton hierarchy="negative" size="medium" shape="rect" onClick={resetDemo}><TrashIcon size={18} weight="bold" aria-hidden="true" /><span>Reset demo</span></BaseButton>
               </div>
-              <BaseBanner tone="warning">Export excludes demo observations. Reset clears local test data and restores the canonical five product-request demo visits.</BaseBanner>
+              <BaseBanner tone="warning">Export includes confirmed real visits only. Reset restores the demo data.</BaseBanner>
             </div>
           )}
         </section>

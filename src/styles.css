@@ -1411,4 +1411,12 @@ button:disabled {
   }
 }
 
-/* guestbook-72-complete */
+/* Product navigation: the 72-screen map stays internal, not customer-facing. */
+.primary-sidebar-nav .nav-group button {
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 38px;
+  padding: 9px 10px;
+}
+.primary-sidebar-nav .nav-group button > em {
+  font-size: 14px;
+}

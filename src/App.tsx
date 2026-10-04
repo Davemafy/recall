@@ -8,6 +8,35 @@ import type { Observation, Prediction } from "./domain/observation";
 import { createOfflineVoice, type OfflineVoiceController, type VoiceProgress } from "./voice/moonshine";
 
 
+interface BrowserSpeechResultEvent {
+  resultIndex: number;
+  results: ArrayLike<ArrayLike<{ transcript: string }>>;
+}
+
+interface BrowserSpeechRecognition {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((event: BrowserSpeechResultEvent) => void) | null;
+  onend: (() => void) | null;
+  onerror: ((event: { error?: string }) => void) | null;
+  start(): void;
+  stop(): void;
+}
+
+interface BrowserSpeechRecognitionConstructor {
+  new (): BrowserSpeechRecognition;
+}
+
+function getBrowserSpeechRecognition(): BrowserSpeechRecognitionConstructor | null {
+  const scope = window as typeof window & {
+    SpeechRecognition?: BrowserSpeechRecognitionConstructor;
+    webkitSpeechRecognition?: BrowserSpeechRecognitionConstructor;
+  };
+  return scope.SpeechRecognition ?? scope.webkitSpeechRecognition ?? null;
+}
+
+
 function useLocationKey() {
   const [key, setKey] = useState(() => window.location.pathname + window.location.search);
   useEffect(() => {
@@ -152,6 +181,15 @@ function AvatarStack({ count = 3, dark = false }: { count?: number; dark?: boole
   );
 }
 
+function GuestMedia({ src, label = "Guest photo" }: { src: string; label?: string }) {
+  return (
+    <div className="guest-media">
+      <img src={src} alt="" />
+      <span className="media-tag">{label}</span>
+    </div>
+  );
+}
+
 function EntryCard({
   observation,
   reacted,
@@ -187,6 +225,7 @@ function EntryCard({
           </div>
         </div>
         <p className="post-message">{observation.rawText}</p>
+        {observation.mediaDataUrl && <GuestMedia src={observation.mediaDataUrl} />}
         <div className="user-likes-row">
           <button className="reply-summary" onClick={() => setShowReplies((value) => !value)}>
             <AvatarStack count={Math.max(1, replies.length)} />
@@ -300,13 +339,19 @@ const guestCopy = {
 function Guest() {
   const [language, setLanguage] = useState<keyof typeof guestCopy>("en");
   const [text, setText] = useState("");
+  const [mediaDataUrl, setMediaDataUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [voiceState, setVoiceState] = useState<"install" | "cached" | "loading" | "ready" | "listening" | "error">(
     () => localStorage.getItem("guestbook-moonshine-voice-v1") ? "cached" : "install",
   );
   const [voiceProgress, setVoiceProgress] = useState<VoiceProgress | null>(null);
   const [voiceError, setVoiceError] = useState("");
+  const [quickVoiceState, setQuickVoiceState] = useState<"idle" | "listening" | "unavailable">(
+    () => getBrowserSpeechRecognition() ? "idle" : "unavailable",
+  );
   const voiceRef = useRef<OfflineVoiceController | null>(null);
+  const quickVoiceRef = useRef<BrowserSpeechRecognition | null>(null);
+  const mediaInputRef = useRef<HTMLInputElement | null>(null);
   const voiceBaseRef = useRef("");
   const copy = guestCopy[language];
 
@@ -315,8 +360,60 @@ function Guest() {
       void voiceRef.current?.stop();
       voiceRef.current?.close();
       voiceRef.current = null;
+      quickVoiceRef.current?.stop();
+      quickVoiceRef.current = null;
     };
   }, []);
+
+  function startQuickVoice() {
+    if (language !== "en" || !navigator.onLine) {
+      setVoiceError("Quick voice needs a connection. Type instead, or install the offline voice pack while connected.");
+      return;
+    }
+    const Recognition = getBrowserSpeechRecognition();
+    if (!Recognition) {
+      setQuickVoiceState("unavailable");
+      setVoiceError("This browser does not expose quick voice recognition.");
+      return;
+    }
+
+    const recognition = new Recognition();
+    const base = text.trim();
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.onresult = (event) => {
+      let transcript = "";
+      for (let index = 0; index < event.results.length; index++) {
+        transcript += event.results[index]?.[0]?.transcript ?? "";
+      }
+      setText([base, transcript.trim()].filter(Boolean).join(base ? " " : ""));
+    };
+    recognition.onend = () => {
+      quickVoiceRef.current = null;
+      setQuickVoiceState("idle");
+    };
+    recognition.onerror = (event) => {
+      quickVoiceRef.current = null;
+      setQuickVoiceState("idle");
+      setVoiceError(event.error === "not-allowed" ? "Allow microphone access in your browser and try again." : "Quick voice could not transcribe that. Type instead or retry.");
+    };
+
+    setVoiceError("");
+    quickVoiceRef.current = recognition;
+    setQuickVoiceState("listening");
+    try {
+      recognition.start();
+    } catch {
+      quickVoiceRef.current = null;
+      setQuickVoiceState("idle");
+      setVoiceError("Quick voice could not start on this browser.");
+    }
+  }
+
+  function stopQuickVoice() {
+    quickVoiceRef.current?.stop();
+  }
 
   async function prepareVoice() {
     if (language !== "en" || voiceState === "loading" || voiceState === "listening") return;
@@ -380,9 +477,17 @@ function Guest() {
     }
   }
 
+  function attachMedia(file?: File) {
+    if (!file || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = () => setMediaDataUrl(typeof reader.result === "string" ? reader.result : "");
+    reader.readAsDataURL(file);
+  }
+
   async function submit() {
     if (text.trim().length < 3 || busy) return;
     if (voiceState === "listening") await stopVoice();
+    if (quickVoiceState === "listening") stopQuickVoice();
     setBusy(true);
     const result = await activeClassifier.classify(text.trim());
     const id = crypto.randomUUID();
@@ -396,16 +501,19 @@ function Guest() {
       predictions: result.predictions,
       confirmedLabels: [],
       status: "pending",
+      mediaDataUrl: mediaDataUrl || undefined,
     };
     await db.observations.add(observation);
     go("/review?id=" + encodeURIComponent(id));
   }
 
   const canPrepare = language === "en" && (voiceState === "install" || voiceState === "cached" || voiceState === "error");
-  const progressPercent = voiceProgress && voiceProgress.fraction > 0 ? Math.round(voiceProgress.fraction * 100) : null;
-  const progressSize = voiceProgress?.total
-    ? `${((voiceProgress.loaded ?? 0) / 1024 / 1024).toFixed(1)} / ${(voiceProgress.total / 1024 / 1024).toFixed(1)} MB`
-    : null;
+  const progressKnown = Boolean(voiceProgress?.total && voiceProgress.total > 0);
+  const progressPercent = progressKnown && voiceProgress ? Math.round(voiceProgress.fraction * 100) : null;
+  const loadedMb = voiceProgress?.loaded ? (voiceProgress.loaded / 1024 / 1024).toFixed(1) : "0.0";
+  const progressSize = progressKnown && voiceProgress?.total
+    ? `${loadedMb} / ${(voiceProgress.total / 1024 / 1024).toFixed(1)} MB`
+    : voiceProgress ? `${loadedMb} MB so far` : null;
   const progressFile = voiceProgress?.file?.split("/").pop();
 
   return (
@@ -431,27 +539,51 @@ function Guest() {
 
             <div className="message-composer writing">
               <textarea value={text} onChange={(event) => setText(event.target.value)} placeholder={copy.placeholder} rows={6} aria-label={copy.title} />
+              {mediaDataUrl && <GuestMedia src={mediaDataUrl} label="Photo" />}
+              <input
+                ref={mediaInputRef}
+                className="sr-only"
+                type="file"
+                accept="image/*"
+                onChange={(event) => attachMedia(event.target.files?.[0])}
+                aria-label="Attach guest photo"
+              />
               <div className="composer-actions">
+                <button className="field-action labelled" onClick={() => mediaInputRef.current?.click()}><Icon name="attach" size={16} /><span>Photo</span></button>
                 {language === "en" && (
                   <>
-                    {canPrepare && <button className="field-action labelled" onClick={prepareVoice}><Icon name="mic" size={16} /><span>{voiceState === "cached" ? "Load voice" : "Install voice"}</span></button>}
+                    {quickVoiceState === "idle" && navigator.onLine && (
+                      <button className="field-action labelled primary-voice" onClick={startQuickVoice}>
+                        <Icon name="mic" size={16} /><span>Speak now</span>
+                      </button>
+                    )}
+                    {quickVoiceState === "listening" && (
+                      <button className="field-action labelled active-voice" onClick={stopQuickVoice}>
+                        <Icon name="mic" size={16} /><span>Listening</span>
+                      </button>
+                    )}
+                    {canPrepare && (
+                      <button className="field-action labelled secondary-voice" onClick={prepareVoice}>
+                        <Icon name="mic" size={16} /><span>{voiceState === "cached" ? "Load offline voice" : "Install offline voice · ~74 MB"}</span>
+                      </button>
+                    )}
                     {voiceState === "loading" && (
                       <span className="voice-caption">
-                        {progressPercent === null
-                          ? "Loading speech engine…"
-                          : "Downloading voice · " + progressPercent + "%" + (progressSize ? " · " + progressSize : "") + (progressFile ? " · " + progressFile : "")}
+                        {progressKnown
+                          ? "Offline voice · " + progressPercent + "% · " + progressSize + (progressFile ? " · " + progressFile : "")
+                          : "Offline voice downloading · " + (progressSize ?? "starting…") + (progressFile ? " · " + progressFile : "")}
                       </span>
                     )}
-                    {voiceState === "ready" && <button className="field-action labelled" onClick={startVoice}><Icon name="mic" size={16} /><span>Speak</span></button>}
-                    {voiceState === "listening" && <button className="field-action labelled active-voice" onClick={stopVoice}><Icon name="mic" size={16} /><span>Listening</span></button>}
+                    {voiceState === "ready" && <button className="field-action labelled secondary-voice" onClick={startVoice}><Icon name="mic" size={16} /><span>Speak offline</span></button>}
+                    {voiceState === "listening" && <button className="field-action labelled active-voice" onClick={stopVoice}><Icon name="mic" size={16} /><span>Listening offline</span></button>}
                   </>
                 )}
                 {language === "sw" && <span className="voice-caption">Typed input · offline</span>}
                 <span className="field-count">{text.length}</span>
               </div>
               {voiceState === "loading" && (
-                <div className={"field-progress " + (progressPercent === null ? "indeterminate" : "")}>
-                  <span style={progressPercent === null ? undefined : { width: progressPercent + "%" }} />
+                <div className={"field-progress " + (progressKnown ? "" : "indeterminate")}>
+                  <span style={progressKnown ? { width: progressPercent + "%" } : undefined} />
                 </div>
               )}
               {voiceError && language === "en" && <p className="field-error">{voiceError}</p>}
@@ -464,7 +596,7 @@ function Guest() {
           </button>
         </article>
 
-        <p className="screen-footnote">Voice is optional. The message stays editable before it enters business memory.</p>
+        <p className="screen-footnote">Speak now uses the browser speech service while connected. Offline voice is an optional ~74 MB on-device pack. The 240 KB Guestbook classifier and typed workflow still work offline.</p>
       </section>
     </Shell>
   );
@@ -587,6 +719,7 @@ function Review() {
               <div><strong>{sourceName(observation)}</strong><span>{formatRelative(observation.createdAt)} · {observation.language.toUpperCase()}</span></div>
             </div>
             <p className="post-message">{observation.rawText}</p>
+            {observation.mediaDataUrl && <GuestMedia src={observation.mediaDataUrl} />}
           </div>
         </article>
 
